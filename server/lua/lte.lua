@@ -78,6 +78,7 @@ illaInterface.LTE.AddEffect = function(user, effect)
         data.addEffectCalled = true
         local effects = user.SeleneEntity():GetCustomData("Effects", {})
         effects[effect.SeleneEffectDefinition.Name] = data
+        user.SeleneEntity():SetCustomData("Effects", effects)
     end
 end
 
@@ -111,6 +112,7 @@ illaInterface.LTE.RemoveEffect = function(user, effect)
            end
        end
        effects[idOrNameOrEffect] = nil
+       user.SeleneEntity():SetCustomData("Effects", effects)
        return true
    end
    return false
