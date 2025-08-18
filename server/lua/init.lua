@@ -31,10 +31,10 @@ Players.PlayerJoined:Connect(function(Player)
             }
         }
     end)
+    entity:Spawn()
     Player:SetControlledEntity(entity)
     Player:SetCameraEntity(entity)
     Player:SetCameraToFollowTarget()
-    entity:Spawn()
 
     illaLogin.onLogin(Character.fromSelenePlayer(Player))
 end)
