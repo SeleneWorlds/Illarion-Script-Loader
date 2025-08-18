@@ -1,6 +1,8 @@
-local illaLogin = require("illarion-vbu.server.lua.server.login")
-local illaLogout = require("illarion-vbu.server.lua.server.logout")
-local illaReload = require("illarion-vbu.server.lua.server.reload")
+local illaInterface = require("illarion-api.server.lua.interface")
+
+local illaLogin = require("server.login")
+local illaLogout = require("server.logout")
+local illaReload = require("server.reload")
 
 local Server = require("selene.server")
 local Players = require("selene.players")
@@ -63,3 +65,7 @@ Network.HandlePayload("illarion:use_at", function(Player, Payload)
         end
     end
 end)
+
+illaInterface.Player.Inform = function(Player, Message)
+    Network.SendToPlayer(Player, "illarion:inform", { Message = Message })
+end
