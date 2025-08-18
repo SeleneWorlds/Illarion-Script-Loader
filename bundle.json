@@ -1,5 +1,8 @@
 {
   "name": "illarion-script-loader",
   "description": "",
-  "entrypoints": ["server/lua/init.lua"]
+  "entrypoints": [
+    "server/lua/init.lua",
+    "server/lua/lte.lua"
+  ]
 }

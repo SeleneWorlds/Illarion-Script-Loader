@@ -66,6 +66,7 @@ Network.HandlePayload("illarion:use_at", function(Player, Payload)
     end
 end)
 
-illaInterface.Player.Inform = function(Player, Message)
-    Network.SendToPlayer(Player, "illarion:inform", { Message = Message })
+illaInterface.Player.Inform = function(user, message)
+    Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = message })
 end
+
