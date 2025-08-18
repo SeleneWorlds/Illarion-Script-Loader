@@ -51,7 +51,7 @@ illaInterface.LTE.FindValue = function(effect, key)
     if data and data.values and data.values[key] then
         return true, data.values[key]
     end
-    return false, nil
+    return false, 0
 end
 
 illaInterface.LTE.RemoveValue = function(effect, key)
