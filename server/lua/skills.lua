@@ -5,7 +5,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local illaLearn = require("server.learn")
 
 Interface.Skills.GetSkillName = function(skillId)
-    local skill = Registries.FindByMetadata("illarion:skills", "id", tostring(skillId))
+    local skill = Registries.FindByMetadata("illarion:skills", "skillId", skillId)
     return skill:GetMetadata("name")
 end
 

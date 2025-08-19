@@ -18,7 +18,7 @@ local function EnsureSeleneEffectData(effect)
 end
 
 Interface.LTE.Create = function(id, nextCalled)
-    local effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(id))
+    local effectDef = Registries.FindByMetadata("illarion:lte", "lteId", id)
     if effectDef == nil then
         print("No such effect " .. id) -- TODO throw an error
         return nil
@@ -89,7 +89,7 @@ Interface.LTE.FindEffect = function(user, idOrName)
     local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
     local effectDef = nil
     if type(idOrName) == "number" then
-        effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(idOrName))
+        effectDef = Registries.FindByMetadata("illarion:lte", "lteId", idOrName)
     elseif type(idOrName) == "string" then
         effectDef = Registries.FindByMetadata("illarion:lte", "name", idOrName)
     end
@@ -106,7 +106,7 @@ Interface.LTE.RemoveEffect = function(user, effect)
    end
    if effect then
        local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
-       local effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(effect.id))
+       local effectDef = Registries.FindByMetadata("illarion:lte", "lteId", effect.id)
        if effectDef then
            local effectScriptName = effectDef:GetMetadata("script")
            local status, effectScript = pcall(require, effectScriptName)
