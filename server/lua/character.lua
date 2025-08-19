@@ -42,23 +42,23 @@ Interface.Character.SetBeard = function(user, beardId)
     user.SeleneEntity():SetCustomData("illarion:beard", beardId)
 end
 
-Entities.SteppedOnTile:Connect(function(Entity, Coordinate)
-    local warpAnnotation = Entity:CollisionMap(Coordinate):GetAnnotation(Coordinate, "illarion:warp")
+Entities.SteppedOnTile:Connect(function(entity, coordinate)
+    local warpAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:warp")
     if warpAnnotation then
-        Entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
+        entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
     end
 end)
 
-Network.HandlePayload("illarion:use_at", function(Player, Payload)
-    local entity = Player:GetControlledEntity()
+Network.HandlePayload("illarion:use_at", function(player, payload)
+    local entity = player:GetControlledEntity()
     local dimension = entity.Dimension
-    local tiles = dimension:GetTilesAt(Payload.x, Payload.y, Payload.z, entity.Collision)
+    local tiles = dimension:GetTilesAt(payload.x, payload.y, payload.z, entity.Collision)
     for _, tile in pairs(tiles) do
         local tileScriptName = tile:GetMetadata("script")
         if tileScriptName and tileScriptName ~= "\\N" then
             local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. tileScriptName)
             if status and type(tileScript.UseItem) == "function" then
-                tileScript.UseItem(Character.fromSelenePlayer(Player), Item.fromSeleneTile(tile))
+                tileScript.UseItem(Character.fromSelenePlayer(player), Item.fromSeleneTile(tile))
             end
         end
     end

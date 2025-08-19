@@ -34,27 +34,27 @@ Interface.Player.GetID = function(user)
     return 0
 end
 
-Players.PlayerJoined:Connect(function(Player)
+Players.PlayerJoined:Connect(function(player)
     local entity = Entities.Create("illarion:human_female")
     entity:SetCoordinate(-97, -109, 0)
-    entity:AddDynamicComponent("illarion:name", function(Entity, ForPlayer)
+    entity:AddDynamicComponent("illarion:name", function(entity, forPlayer)
         return {
             type = "visual",
             visual = "illarion:labels/character",
             properties = {
-                label = Entity.Name
+                label = entity.Name
             }
         }
     end)
     entity:Spawn()
-    Player:SetControlledEntity(entity)
-    Player:SetCameraEntity(entity)
-    Player:SetCameraToFollowTarget()
+    player:SetControlledEntity(entity)
+    player:SetCameraEntity(entity)
+    player:SetCameraToFollowTarget()
 
-    illaLogin.onLogin(Character.fromSelenePlayer(Player))
+    illaLogin.onLogin(Character.fromSelenePlayer(player))
 end)
 
-Players.PlayerLeft:Connect(function(Player)
-    illaLogout.onLogout(Character.fromSelenePlayer(Player))
-    Player:GetControlledEntity():Remove()
+Players.PlayerLeft:Connect(function(player)
+    illaLogout.onLogout(Character.fromSelenePlayer(player))
+    player:GetControlledEntity():Remove()
 end)
