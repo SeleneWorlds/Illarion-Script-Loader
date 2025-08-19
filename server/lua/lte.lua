@@ -78,14 +78,14 @@ illaInterface.LTE.AddEffect = function(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity():GetCustomData("Effects", {})
+        local effects = user.SeleneEntity():GetCustomData("illarion:effects", {})
         effects[effect.SeleneEffectDefinition.Name] = data
-        user.SeleneEntity():SetCustomData("Effects", effects)
+        user.SeleneEntity():SetCustomData("illarion:effects", effects)
     end
 end
 
 illaInterface.LTE.FindEffect = function(user, idOrName)
-    local effects = user.SeleneEntity():GetCustomData("Effects", {})
+    local effects = user.SeleneEntity():GetCustomData("illarion:effects", {})
     local effectDef = nil
     if type(idOrName) == "number" then
         effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(idOrName))
@@ -104,7 +104,7 @@ illaInterface.LTE.RemoveEffect = function(user, effect)
        effect = self:find(idOrNameOrEffect)
    end
    if effect then
-       local effects = user.SeleneEntity():GetCustomData("Effects", {})
+       local effects = user.SeleneEntity():GetCustomData("illarion:effects", {})
        local effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(effect.id))
        if effectDef then
            local effectScriptName = effectDef:GetMetadata("script")
@@ -114,7 +114,7 @@ illaInterface.LTE.RemoveEffect = function(user, effect)
            end
        end
        effects[idOrNameOrEffect] = nil
-       user.SeleneEntity():SetCustomData("Effects", effects)
+       user.SeleneEntity():SetCustomData("illarion:effects", effects)
        return true
    end
    return false
@@ -124,7 +124,7 @@ Schedules.EverySecond:Connect(function()
     local players = world:getPlayersOnline()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity()
-        local effects = entity:GetCustomData("Effects", {})
+        local effects = entity:GetCustomData("illarion:effects", {})
         local removedEffects = {}
         for effectName, effectData in pairs(effects) do
             effectData.nextCalled = (effectData.nextCalled or 0) - 1
@@ -146,6 +146,6 @@ Schedules.EverySecond:Connect(function()
         for _, effectName in pairs(removedEffects) do
             effects[effectName] = nil
         end
-        entity:SetCustomData("Effects", effects)
+        entity:SetCustomData("illarion:effects", effects)
     end
 end)
