@@ -10,6 +10,10 @@
     "server/lua/skills.lua",
     "server/lua/lte.lua",
     "server/lua/chat.lua",
-    "server/lua/quests.lua"
+    "server/lua/quests.lua",
+    "server/lua/magic.lua",
+    "server/lua/dialog.lua",
+    "server/lua/movement.lua",
+    "server/lua/combat.lua"
   ]
 }

@@ -10,6 +10,30 @@ Interface.Player.Inform = function(user, message)
     Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = message })
 end
 
+Interface.Player.PageGM = function(user, message)
+    print("PageGM", user.name, message)
+end
+
+Interface.Player.IsAdmin = function(user)
+    print("IsAdmin", user.name)
+    return false
+end
+
+Interface.Player.GetLanguage = function(user)
+    print("GetLanguage", user.name)
+    return Player.german
+end
+
+Interface.Player.GetTotalOnlineTime = function(user)
+    print("GetTotalOnlineTime", user.name)
+    return 0
+end
+
+Interface.Player.GetID = function(user)
+    print("GetID", user.name)
+    return 0
+end
+
 Players.PlayerJoined:Connect(function(Player)
     local entity = Entities.Create("illarion:human_female")
     entity:SetCoordinate(-97, -109, 0)

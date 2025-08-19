@@ -1,7 +1,7 @@
 local Interface = require("illarion-api.server.lua.interface")
 
 Interface.Chat.Talk = function(user, mode, message, messageEnglish)
-    user:Inform(message)
+    print("Talk", user.name, mode, message, messageEnglish)
     local entity = user.SeleneEntity()
     entity:SetCustomData("illarion:lastSpokenText", message)
 end
