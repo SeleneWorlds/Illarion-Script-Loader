@@ -49,6 +49,8 @@ Players.PlayerJoined:Connect(function(player)
             }
         }
     end)
+    entity:SetCustomData(DataKeys.Attributes .. "hitpoints", 10000)
+    entity:SetCustomData(DataKeys.Attributes .. "foodlevel", 10000)
     entity:SetCustomData(DataKeys.ID, 8147)
     entity:SetCustomData(DataKeys.CharacterType, Character.player)
     entity:Spawn()
