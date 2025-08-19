@@ -1,72 +1,11 @@
-local illaInterface = require("illarion-api.server.lua.interface")
+local Registries = require("selene.registries")
 
-local illaLogin = require("server.login")
-local illaLogout = require("server.logout")
-local illaReload = require("server.reload")
-
-local Server = require("selene.server")
-local Players = require("selene.players")
-local Entities = require("selene.entities")
-local Dimensions = require("selene.dimensions")
-local Network = require("selene.network")
-local Map = require("selene.map")
-
-Server.ServerStarted:Connect(function()
-    print("Illarion Bridge started.")
-end)
-
-Server.ServerReloaded:Connect(function()
-    illaReload.onReload()
-end)
-
-Players.PlayerJoined:Connect(function(Player)
-    local entity = Entities.Create("illarion:human_female")
-    entity:SetCoordinate(-97, -109, 0)
-    entity:AddDynamicComponent("illarion:name", function(Entity, ForPlayer)
-        return {
-            type = "visual",
-            visual = "illarion:labels/character",
-            properties = {
-                label = Entity.Name
-            }
-        }
-    end)
-    entity:Spawn()
-    Player:SetControlledEntity(entity)
-    Player:SetCameraEntity(entity)
-    Player:SetCameraToFollowTarget()
-
-    illaLogin.onLogin(Character.fromSelenePlayer(Player))
-end)
-
-Players.PlayerLeft:Connect(function(Player)
-    illaLogout.onLogout(Character.fromSelenePlayer(Player))
-    Player:GetControlledEntity():Remove()
-end)
-
-Entities.SteppedOnTile:Connect(function(Entity, Coordinate)
-    local warpAnnotation = Entity:CollisionMap(Coordinate):GetAnnotation(Coordinate, "illarion:warp")
-    if warpAnnotation then
-        Entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
-    end
-end)
-
-Network.HandlePayload("illarion:use_at", function(Player, Payload)
-    local entity = Player:GetControlledEntity()
-    local dimension = entity.Dimension
-    local tiles = dimension:GetTilesAt(Payload.x, Payload.y, Payload.z, entity.Collision)
-    for _, tile in pairs(tiles) do
-        local tileScriptName = tile:GetMetadata("script")
-        if tileScriptName and tileScriptName ~= "\\N" then
-            local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. tileScriptName)
-            if status and type(tileScript.UseItem) == "function" then
-                tileScript.UseItem(Character.fromSelenePlayer(Player), Item.fromSeleneTile(tile))
-            end
-        end
-    end
-end)
-
-illaInterface.Player.Inform = function(user, message)
-    Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = message })
+local allRaces = Registries.FindAll("illarion:races")
+for _, Race in ipairs(allRaces) do
+    Character[Race:GetMetadata("name")] = tonumber(Race:GetMetadata("id"))
 end
 
+local allSkills = Registries.FindAll("illarion:skills")
+for _, Skill in ipairs(allSkills) do
+    Character[Skill:GetMetadata("name")] = tonumber(Skill:GetMetadata("id"))
+end

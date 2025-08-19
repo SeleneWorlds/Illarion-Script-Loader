@@ -3,6 +3,10 @@
   "description": "",
   "entrypoints": [
     "server/lua/init.lua",
+    "server/lua/server.lua",
+    "server/lua/player.lua",
+    "server/lua/character.lua",
+    "server/lua/skills.lua",
     "server/lua/lte.lua"
   ]
 }
