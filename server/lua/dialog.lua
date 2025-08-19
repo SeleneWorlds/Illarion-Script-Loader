@@ -1,23 +1,23 @@
 local Interface = require("illarion-api.server.lua.interface")
 
 Interface.Dialog.RequestInput = function(user, dialog)
-    print("RequestInput", user.name, dialog)
+    print("RequestInput", user.name, table.tostring(dialog))
 end
 
 Interface.Dialog.ShowMessage = function(user, dialog)
-    print("ShowMessage", user.name, dialog)
+    print("ShowMessage", user.name, table.tostring(dialog))
 end
 
 Interface.Dialog.RequestSelection = function(user, dialog)
-    print("RequestSelection", user.name, dialog)
+    print("RequestSelection", user.name, table.tostring(dialog))
 end
 
 Interface.Dialog.ShowMerchant = function(user, dialog)
-    print("ShowMerchant", user.name, dialog)
+    print("ShowMerchant", user.name, table.tostring(dialog))
 end
 
 Interface.Dialog.ShowCrafting = function(user, dialog)
-    print("ShowCrafting", user.name, dialog)
+    print("ShowCrafting", user.name, table.tostring(dialog))
 end
 
 Interface.Dialog.ShowBook = function(user, bookId)

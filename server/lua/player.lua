@@ -49,8 +49,8 @@ Players.PlayerJoined:Connect(function(player)
     entity:SetCustomData(DataKeys.ID, 8147)
     entity:SetCustomData(DataKeys.CharacterType, Character.player)
     entity:Spawn()
-    player:SetControlledEntity(entity)
-    player:SetCameraEntity(entity)
+    player.ControlledEntity = entity
+    player.CameraEntity = entity
     player:SetCameraToFollowTarget()
 
     illaLogin.onLogin(Character.fromSelenePlayer(player))
@@ -58,5 +58,5 @@ end)
 
 Players.PlayerLeft:Connect(function(player)
     illaLogout.onLogout(Character.fromSelenePlayer(player))
-    player:GetControlledEntity():Remove()
+    player.ControlledEntity:Remove()
 end)

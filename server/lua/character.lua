@@ -55,7 +55,7 @@ Entities.SteppedOnTile:Connect(function(entity, coordinate)
 end)
 
 Network.HandlePayload("illarion:use_at", function(player, payload)
-    local entity = player:GetControlledEntity()
+    local entity = player.ControlledEntity
     local dimension = entity.Dimension
     local tiles = dimension:GetTilesAt(payload.x, payload.y, payload.z, entity.Collision)
     for _, tile in pairs(tiles) do
