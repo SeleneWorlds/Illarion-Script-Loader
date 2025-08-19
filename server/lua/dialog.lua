@@ -6,6 +6,7 @@ end
 
 Interface.Dialog.ShowMessage = function(user, dialog)
     print("ShowMessage", user.name, table.tostring(dialog))
+    user:inform(dialog.message)
 end
 
 Interface.Dialog.RequestSelection = function(user, dialog)
