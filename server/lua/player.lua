@@ -7,8 +7,9 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
-Interface.Player.Inform = function(user, message)
-    Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = message })
+Interface.Player.Inform = function(user, message, messageEnglish, priority)
+    local localizedMessage = user:getPlayerLanguage() == Player.english and messageEnglish or message
+    Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = localizedMessage })
 end
 
 Interface.Player.PageGM = function(user, message)
@@ -21,8 +22,10 @@ Interface.Player.IsAdmin = function(user)
 end
 
 Interface.Player.GetLanguage = function(user)
-    print("GetLanguage", user.name)
-    return Player.german
+    if user.SelenePlayer.Language == "de" then
+        return Player.german
+    end
+    return Player.english
 end
 
 Interface.Player.GetTotalOnlineTime = function(user)
