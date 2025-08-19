@@ -31,8 +31,7 @@ Interface.Player.GetTotalOnlineTime = function(user)
 end
 
 Interface.Player.GetID = function(user)
-    print("GetID", user.name)
-    return 0
+    return user.SeleneEntity():GetCustomData(DataKeys.ID, 0)
 end
 
 Players.PlayerJoined:Connect(function(player)
@@ -47,6 +46,7 @@ Players.PlayerJoined:Connect(function(player)
             }
         }
     end)
+    entity:SetCustomData(DataKeys.ID, 8147)
     entity:SetCustomData(DataKeys.CharacterType, Character.player)
     entity:Spawn()
     player:SetControlledEntity(entity)

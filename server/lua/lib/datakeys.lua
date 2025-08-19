@@ -1,5 +1,6 @@
 local m = {}
 
+m.ID = "illarion:id"
 m.CharacterType = "illarion:characterType"
 m.Race = "illarion:race"
 m.SkinColor = "illarion:skinColor"
