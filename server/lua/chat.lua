@@ -1,20 +1,21 @@
 local Interface = require("illarion-api.server.lua.interface")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Interface.Chat.Talk = function(user, mode, message, messageEnglish)
     print("Talk", user.name, mode, message, messageEnglish)
     local entity = user.SeleneEntity()
-    entity:SetCustomData("illarion:lastSpokenText", message)
+    entity:SetCustomData(DataKeys.LastSpokenText, message)
 end
 
 Interface.Chat.GetLanguage = function(user)
     local entity = user.SeleneEntity()
-    return entity:GetCustomData("illarion:language", 0)
+    return entity:GetCustomData(DataKeys.Language, 0)
 end
 
 Interface.Chat.SetLanguage = function(user, language)
-    entity:SetCustomData("illarion:language", language)
+    entity:SetCustomData(DataKeys.Language, language)
 end
 
 Interface.Chat.GetLastSpokenText = function(user)
-    return entity:GetCustomData("illarion:lastSpokenText", "")
+    return entity:GetCustomData(DataKeys.LastSpokenText, "")
 end

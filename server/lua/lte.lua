@@ -1,7 +1,8 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 local Players = require("selene.players")
-local illaInterface = require("illarion-api.server.lua.interface")
+local Interface = require("illarion-api.server.lua.interface")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function WrapLongTimeEffect(def, entity, data)
     return setmetatable({SeleneEffectDefinition = def, SeleneEntity = entity, SeleneEffectData = data}, LongTimeEffectMT)
@@ -16,7 +17,7 @@ local function EnsureSeleneEffectData(effect)
     return data
 end
 
-illaInterface.LTE.Create = function(id, nextCalled)
+Interface.LTE.Create = function(id, nextCalled)
     local effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(id))
     if effectDef == nil then
         print("No such effect " .. id) -- TODO throw an error
@@ -27,20 +28,20 @@ illaInterface.LTE.Create = function(id, nextCalled)
     return effect
 end
 
-illaInterface.LTE.SetNextCalled = function(effect, value)
+Interface.LTE.SetNextCalled = function(effect, value)
     local data = EnsureSeleneEffectData(effect)
     data.nextCalled = value
 end
 
-illaInterface.LTE.GetNextCalled = function(effect)
+Interface.LTE.GetNextCalled = function(effect)
     return effect.SeleneEffectData and effect.SeleneEffectData.nextCalled or 0
 end
 
-illaInterface.LTE.GetNumberCalled = function(effect)
+Interface.LTE.GetNumberCalled = function(effect)
     return effect.SeleneEffectData and effect.SeleneEffectData.numberCalled or 0
 end
 
-illaInterface.LTE.AddValue = function(effect, key, value)
+Interface.LTE.AddValue = function(effect, key, value)
     local data = EnsureSeleneEffectData(effect)
     if not data.values then
         data.values = {}
@@ -48,7 +49,7 @@ illaInterface.LTE.AddValue = function(effect, key, value)
     data.values[key] = value
 end
 
-illaInterface.LTE.FindValue = function(effect, key)
+Interface.LTE.FindValue = function(effect, key)
     local data = effect.SeleneEffectData
     if data and data.values and data.values[key] then
         return true, data.values[key]
@@ -56,14 +57,14 @@ illaInterface.LTE.FindValue = function(effect, key)
     return false, 0
 end
 
-illaInterface.LTE.RemoveValue = function(effect, key)
+Interface.LTE.RemoveValue = function(effect, key)
     local data = effect.SeleneEffectData
     if data and data.values then
         data.values[key] = nil
     end
 end
 
-illaInterface.LTE.AddEffect = function(user, effect)
+Interface.LTE.AddEffect = function(user, effect)
     local found, existing = user.effects:find(effect.id)
     if found then
         local status, effectScript = pcall(require, effectScriptName)
@@ -78,14 +79,14 @@ illaInterface.LTE.AddEffect = function(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity():GetCustomData("illarion:effects", {})
+        local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
         effects[effect.SeleneEffectDefinition.Name] = data
-        user.SeleneEntity():SetCustomData("illarion:effects", effects)
+        user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
     end
 end
 
-illaInterface.LTE.FindEffect = function(user, idOrName)
-    local effects = user.SeleneEntity():GetCustomData("illarion:effects", {})
+Interface.LTE.FindEffect = function(user, idOrName)
+    local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
     local effectDef = nil
     if type(idOrName) == "number" then
         effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(idOrName))
@@ -98,13 +99,13 @@ illaInterface.LTE.FindEffect = function(user, idOrName)
     return false, nil
 end
 
-illaInterface.LTE.RemoveEffect = function(user, effect)
+Interface.LTE.RemoveEffect = function(user, effect)
    local effect = idOrNameOrEffect
    if type(idOrNameOrEffect) == "number" or type(idOrNameOrEffect) == "string" then
        effect = self:find(idOrNameOrEffect)
    end
    if effect then
-       local effects = user.SeleneEntity():GetCustomData("illarion:effects", {})
+       local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
        local effectDef = Registries.FindByMetadata("illarion:lte", "id", tostring(effect.id))
        if effectDef then
            local effectScriptName = effectDef:GetMetadata("script")
@@ -114,7 +115,7 @@ illaInterface.LTE.RemoveEffect = function(user, effect)
            end
        end
        effects[idOrNameOrEffect] = nil
-       user.SeleneEntity():SetCustomData("illarion:effects", effects)
+       user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
        return true
    end
    return false
@@ -124,7 +125,7 @@ Schedules.EverySecond:Connect(function()
     local players = world:getPlayersOnline()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity()
-        local effects = entity:GetCustomData("illarion:effects", {})
+        local effects = entity:GetCustomData(DataKeys.Effects, {})
         local removedEffects = {}
         for effectName, effectData in pairs(effects) do
             effectData.nextCalled = (effectData.nextCalled or 0) - 1
@@ -146,6 +147,6 @@ Schedules.EverySecond:Connect(function()
         for _, effectName in pairs(removedEffects) do
             effects[effectName] = nil
         end
-        entity:SetCustomData("illarion:effects", effects)
+        entity:SetCustomData(DataKeys.Effects, effects)
     end
 end)

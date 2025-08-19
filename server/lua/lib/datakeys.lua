@@ -1,0 +1,22 @@
+local m = {}
+
+m.CharacterType = "illarion:characterType"
+m.Race = "illarion:race"
+m.SkinColor = "illarion:skinColor"
+m.HairColor = "illarion:hairColor"
+m.Hair = "illarion:hair"
+m.Beard = "illarion:beard"
+m.MagicType = "illarion:magicType"
+m.MagicFlags = "illarion:magicFlags:"
+m.Quests = "illarion:quests:"
+m.Attributes = "illarion:attributes:"
+m.BaseAttributes = "illarion:baseAttributes:"
+m.PoisonValue = "illarion:poisonValue"
+m.MentalCapacity = "illarion:mentalCapacity"
+m.Language = "illarion:language"
+m.LastSpokenText = "illarion:lastSpokenText"
+m.Effects = "illarion:effects"
+m.Skills = "illarion:skills:"
+m.MinorSkills = "illarion:skills:minor:"
+
+return m

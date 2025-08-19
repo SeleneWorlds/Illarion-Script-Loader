@@ -2,6 +2,7 @@ local Players = require("selene.players")
 local Entities = require("selene.entities")
 local Network = require("selene.network")
 local Interface = require("illarion-api.server.lua.interface")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
@@ -46,6 +47,7 @@ Players.PlayerJoined:Connect(function(player)
             }
         }
     end)
+    entity:SetCustomData(DataKeys.CharacterType, Character.player)
     entity:Spawn()
     player:SetControlledEntity(entity)
     player:SetCameraEntity(entity)
