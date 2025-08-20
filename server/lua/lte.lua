@@ -18,7 +18,7 @@ local function EnsureSeleneEffectData(effect)
 end
 
 Interface.LTE.Create = function(id, nextCalled)
-    local effectDef = Registries.FindByMetadata("illarion:lte", "lteId", id)
+    local effectDef = Registries.FindByMetadata("illarion:effects", "id", id)
     if effectDef == nil then
         print("No such effect " .. id) -- TODO throw an error
         return nil
@@ -89,9 +89,9 @@ Interface.LTE.FindEffect = function(user, idOrName)
     local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
     local effectDef = nil
     if type(idOrName) == "number" then
-        effectDef = Registries.FindByMetadata("illarion:lte", "lteId", idOrName)
+        effectDef = Registries.FindByMetadata("illarion:effects", "id", idOrName)
     elseif type(idOrName) == "string" then
-        effectDef = Registries.FindByMetadata("illarion:lte", "name", idOrName)
+        effectDef = Registries.FindByMetadata("illarion:effects", "name", idOrName)
     end
     if effectDef and effects[effectDef.Name] then
         return true, WrapLongTimeEffect(effectDef, user.SeleneEntity(), effects[effectDef.Name])
@@ -106,7 +106,7 @@ Interface.LTE.RemoveEffect = function(user, effect)
    end
    if effect then
        local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
-       local effectDef = Registries.FindByMetadata("illarion:lte", "lteId", effect.id)
+       local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
        if effectDef then
            local effectScriptName = effectDef:GetMetadata("script")
            local status, effectScript = pcall(require, effectScriptName)
@@ -131,7 +131,7 @@ Schedules.EverySecond:Connect(function()
             effectData.nextCalled = (effectData.nextCalled or 0) - 1
             if effectData.nextCalled <= 0 then
                 effectData.numberCalled = (effectData.numberCalled or 0) + 1
-                local effectDef = Registries.FindByName("illarion:lte", tostring(effectName))
+                local effectDef = Registries.FindByName("illarion:effects", tostring(effectName))
                 if effectDef then
                     local effectScriptName = effectDef:GetMetadata("script")
                     local status, effectScript = pcall(require, effectScriptName)
