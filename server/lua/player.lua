@@ -38,7 +38,7 @@ Interface.Player.GetID = function(user)
 end
 
 Players.PlayerJoined:Connect(function(player)
-    local entity = Entities.Create("illarion:human_female")
+    local entity = Entities.Create("illarion:race_0_1")
     entity:SetCoordinate(-97, -109, 0)
     entity:AddDynamicComponent("illarion:name", function(entity, forPlayer)
         return {
