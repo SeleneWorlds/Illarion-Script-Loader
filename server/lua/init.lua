@@ -1,11 +1,19 @@
 local Registries = require("selene.registries")
 
 local allRaces = Registries.FindAll("illarion:races")
-for _, Race in ipairs(allRaces) do
-    Character[Race:GetMetadata("name")] = Race:GetMetadata("raceId")
+for _, race in ipairs(allRaces) do
+    Character[race:GetMetadata("name")] = race:GetMetadata("id")
 end
 
 local allSkills = Registries.FindAll("illarion:skills")
-for _, Skill in ipairs(allSkills) do
-    Character[Skill:GetMetadata("name")] = Skill:GetMetadata("skillId")
+for _, skill in ipairs(allSkills) do
+    Character[skill:GetMetadata("name")] = skill:GetMetadata("id")
+end
+
+local allItems = Registries.FindAll("illarion:items")
+for _, item in ipairs(allItems) do
+    local name = item:GetField("name")
+    if name then
+        Item[name] = item:GetMetadata("id")
+    end
 end
