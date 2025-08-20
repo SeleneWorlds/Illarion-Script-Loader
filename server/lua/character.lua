@@ -1,5 +1,6 @@
 local Entities = require("selene.entities")
 local Network = require("selene.network")
+local Registries = require("selene.registries")
 local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
@@ -59,11 +60,15 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
     local dimension = entity.Dimension
     local tiles = dimension:GetTilesAt(payload.x, payload.y, payload.z, entity.Collision)
     for _, tile in pairs(tiles) do
-        local tileScriptName = tile:GetMetadata("script")
-        if tileScriptName and tileScriptName ~= "\\N" then
-            local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. tileScriptName)
-            if status and type(tileScript.UseItem) == "function" then
-                tileScript.UseItem(Character.fromSelenePlayer(player), Item.fromSeleneTile(tile))
+        local itemId = tile:GetMetadata("itemId")
+        local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+        if item then
+            local scriptName = item:GetField("script")
+            if scriptName then
+                local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+                if status and type(tileScript.UseItem) == "function" then
+                    tileScript.UseItem(Character.fromSelenePlayer(player), Item.fromSeleneTile(tile))
+                end
             end
         end
     end
