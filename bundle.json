@@ -16,6 +16,8 @@
     "server/lua/dialog.lua",
     "server/lua/movement.lua",
     "server/lua/combat.lua",
-    "server/lua/npc.lua"
+    "server/lua/npc.lua",
+    "server/lua/triggerfields.lua",
+    "server/lua/warps.lua"
   ]
 }

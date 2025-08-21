@@ -1,4 +1,3 @@
-local Entities = require("selene.entities")
 local Network = require("selene.network")
 local Registries = require("selene.registries")
 local Interface = require("illarion-api.server.lua.interface")
@@ -47,13 +46,6 @@ end
 Interface.Character.SetBeard = function(user, beardId)
     user.SeleneEntity():SetCustomData(DataKeys.Beard, beardId)
 end
-
-Entities.SteppedOnTile:Connect(function(entity, coordinate)
-    local warpAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:warp")
-    if warpAnnotation then
-        entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
-    end
-end)
 
 Network.HandlePayload("illarion:use_at", function(player, payload)
     local entity = player.ControlledEntity
