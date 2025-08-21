@@ -59,7 +59,9 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
     local entity = player.ControlledEntity
     local dimension = entity.Dimension
     local tiles = dimension:GetTilesAt(payload.x, payload.y, payload.z, entity.Collision)
+    print(payload.x, payload.y, payload.z)
     for _, tile in pairs(tiles) do
+        print(tile.Name)
         local itemId = tile:GetMetadata("itemId")
         local item = Registries.FindByMetadata("illarion:items", "id", itemId)
         if item then
