@@ -20,8 +20,7 @@ end
 Interface.LTE.Create = function(id, nextCalled)
     local effectDef = Registries.FindByMetadata("illarion:effects", "id", id)
     if effectDef == nil then
-        print("No such effect " .. id) -- TODO throw an error
-        return nil
+        error("No such effect " .. id)
     end
     local effect = WrapLongTimeEffect(effectDef)
     effect.nextCalled = nextCalled
@@ -100,25 +99,18 @@ Interface.LTE.FindEffect = function(user, idOrName)
 end
 
 Interface.LTE.RemoveEffect = function(user, effect)
-   local effect = idOrNameOrEffect
-   if type(idOrNameOrEffect) == "number" or type(idOrNameOrEffect) == "string" then
-       effect = self:find(idOrNameOrEffect)
-   end
-   if effect then
-       local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
-       local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
-       if effectDef then
-           local effectScriptName = effectDef:GetMetadata("script")
-           local status, effectScript = pcall(require, effectScriptName)
-           if status and effectScript and type(effectScript.removeEffect) == "function" then
-               effectScript.removeEffect(effect, user)
-           end
+   local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
+   local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
+   if effectDef then
+       local effectScriptName = effectDef:GetMetadata("script")
+       local status, effectScript = pcall(require, effectScriptName)
+       if status and effectScript and type(effectScript.removeEffect) == "function" then
+           effectScript.removeEffect(effect, user)
        end
-       effects[idOrNameOrEffect] = nil
-       user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
-       return true
    end
-   return false
+   effects[effectDef.Name] = nil
+   user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
+   return true
 end
 
 Schedules.EverySecond:Connect(function()
