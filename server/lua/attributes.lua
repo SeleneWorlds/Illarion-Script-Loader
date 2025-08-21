@@ -18,6 +18,14 @@ Interface.Attributes.SetBaseAttribute = function(user, attribute, value)
     user.SeleneEntity():SetCustomData(DataKeys.BaseAttributes .. attribute, value)
 end
 
+Interface.Attributes.GetTransientBaseAttribute = function(user, attribute)
+    return user.SeleneEntity():GetCustomData(DataKeys.TransientBaseAttributes .. attribute, 0)
+end
+
+Interface.Attributes.SetTransientBaseAttribute = function(user, attribute, value)
+    user.SeleneEntity():SetCustomData(DataKeys.TransientBaseAttributes .. attribute, value)
+end
+
 Interface.Attributes.ClampAttribute = function(user, attribute, value)
     local max = 0
     if attribute == "hitpoints" or attribute == "mana" then
