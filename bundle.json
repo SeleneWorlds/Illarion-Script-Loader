@@ -19,6 +19,8 @@
     "server/lua/npc.lua",
     "server/lua/triggerfields.lua",
     "server/lua/warps.lua",
-    "server/lua/scheduled_scripts.lua"
+    "server/lua/scheduled_scripts.lua",
+    "server/lua/actions.lua",
+    "server/lua/world.lua"
   ]
 }
