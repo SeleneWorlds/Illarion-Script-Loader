@@ -1,6 +1,8 @@
 local Players = require("selene.players")
 local Entities = require("selene.entities")
 local Network = require("selene.network")
+local HTTP = require("selene.http")
+local Config = require("selene.config")
 local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
@@ -13,7 +15,8 @@ Interface.Player.Inform = function(user, message, messageEnglish, priority)
 end
 
 Interface.Player.PageGM = function(user, message)
-    print("PageGM", user.name, message)
+    local webhookUrl = Config.GetProperty("notifyAdminDiscordWebhook")
+    HTTP.Post(webhookUrl, { username = user.name .. " (" .. user.SelenePlayer.UserId .. ")", content = message })
 end
 
 Interface.Player.IsAdmin = function(user)
