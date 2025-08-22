@@ -29,8 +29,7 @@ Interface.Player.GetLanguage = function(user)
 end
 
 Interface.Player.GetTotalOnlineTime = function(user)
-    print("GetTotalOnlineTime", user.name)
-    return 0
+    return player:GetCustomData(DataKeys.TotalOnlineTime)
 end
 
 Interface.Player.GetID = function(user)
@@ -58,10 +57,18 @@ Players.PlayerJoined:Connect(function(player)
     player.CameraEntity = entity
     player:SetCameraToFollowTarget()
 
+    player:SetCustomData(DataKeys.CurrentLoginTimestamp, os.time())
+
     illaLogin.onLogin(Character.fromSelenePlayer(player))
 end)
 
 Players.PlayerLeft:Connect(function(player)
     illaLogout.onLogout(Character.fromSelenePlayer(player))
     player.ControlledEntity:Remove()
+
+    local loginTimestamp = player:GetCustomData(DataKeys.CurrentLoginTimestamp)
+    local logoutTimestamp = os.time()
+    local sessionOnlineTime = logoutTimestamp - loginTimestamp
+    local totalOnlineTime = player:GetCustomData(DataKeys.TotalOnlineTime)
+    player:SetCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
 end)

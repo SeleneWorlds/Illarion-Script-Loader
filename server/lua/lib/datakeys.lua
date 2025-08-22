@@ -20,5 +20,7 @@ m.LastSpokenText = "illarion:lastSpokenText"
 m.Effects = "illarion:effects"
 m.Skills = "illarion:skills:"
 m.MinorSkills = "illarion:skills:minor:"
+m.CurrentLoginTimestamp = "illarion:currentLoginTimestamp"
+m.TotalOnlineTime = "illarion:totalOnlineTime"
 
 return m
