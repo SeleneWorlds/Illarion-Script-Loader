@@ -33,7 +33,7 @@ Interface.Player.GetLanguage = function(user)
 end
 
 Interface.Player.GetTotalOnlineTime = function(user)
-    return player:GetCustomData(DataKeys.TotalOnlineTime)
+    return user.SelenePlayer:GetCustomData(DataKeys.TotalOnlineTime, 0)
 end
 
 Interface.Player.GetID = function(user)
@@ -70,9 +70,9 @@ Players.PlayerLeft:Connect(function(player)
     illaLogout.onLogout(Character.fromSelenePlayer(player))
     player.ControlledEntity:Remove()
 
-    local loginTimestamp = player:GetCustomData(DataKeys.CurrentLoginTimestamp)
+    local loginTimestamp = player:GetCustomData(DataKeys.CurrentLoginTimestamp, 0)
     local logoutTimestamp = os.time()
     local sessionOnlineTime = logoutTimestamp - loginTimestamp
-    local totalOnlineTime = player:GetCustomData(DataKeys.TotalOnlineTime)
+    local totalOnlineTime = player:GetCustomData(DataKeys.TotalOnlineTime, 0)
     player:SetCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
 end)
