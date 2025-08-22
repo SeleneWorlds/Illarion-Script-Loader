@@ -22,5 +22,8 @@ m.Skills = "illarion:skills:"
 m.MinorSkills = "illarion:skills:minor:"
 m.CurrentLoginTimestamp = "illarion:currentLoginTimestamp"
 m.TotalOnlineTime = "illarion:totalOnlineTime"
+m.CurrentAction = "illarion:currentAction"
+m.LastActionScript = "illarion:lastActionScript"
+m.LastActionArgs = "illarion:lastActionArgs"
 
 return m
