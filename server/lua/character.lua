@@ -55,17 +55,20 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
     for _, tile in pairs(tiles) do
         print(tile.Name)
         local itemId = tile:GetMetadata("itemId")
-        local item = Registries.FindByMetadata("illarion:items", "id", itemId)
-        if item then
-            local scriptName = item:GetField("script")
-            if scriptName then
-                local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. scriptName)
-                if status and type(tileScript.UseItem) == "function" then
-                    local illaUser = Character.fromSelenePlayer(player)
-                    local illaItem = Item.fromSeleneTile(tile)
-                    entity:SetCustomData(DataKeys.LastActionScript, tileScript.UseItem)
-                    entity:SetCustomData(DataKeys.LastActionArgs, { user, illaItem })
-                    tileScript.UseItem(illaUser, illaItem)
+        if itemId then
+            local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+            if item then
+                local scriptName = item:GetField("script")
+                if scriptName then
+                    local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+                    if status and type(tileScript.UseItem) == "function" then
+                        local illaUser = Character.fromSelenePlayer(player)
+                        local illaItem = Item.fromSeleneTile(tile)
+                        entity:SetCustomData(DataKeys.LastActionScript, tileScript)
+                        entity:SetCustomData(DataKeys.LastActionFunction, tileScript.UseItem)
+                        entity:SetCustomData(DataKeys.LastActionArgs, { user, illaItem })
+                        tileScript.UseItem(illaUser, illaItem)
+                    end
                 end
             end
         end

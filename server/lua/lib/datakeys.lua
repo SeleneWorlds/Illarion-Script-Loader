@@ -24,6 +24,7 @@ m.CurrentLoginTimestamp = "illarion:currentLoginTimestamp"
 m.TotalOnlineTime = "illarion:totalOnlineTime"
 m.CurrentAction = "illarion:currentAction"
 m.LastActionScript = "illarion:lastActionScript"
+m.LastActionFunction = "illarion:lastActionFunction"
 m.LastActionArgs = "illarion:lastActionArgs"
 
 return m
