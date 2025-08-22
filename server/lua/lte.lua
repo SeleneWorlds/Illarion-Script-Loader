@@ -117,28 +117,30 @@ Schedules.EverySecond:Connect(function()
     local players = world:getPlayersOnline()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity()
-        local effects = entity:GetCustomData(DataKeys.Effects, {})
-        local removedEffects = {}
-        for effectName, effectData in pairs(effects) do
-            effectData.nextCalled = (effectData.nextCalled or 0) - 1
-            if effectData.nextCalled <= 0 then
-                effectData.numberCalled = (effectData.numberCalled or 0) + 1
-                local effectDef = Registries.FindByName("illarion:effects", tostring(effectName))
-                if effectDef then
-                    local effectScriptName = effectDef:GetMetadata("script")
-                    local status, effectScript = pcall(require, effectScriptName)
-                    if status and effectScript and type(effectScript.callEffect) == "function" then
-                        local effect = WrapLongTimeEffect(effectDef, entity, effectData)
-                        if not effectScript.callEffect(effect, player) then
-                            table.insert(removedEffects, effectName)
+        if entity then
+            local effects = entity:GetCustomData(DataKeys.Effects, {})
+            local removedEffects = {}
+            for effectName, effectData in pairs(effects) do
+                effectData.nextCalled = (effectData.nextCalled or 0) - 1
+                if effectData.nextCalled <= 0 then
+                    effectData.numberCalled = (effectData.numberCalled or 0) + 1
+                    local effectDef = Registries.FindByName("illarion:effects", tostring(effectName))
+                    if effectDef then
+                        local effectScriptName = effectDef:GetMetadata("script")
+                        local status, effectScript = pcall(require, effectScriptName)
+                        if status and effectScript and type(effectScript.callEffect) == "function" then
+                            local effect = WrapLongTimeEffect(effectDef, entity, effectData)
+                            if not effectScript.callEffect(effect, player) then
+                                table.insert(removedEffects, effectName)
+                            end
                         end
                     end
                 end
             end
+            for _, effectName in pairs(removedEffects) do
+                effects[effectName] = nil
+            end
+            entity:SetCustomData(DataKeys.Effects, effects)
         end
-        for _, effectName in pairs(removedEffects) do
-            effects[effectName] = nil
-        end
-        entity:SetCustomData(DataKeys.Effects, effects)
     end
 end)
