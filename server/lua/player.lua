@@ -20,8 +20,9 @@ Interface.Player.PageGM = function(user, message)
 end
 
 Interface.Player.IsAdmin = function(user)
-    print("IsAdmin", user.name)
-    return false
+    -- TODO Temporary solution until we have basic permission support in Selene
+    local admins = string.split(Config.GetProperty("admins"), ",")
+    return table.find(admins, user.SelenePlayer.UserId)
 end
 
 Interface.Player.GetLanguage = function(user)
