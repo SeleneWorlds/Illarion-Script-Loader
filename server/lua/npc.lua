@@ -8,5 +8,7 @@ for _, npc in ipairs(allNPCs) do
     entity.Name = npc:GetField("name")
     entity:SetCoordinate(npc:GetField("x"), npc:GetField("y"), npc:GetField("z"))
     entity:SetFacing(DirectionUtils.IllaToSelene(npc:GetField("facing")))
+    entity:SetCustomData(DataKeys.ID, npc:GetField("id") + 4278190080)
+    entity:SetCustomdata(DataKeys.CharacterType, Character.npc)
     entity:Spawn()
 end
