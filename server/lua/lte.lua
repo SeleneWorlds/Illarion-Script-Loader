@@ -17,6 +17,27 @@ local function EnsureSeleneEffectData(effect)
     return data
 end
 
+Character.SeleneMethods.effects = function(user)
+    return {
+        addEffect = function(self, effect)
+            return Interface.LTE.AddEffect(user, effect)
+        end,
+        find = function(self, idOrName)
+            return Interface.LTE.FindEffect(user, idOrName)
+        end,
+        removeEffect = function(self, idOrNameOrEffect)
+            local effect = idOrNameOrEffect
+            if type(idOrNameOrEffect) == "number" or type(idOrNameOrEffect) == "string" then
+                effect = self:find(idOrNameOrEffect)
+            end
+            if not effect then
+                return false
+            end
+            return Interface.LTE.RemoveEffect(user, effect)
+        end
+    }
+end
+
 Interface.LTE.Create = function(id, nextCalled)
     local effectDef = Registries.FindByMetadata("illarion:effects", "id", id)
     if effectDef == nil then

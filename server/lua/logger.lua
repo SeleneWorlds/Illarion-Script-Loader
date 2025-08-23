@@ -11,7 +11,3 @@ end
 Interface.Logger.LogError = function(message)
     print("[Error] " .. message)
 end
-
-Interface.Logger.LogAdmin = function(message)
-    print("[Admin] " .. message)
-end

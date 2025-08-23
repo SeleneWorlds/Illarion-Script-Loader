@@ -1,7 +1,7 @@
 local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
-Interface.Chat.Talk = function(user, mode, message, messageEnglish)
+Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     print("Talk", user.name, mode, message, messageEnglish)
     local entity = user.SeleneEntity()
     entity:SetCustomData(DataKeys.LastSpokenText, message)

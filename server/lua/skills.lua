@@ -4,16 +4,16 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local illaLearn = require("server.learn")
 
-Interface.Skills.GetSkillName = function(skillId)
+Character.SeleneMethods.getSkillName = function(skillId)
     local skill = Registries.FindByMetadata("illarion:skills", "id", skillId)
     return skill:GetMetadata("name")
 end
 
-Interface.Skills.GetSkill = function(user, skillId)
+Character.SeleneMethods.getSkill = function(user, skillId)
     return user.SeleneEntity():GetCustomData(DataKeys.Skills .. skillId, 0)
 end
 
-Interface.Skills.GetMinorSkill = function(user, skillId)
+Character.SeleneMethods.getMinorSkill = function(user, skillId)
     return user.SeleneEntity():GetCustomData(DataKeys.MinorSkills .. skillId, 0)
 end
 
@@ -25,6 +25,6 @@ Interface.Skills.SetSkillMinor = function(user, skillId, minor)
     user.SeleneEntity():SetCustomData(DataKeys.MinorSkills .. skillId, minor)
 end
 
-Interface.Skills.Learn = function(user, skillId, actionPoints, learnLimit)
+Character.SeleneMethods.learn = function(user, skillId, actionPoints, learnLimit)
     illaLearn.learn(user, skillId, actionPoints, learnLimit)
 end

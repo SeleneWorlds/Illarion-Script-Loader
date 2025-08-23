@@ -3,37 +3,36 @@ local Entities = require("selene.entities")
 local Network = require("selene.network")
 local HTTP = require("selene.http")
 local Config = require("selene.config")
-local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
-Interface.Player.Inform = function(user, message, messageEnglish, priority)
+Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
     local localizedMessage = user:getPlayerLanguage() == Player.english and messageEnglish or message
     Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = localizedMessage })
 end
 
-Interface.Player.PageGM = function(user, message)
+Character.SeleneMethods.pageGM = function(user, message)
     local webhookUrl = Config.GetProperty("notifyAdminDiscordWebhook")
     HTTP.Post(webhookUrl, { username = user.name .. " (" .. user.SelenePlayer.UserId .. ")", content = message })
 end
 
-Interface.Player.IsAdmin = function(user)
+Character.SeleneMethods.isAdmin = function(user)
     -- TODO Temporary solution until we have basic permission support in Selene
     local admins = string.split(Config.GetProperty("admins"), ",")
     return table.find(admins, user.SelenePlayer.UserId)
 end
 
-Interface.Player.GetLanguage = function(user)
+Character.SeleneMethods.getPlayerLanguage = function(user)
     if user.SelenePlayer.Language == "de" then
         return Player.german
     end
     return Player.english
 end
 
-Interface.Player.GetTotalOnlineTime = function(user)
-    return user.SelenePlayer:GetCustomData(DataKeys.TotalOnlineTime, 0)
+Character.SeleneMethods.isNewPlayer = function(user)
+    return user.SelenePlayer:GetCustomData(DataKeys.TotalOnlineTime, 0) < 10 * 60 * 60
 end
 
 Players.PlayerJoined:Connect(function(player)
@@ -72,3 +71,12 @@ Players.PlayerLeft:Connect(function(player)
     local totalOnlineTime = player:GetCustomData(DataKeys.TotalOnlineTime, 0)
     player:SetCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
 end)
+
+Character.SeleneMethods.idleTime = function(user)
+    return user.SelenePlayer.IdleTime
+end
+
+Character.SeleneMethods.logAdmin = function(user, message)
+    local playerTypePrefix = user:isAdmin() and "Admin" or "Player"
+    print("[Admin]", playerTypePrefix, user.name, "(" .. user.id .. ")", "uses admin tool:", message)
+end

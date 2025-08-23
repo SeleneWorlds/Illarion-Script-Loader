@@ -3,15 +3,15 @@ local Registries = require("selene.registries")
 local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
-Interface.Character.GetType = function(user)
+Character.SeleneMethods.getType = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.CharacterType, Character.player)
 end
 
-Interface.Character.GetRace = function(user)
+Character.SeleneMethods.getRace = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.Race, 0)
 end
 
-Interface.Character.SetRace = function(user, raceId)
+Character.SeleneMethods.setRace = function(user, raceId)
     local entity = user.SeleneEntity()
     entity:SetCustomData(DataKeys.Race, raceId)
     local sex = Interface.Character.GetSex(user)
@@ -21,35 +21,35 @@ Interface.Character.SetRace = function(user, raceId)
     })
 end
 
-Interface.Character.GetSkinColor = function(user)
+Character.SeleneMethods.getSkinColour = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.SkinColor, colour(255, 255, 255))
 end
 
-Interface.Character.SetSkinColor = function(user, skinColor)
+Character.SeleneMethods.setSkinColour = function(user, skinColor)
     user.SeleneEntity():SetCustomData(DataKeys.SkinColor, skinColor)
 end
 
-Interface.Character.GetHairColor = function(user)
+Character.SeleneMethods.getHairColour = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.HairColor, colour(255, 255, 255))
 end
 
-Interface.Character.SetHairColor = function(user, hairColor)
+Character.SeleneMethods.setHairColour = function(user, hairColor)
     user.SeleneEntity():SetCustomData(DataKeys.HairColor, hairColor)
 end
 
-Interface.Character.GetHair = function(user)
+Character.SeleneMethods.getHair = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.Hair, 0)
 end
 
-Interface.Character.SetHair = function(user, hairId)
+Character.SeleneMethods.setHair = function(user, hairId)
     user.SeleneEntity():SetCustomData(DataKeys.Hair, hairId)
 end
 
-Interface.Character.GetBeard = function(user)
+Character.SeleneMethods.getBeard = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.Beard, 0)
 end
 
-Interface.Character.SetBeard = function(user, beardId)
+Character.SeleneMethods.setBeard = function(user, beardId)
     user.SeleneEntity():SetCustomData(DataKeys.Beard, beardId)
 end
 
@@ -101,4 +101,67 @@ end
 
 Character.SeleneGetters.isinvisible = function(user)
     return user.SeleneEntity():IsInvisible()
+end
+
+Character.SeleneSetters.isinvisible = function(user)
+    user.SeleneEntity():MakeInvisible()
+end
+
+Character.SeleneMethods.updateAppearance = function(user)
+    user.SeleneEntity():UpdateVisual()
+end
+
+Character.SeleneMethods.setClippingActive = function(user, status)
+    user.SeleneEntity():SetNoClip(status)
+end
+
+Character.SeleneMethods.getClippingActive = function(user)
+    return user.SeleneEntity():IsNoClip()
+end
+
+Character.SeleneMethods.getFaceTo = function(user)
+   return DirectionUtils.SeleneToIlla(user.SeleneEntity().Facing) or Character.north
+end
+
+Character.SeleneMethods.warp = function(user, pos)
+    -- TODO illa fails this if occupied
+    user.SeleneEntity():SetCoordinate(pos)
+end
+
+Character.SeleneMethods.forceWarp = function(user, pos)
+    user.SeleneEntity():SetCoordinate(pos)
+end
+
+Character.SeleneMethods.move = function(user, direction, activeMove)
+    -- TODO activeMove = false means it should be a "push" (no walk animation)
+    user.SeleneEntity():Move(direction)
+end
+
+Character.SeleneMethods.turn = function(user, direction)
+    local seleneDirection = DirectionUtils.IllaToSelene(direction)
+    if seleneDirection then
+        user.SeleneEntity():SetFacing(seleneDirection)
+    end
+end
+
+Character.SeleneMethods.isInRange = function(user, other, distance)
+    return user:isInRangeToPosition(other.position, distance)
+end
+
+Character.SeleneMethods.isInRangeToPosition = function(user, position, distance)
+    local dx = math.abs(user.pos.x - position.x)
+    local dy = math.abs(user.pos.y - position.y)
+    local dz = math.abs(user.pos.z - position.z)
+    return (dx <= distance) and (dy <= distance) and dz == 0
+end
+
+Character.SeleneMethods.distanceMetric = function(user, other)
+    return user:distanceMetricToPosition(other.position)
+end
+
+Character.SeleneMethods.distanceMetricToPosition = function(user, position)
+    local dx = math.abs(user.pos.x - position.x)
+    local dy = math.abs(user.pos.y - position.y)
+    local dz = math.abs(user.pos.z - position.z)
+    return math.max(dx, dy, dz)
 end

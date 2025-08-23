@@ -38,7 +38,7 @@ Interface.Attributes.ClampAttribute = function(user, attribute, value)
     return max ~= 0 and math.clamp(value, 0, max) or math.max(value, 0)
 end
 
-Interface.Attributes.IsBaseAttributeValid = function(user, attribute, value)
+Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
     local raceId = Interface.Character.GetRace(user)
     local race = Registries.FindByMetadata("illarion:races", "id", raceId)
     if not race then
@@ -55,7 +55,7 @@ Interface.Attributes.IsBaseAttributeValid = function(user, attribute, value)
     return value >= minValue and value <= maxValue
 end
 
-Interface.Attributes.GetMaxAttributePoints = function(user)
+Character.SeleneMethods.getMaxAttributePoints = function(user)
     local raceId = Interface.Character.GetRace(user)
     local race = Registries.FindByMetadata("illarion:races", "id", raceId)
     if not race then
@@ -65,18 +65,122 @@ Interface.Attributes.GetMaxAttributePoints = function(user)
     return race:GetField("maxAttributePoints")
 end
 
-Interface.Attributes.GetPoisonValue = function(user)
+Character.SeleneMethods.getPoisonValue = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.PoisonValue, 0)
 end
 
-Interface.Attributes.SetPoisonValue = function(user, value)
+Character.SeleneMethods.setPoisonValue = function(user, value)
     user.SeleneEntity():SetCustomData(DataKeys.PoisonValue, value)
 end
 
-Interface.Attributes.GetMentalCapacity = function(user)
+Character.SeleneMethods.increasePoisonValue = function(user, amount)
+    user.SeleneEntity():SetCustomData(DataKeys.PoisonValue, user.SeleneEntity():GetCustomData(DataKeys.PoisonValue, 0) + amount)
+end
+
+Character.SeleneMethods.getMentalCapacity = function(user)
     return user.SeleneEntity():GetCustomData(DataKeys.MentalCapacity, 0)
 end
 
-Interface.Attributes.SetMentalCapacity = function(user, value)
+Character.SeleneMethods.setMentalCapacity = function(user, value)
     user.SeleneEntity():SetCustomData(DataKeys.MentalCapacity, value)
+end
+
+Character.SeleneMethods.increaseMentalCapacity = function(user, amount)
+    user.SeleneEntity():SetCustomData(DataKeys.MentalCapacity, user.SeleneEntity():GetCustomData(DataKeys.MentalCapacity, 0) + amount)
+end
+
+Character.SeleneMethods.increaseAttrib = function(user, attribute, value)
+    if attribute == "sex" then
+        error("sex is not yet implemented 😏")
+    end
+
+    local baseValue = Interface.Attributes.GetTransientBaseAttribute(user, attribute)
+    local offset = Interface.Attributes.GetAttributeOffset(user, attribute)
+    local prev = Interface.Attributes.ClampAttribute(user, attribute, baseValue + offset)
+    local new = Interface.Attributes.ClampAttribute(user, attribute, prev + value)
+    if prev ~= new then
+        if baseValue == 0 then
+            Interface.Attributes.SetBaseAttribute(user, attribute, new)
+            Interface.Attributes.SetAttributeOffset(user, attribute, 0)
+        else
+            Interface.Attributes.SetAttributeOffset(user, attribute, new - baseValue)
+        end
+        Interface.Attributes.HandleAttributeChange(user, attribute)
+    end
+    return new
+end
+
+Character.SeleneMethods.setAttrib = function(user, attribute, value)
+   local baseValue = Interface.Attributes.GetTransientBaseAttribute(user, attribute)
+   local offset = Interface.Attributes.GetAttributeOffset(user, attribute)
+   local prev = Interface.Attributes.ClampAttribute(user, attribute, baseValue + offset)
+   local new = Interface.Attributes.ClampAttribute(user, attribute, value)
+   if prev ~= new then
+       if baseValue == 0 then
+           Interface.Attributes.SetBaseAttribute(user, attribute, new)
+           Interface.Attributes.SetAttributeOffset(user, attribute, 0)
+       else
+           Interface.Attributes.SetAttributeOffset(user, attribute, new - baseValue)
+       end
+       Interface.Attributes.HandleAttributeChange(user, attribute)
+   end
+end
+
+Character.SeleneMethods.getBaseAttributeSum = function(user)
+    return Interface.Attributes.GetTransientBaseAttribute(user, "agility") + Interface.Attributes.GetTransientBaseAttribute(user, "constitution") +
+           Interface.Attributes.GetTransientBaseAttribute(user, "dexterity") + Interface.Attributes.GetTransientBaseAttribute(user, "essence") +
+           Interface.Attributes.GetTransientBaseAttribute(user, "intelligence") + Interface.Attributes.GetTransientBaseAttribute(user, "perception") +
+           Interface.Attributes.GetTransientBaseAttribute(user, "strength") + Interface.Attributes.GetTransientBaseAttribute(user, "willpower")
+end
+
+Character.SeleneMethods.saveBaseAttributes = function(user)
+    -- This behaviour is insane and should not exist
+    if getMaxAttributePoints(user) ~= getBaseAttributeSum(user) then
+        Interface.Attributes.SetTransientBaseAttribute(user, "agility", Interface.Attributes.GetBaseAttribute(user, "agility"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "constitution", Interface.Attributes.GetBaseAttribute(user, "constitution"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "dexterity", Interface.Attributes.GetBaseAttribute(user, "dexterity"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "essence", Interface.Attributes.GetBaseAttribute(user, "essence"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "intelligence", Interface.Attributes.GetBaseAttribute(user, "intelligence"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "perception", Interface.Attributes.GetBaseAttribute(user, "perception"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "strength", Interface.Attributes.GetBaseAttribute(user, "strength"))
+        Interface.Attributes.SetTransientBaseAttribute(user, "willpower", Interface.Attributes.GetBaseAttribute(user, "willpower"))
+        return false
+    end
+
+    Interface.Attributes.SetBaseAttribute(user, "agility", Interface.Attributes.GetTransientBaseAttribute(user, "agility"))
+    Interface.Attributes.SetBaseAttribute(user, "constitution", Interface.Attributes.GetTransientBaseAttribute(user, "constitution"))
+    Interface.Attributes.SetBaseAttribute(user, "dexterity", Interface.Attributes.GetTransientBaseAttribute(user, "dexterity"))
+    Interface.Attributes.SetBaseAttribute(user, "essence", Interface.Attributes.GetTransientBaseAttribute(user, "essence"))
+    Interface.Attributes.SetBaseAttribute(user, "intelligence", Interface.Attributes.GetTransientBaseAttribute(user, "intelligence"))
+    Interface.Attributes.SetBaseAttribute(user, "perception", Interface.Attributes.GetTransientBaseAttribute(user, "perception"))
+    Interface.Attributes.SetBaseAttribute(user, "strength", Interface.Attributes.GetTransientBaseAttribute(user, "strength"))
+    Interface.Attributes.SetBaseAttribute(user, "willpower", Interface.Attributes.GetTransientBaseAttribute(user, "willpower"))
+    return true
+end
+
+Character.SeleneMethods.setBaseAttribute = function(user, attribute, value)
+    if Interface.Attributes.isBaseAttributeValid(user, attribute, value) then
+        local prev = Interface.Attributes.GetTransientBaseAttribute(user, attribute)
+        local new = Interface.Attributes.ClampAttribute(user, attribute, value)
+        if prev ~= new then
+            Interface.Attributes.SetBaseAttribute(user, attribute, new)
+            Interface.Attributes.HandleAttributeChange(user, attribute)
+        end
+        return true
+    end
+    return false
+end
+
+Character.SeleneMethods.increaseBaseAttribute = function(user, attribute, amount)
+    local prev = Interface.Attributes.GetTransientBaseAttribute(user, attribute)
+    local new = prev + amount
+    if Interface.Attributes.isBaseAttributeValid(user, attribute, new) then
+        new = Interface.Attributes.ClampAttribute(user, attribute, new)
+        if prev ~= new then
+            Interface.Attributes.SetBaseAttribute(user, attribute, new)
+            Interface.Attributes.HandleAttributeChange(user, attribute)
+        end
+        return true
+    end
+    return false
 end
