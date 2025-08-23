@@ -12,7 +12,13 @@ Interface.Character.GetRace = function(user)
 end
 
 Interface.Character.SetRace = function(user, raceId)
-    user.SeleneEntity():SetCustomData(DataKeys.Race, raceId)
+    local entity = user.SeleneEntity()
+    entity:SetCustomData(DataKeys.Race, raceId)
+    local sex = Interface.Character.GetSex(user)
+    entity:AddComponent("illarion:body", {
+        type = "visual",
+        visual = "illarion:race_" .. raceId .. "_" .. sex
+    })
 end
 
 Interface.Character.GetSkinColor = function(user)
@@ -75,6 +81,24 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
     end
 end)
 
-Interface.Character.Introduce = function(user, other)
+Character.SeleneMethods.introduce = function(user, other)
     user.SeleneEntity():SetCustomData(DataKeys.Introduction .. ":" .. other.id, true)
+    -- TODO sync name component
+    error("introduce is not fully implemented - does not sync new nameplate yet")
+end
+
+Character.SeleneGetters.id = function(user)
+    return user.SeleneEntity():GetCustomData(DataKeys.ID, 0)
+end
+
+Character.SeleneGetters.name = function(user)
+    return user.SeleneEntity().Name
+end
+
+Character.SeleneGetters.pos = function(user)
+    return user.SeleneEntity().Coordinate
+end
+
+Character.SeleneGetters.isinvisible = function(user)
+    return user.SeleneEntity():IsInvisible()
 end
