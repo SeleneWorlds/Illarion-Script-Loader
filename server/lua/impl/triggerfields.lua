@@ -1,7 +1,7 @@
 local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Dimensions = require("selene.dimensions")
-local DirectionUtils = require("illarion-api.server.lua.lib.directionUtils")
+local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 
 local allTriggerFields = Registries.FindAll("illarion:triggerfields")
 for _, field in ipairs(allTriggerFields) do

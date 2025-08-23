@@ -1,6 +1,6 @@
 local Registries = require("selene.registries")
 local Entities = require("selene.entities")
-local DirectionUtils = require("illarion-api.server.lua.lib.directionUtils")
+local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local allNPCs = Registries.FindAll("illarion:npcs")
