@@ -36,10 +36,6 @@ Interface.Player.GetTotalOnlineTime = function(user)
     return user.SelenePlayer:GetCustomData(DataKeys.TotalOnlineTime, 0)
 end
 
-Interface.Player.GetID = function(user)
-    return user.SeleneEntity():GetCustomData(DataKeys.ID, 0)
-end
-
 Players.PlayerJoined:Connect(function(player)
     local entity = Entities.Create("illarion:race_0_1")
     entity:SetCoordinate(-97, -109, 0)

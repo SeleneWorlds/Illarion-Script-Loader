@@ -14,7 +14,6 @@
     "server/lua/quests.lua",
     "server/lua/magic.lua",
     "server/lua/dialog.lua",
-    "server/lua/movement.lua",
     "server/lua/combat.lua",
     "server/lua/npc.lua",
     "server/lua/triggerfields.lua",

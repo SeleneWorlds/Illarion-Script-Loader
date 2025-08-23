@@ -7,7 +7,7 @@ Interface.Chat.Talk = function(user, mode, message, messageEnglish)
     entity:SetCustomData(DataKeys.LastSpokenText, message)
 end
 
-Interface.Chat.GetLanguage = function(user)
+Character.SeleneGetters.activeLanguage = function(user)
     local entity = user.SeleneEntity()
     return entity:GetCustomData(DataKeys.Language, 0)
 end
@@ -16,6 +16,6 @@ Interface.Chat.SetLanguage = function(user, language)
     entity:SetCustomData(DataKeys.Language, language)
 end
 
-Interface.Chat.GetLastSpokenText = function(user)
+Character.SeleneGetters.lastSpokenText = function(user)
     return entity:GetCustomData(DataKeys.LastSpokenText, "")
 end
