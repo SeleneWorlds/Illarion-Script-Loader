@@ -6,7 +6,8 @@ local Sounds = require("selene.sounds")
 world.gfx = function(world, gfxId, pos)
     local entityType = Registries.FindByMetadata("entities", "gfxId", gfxId)
     if entityType == nil then
-        error("Unknown gfx id " .. gfxId)
+        print("Unknown gfx id " .. gfxId)
+        return
     end
 
     local entity = Entities.CreateTransient(entityType.Name)
