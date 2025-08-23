@@ -1,4 +1,3 @@
-local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getQuestProgress = function(user, questId)

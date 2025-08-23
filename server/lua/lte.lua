@@ -1,7 +1,6 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 local Players = require("selene.players")
-local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function WrapLongTimeEffect(def, entity, data)
@@ -17,74 +16,8 @@ local function EnsureSeleneEffectData(effect)
     return data
 end
 
-Character.SeleneGetters.effects = function(user)
-    return {
-        addEffect = function(self, effect)
-            return Interface.LTE.AddEffect(user, effect)
-        end,
-        find = function(self, idOrName)
-            return Interface.LTE.FindEffect(user, idOrName)
-        end,
-        removeEffect = function(self, idOrNameOrEffect)
-            local effect = idOrNameOrEffect
-            if type(idOrNameOrEffect) == "number" or type(idOrNameOrEffect) == "string" then
-                effect = self:find(idOrNameOrEffect)
-            end
-            if not effect then
-                return false
-            end
-            return Interface.LTE.RemoveEffect(user, effect)
-        end
-    }
-end
 
-Interface.LTE.Create = function(id, nextCalled)
-    local effectDef = Registries.FindByMetadata("illarion:effects", "id", id)
-    if effectDef == nil then
-        error("No such effect " .. id)
-    end
-    local effect = WrapLongTimeEffect(effectDef)
-    effect.nextCalled = nextCalled
-    return effect
-end
-
-Interface.LTE.SetNextCalled = function(effect, value)
-    local data = EnsureSeleneEffectData(effect)
-    data.nextCalled = value
-end
-
-Interface.LTE.GetNextCalled = function(effect)
-    return effect.SeleneEffectData and effect.SeleneEffectData.nextCalled or 0
-end
-
-Interface.LTE.GetNumberCalled = function(effect)
-    return effect.SeleneEffectData and effect.SeleneEffectData.numberCalled or 0
-end
-
-Interface.LTE.AddValue = function(effect, key, value)
-    local data = EnsureSeleneEffectData(effect)
-    if not data.values then
-        data.values = {}
-    end
-    data.values[key] = value
-end
-
-Interface.LTE.FindValue = function(effect, key)
-    local data = effect.SeleneEffectData
-    if data and data.values and data.values[key] then
-        return true, data.values[key]
-    end
-    return false, 0
-end
-
-Interface.LTE.RemoveValue = function(effect, key)
-    local data = effect.SeleneEffectData
-    if data and data.values then
-        data.values[key] = nil
-    end
-end
-
-Interface.LTE.AddEffect = function(user, effect)
+local function AddEffect(user, effect)
     local found, existing = user.effects:find(effect.id)
     if found then
         local status, effectScript = pcall(require, effectScriptName)
@@ -105,7 +38,7 @@ Interface.LTE.AddEffect = function(user, effect)
     end
 end
 
-Interface.LTE.FindEffect = function(user, idOrName)
+local function FindEffect(user, idOrName)
     local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
     local effectDef = nil
     if type(idOrName) == "number" then
@@ -119,7 +52,7 @@ Interface.LTE.FindEffect = function(user, idOrName)
     return false, nil
 end
 
-Interface.LTE.RemoveEffect = function(user, effect)
+local function RemoveEffect(user, effect)
    local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
    local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
@@ -132,6 +65,81 @@ Interface.LTE.RemoveEffect = function(user, effect)
    effects[effectDef.Name] = nil
    user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
    return true
+end
+
+Character.SeleneGetters.effects = function(user)
+    return {
+        addEffect = function(self, effect)
+            return AddEffect(user, effect)
+        end,
+        find = function(self, idOrName)
+            return FindEffect(user, idOrName)
+        end,
+        removeEffect = function(self, idOrNameOrEffect)
+            local effect = idOrNameOrEffect
+            if type(idOrNameOrEffect) == "number" or type(idOrNameOrEffect) == "string" then
+                effect = self:find(idOrNameOrEffect)
+            end
+            if not effect then
+                return false
+            end
+            return RemoveEffect(user, effect)
+        end
+    }
+end
+
+LongTimeEffect.SeleneConstructor = function(id, nextCalled)
+    local effectDef = Registries.FindByMetadata("illarion:effects", "id", id)
+    if effectDef == nil then
+        error("No such effect " .. id)
+    end
+    local effect = WrapLongTimeEffect(effectDef)
+    effect.nextCalled = nextCalled
+    return effect
+end
+
+LongTimeEffect.SeleneSetters.nextCalled = function(effect, value)
+    local data = EnsureSeleneEffectData(effect)
+    data.nextCalled = value
+end
+
+LongTimeEffect.SeleneGetters.effectId = function(effect)
+    return tonumber(effect.SeleneEffectDefinition:GetMetadata("lteId"))
+end
+
+LongTimeEffect.SeleneGetters.effectName = function(effect)
+    return effect.SeleneEffectDefinition:GetMetadata("name")
+end
+
+LongTimeEffect.SeleneGetters.nextCalled = function(effect)
+    return effect.SeleneEffectData and effect.SeleneEffectData.nextCalled or 0
+end
+
+LongTimeEffect.SeleneGetters.numberCalled = function(effect)
+    return effect.SeleneEffectData and effect.SeleneEffectData.numberCalled or 0
+end
+
+LongTimeEffect.SeleneMethods.addValue = function(effect, key, value)
+    local data = EnsureSeleneEffectData(effect)
+    if not data.values then
+        data.values = {}
+    end
+    data.values[key] = value
+end
+
+LongTimeEffect.SeleneMethods.findValue = function(effect, key)
+    local data = effect.SeleneEffectData
+    if data and data.values and data.values[key] then
+        return true, data.values[key]
+    end
+    return false, 0
+end
+
+LongTimeEffect.SeleneMethods.removeValue = function(effect, key)
+    local data = effect.SeleneEffectData
+    if data and data.values then
+        data.values[key] = nil
+    end
 end
 
 Schedules.EverySecond:Connect(function()

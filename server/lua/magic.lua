@@ -1,4 +1,3 @@
-local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getMagicType = function(user)
@@ -13,7 +12,7 @@ Character.SeleneMethods.getMagicFlags = function(user, magicType)
     return user.SeleneEntity():GetCustomData(DataKeys.MagicFlags .. magicType, 0)
 end
 
-local function setMagicFlags(user, magicType, flags)
+local function SetMagicFlags(user, magicType, flags)
     user.SeleneEntity():SetCustomData(DataKeys.MagicFlags .. magicType, flags)
 end
 
@@ -32,5 +31,5 @@ Character.SeleneMethods.teachMagic = function(user, magicType, magicFlag)
 
     local flags = user:getMagicFlags(magicType)
     flags = flags | magicFlag
-    Interface.Magic.SetMagicFlags(user, magicType, flags)
+    SetMagicFlags(user, magicType, flags)
 end

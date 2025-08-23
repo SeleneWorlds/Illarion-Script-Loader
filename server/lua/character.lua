@@ -1,6 +1,5 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
-local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getType = function(user)

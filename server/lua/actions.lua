@@ -1,5 +1,4 @@
 local Schedules = require("selene.schedules")
-local Interface = require("illarion-api.server.lua.interface")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function ClearAction(user)
@@ -17,7 +16,7 @@ local function ClearAction(user)
     entity:SetCustomData(DataKeys.CurrentAction, nil)
 end
 
-Interface.Actions.StartAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
+Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
     local entity = user.SeleneEntity()
     local gfxHandle = nil
     local sfxHandle = nil
@@ -47,7 +46,7 @@ Interface.Actions.StartAction = function(user, duration, gfxId, gfxInterval, sfx
     })
 end
 
-Interface.Actions.DisturbAction = function(user, disturber)
+Character.SeleneMethods.disturbAction = function(user, disturber)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local shouldAbort = false
@@ -59,14 +58,14 @@ Interface.Actions.DisturbAction = function(user, disturber)
     end
 
     if shouldAbort then
-        Interface.Actions.AbortAction(user)
+        user:abortAction()
         return true
     end
 
     return false
 end
 
-Interface.Actions.SuccessAction = function(user)
+Character.SeleneMethods.successAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity()
@@ -78,7 +77,7 @@ Interface.Actions.SuccessAction = function(user)
     ClearAction(user)
 end
 
-Interface.Actions.AbortAction = function(user)
+Character.SeleneMethods.abortAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity()
@@ -90,11 +89,7 @@ Interface.Actions.AbortAction = function(user)
     ClearAction(user)
 end
 
-Interface.Actions.IsActionRunning = function(user)
+Character.SeleneMethods.isActionRunning = function(user)
     local entity = user.SeleneEntity()
     return entity:GetCustomData(DataKeys.CurrentAction) ~= nil
-end
-
-Interface.Actions.ChangeSource = function(user, charOrItemOrPosOrTextOrNil, talkTypeIfText)
-    print("ChangeSource", user) -- TODO
 end

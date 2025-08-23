@@ -1,5 +1,3 @@
-local Interface = require("illarion-api.server.lua.interface")
-
 local illaFighting = require("server.standardfighting")
 
 Character.SeleneMethods.callAttackScript = function(attacker, defender)
