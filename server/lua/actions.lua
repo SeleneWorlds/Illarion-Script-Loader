@@ -2,7 +2,7 @@ local Schedules = require("selene.schedules")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function ClearAction(user)
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     local action = entity:GetCustomData(DataKeys.CurrentAction, {})
      if action.ActionHandle then
          Schedules.ClearTimeout(action.ActionHandle)
@@ -17,7 +17,7 @@ local function ClearAction(user)
 end
 
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     local gfxHandle = nil
     local sfxHandle = nil
     if gfxId ~= 0 then
@@ -50,7 +50,7 @@ Character.SeleneMethods.disturbAction = function(user, disturber)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local shouldAbort = false
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     local script = entity:GetCustomData(DataKeys.LastActionScript)
     if script and type(script.actionDisturbed) == "function" then
         shouldAbort = script.actionDisturbed(user, disturber)
@@ -68,7 +68,7 @@ end
 Character.SeleneMethods.successAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     local func = entity:GetCustomData(DataKeys.LastActionFunction)
      if type(func) == "function" then
          pcall(func, table.unpack(args), Action.success)
@@ -80,7 +80,7 @@ end
 Character.SeleneMethods.abortAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     local func = entity:GetCustomData(DataKeys.LastActionFunction)
     if type(func) == "function" then
         pcall(func, table.unpack(args), Action.abort)
@@ -90,6 +90,6 @@ Character.SeleneMethods.abortAction = function(user)
 end
 
 Character.SeleneMethods.isActionRunning = function(user)
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     return entity:GetCustomData(DataKeys.CurrentAction) ~= nil
 end

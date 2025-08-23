@@ -2,7 +2,7 @@ local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getMonsterType = function(user)
-    local entity = user.SeleneEntity()
+    local entity = user.SeleneEntity
     return user:GetCustomData(DataKeys.MonsterType, 0)
 end
 

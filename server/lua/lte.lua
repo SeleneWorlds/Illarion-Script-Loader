@@ -32,14 +32,14 @@ local function AddEffect(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
+        local effects = user.SeleneEntity:GetCustomData(DataKeys.Effects, {})
         effects[effect.SeleneEffectDefinition.Name] = data
-        user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
+        user.SeleneEntity:SetCustomData(DataKeys.Effects, effects)
     end
 end
 
 local function FindEffect(user, idOrName)
-    local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
+    local effects = user.SeleneEntity:GetCustomData(DataKeys.Effects, {})
     local effectDef = nil
     if type(idOrName) == "number" then
         effectDef = Registries.FindByMetadata("illarion:effects", "id", idOrName)
@@ -47,13 +47,13 @@ local function FindEffect(user, idOrName)
         effectDef = Registries.FindByMetadata("illarion:effects", "name", idOrName)
     end
     if effectDef and effects[effectDef.Name] then
-        return true, WrapLongTimeEffect(effectDef, user.SeleneEntity(), effects[effectDef.Name])
+        return true, WrapLongTimeEffect(effectDef, user.SeleneEntity, effects[effectDef.Name])
     end
     return false, nil
 end
 
 local function RemoveEffect(user, effect)
-   local effects = user.SeleneEntity():GetCustomData(DataKeys.Effects, {})
+   local effects = user.SeleneEntity:GetCustomData(DataKeys.Effects, {})
    local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
        local effectScriptName = effectDef:GetMetadata("script")
@@ -63,7 +63,7 @@ local function RemoveEffect(user, effect)
        end
    end
    effects[effectDef.Name] = nil
-   user.SeleneEntity():SetCustomData(DataKeys.Effects, effects)
+   user.SeleneEntity:SetCustomData(DataKeys.Effects, effects)
    return true
 end
 
@@ -145,7 +145,7 @@ end
 Schedules.EverySecond:Connect(function()
     local players = world:getPlayersOnline()
     for _, player in pairs(players) do
-        local entity = player.SeleneEntity()
+        local entity = player.SeleneEntity
         if entity then
             local effects = entity:GetCustomData(DataKeys.Effects, {})
             local removedEffects = {}

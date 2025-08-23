@@ -2,27 +2,27 @@ local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function GetAttributeOffset(user, attribute)
-    return user.SeleneEntity():GetCustomData(DataKeys.AttributeOffsets .. attribute, 0)
+    return user.SeleneEntity:GetCustomData(DataKeys.AttributeOffsets .. attribute, 0)
 end
 
 local function SetAttributeOffset(user, attribute, value)
-    user.SeleneEntity():SetCustomData(DataKeys.AttributeOffsets .. attribute, value)
+    user.SeleneEntity:SetCustomData(DataKeys.AttributeOffsets .. attribute, value)
 end
 
 local function GetSavedBaseAttribute(user, attribute)
-    return user.SeleneEntity():GetCustomData(DataKeys.BaseAttributes .. attribute, 0)
+    return user.SeleneEntity:GetCustomData(DataKeys.BaseAttributes .. attribute, 0)
 end
 
 local function SetSavedBaseAttribute(user, attribute, value)
-    user.SeleneEntity():SetCustomData(DataKeys.BaseAttributes .. attribute, value)
+    user.SeleneEntity:SetCustomData(DataKeys.BaseAttributes .. attribute, value)
 end
 
 local function GetTransientBaseAttribute(user, attribute)
-    return user.SeleneEntity():GetCustomData(DataKeys.TransientBaseAttributes .. attribute, 0)
+    return user.SeleneEntity:GetCustomData(DataKeys.TransientBaseAttributes .. attribute, 0)
 end
 
 local function SetTransientBaseAttribute(user, attribute, value)
-    user.SeleneEntity():SetCustomData(DataKeys.TransientBaseAttributes .. attribute, value)
+    user.SeleneEntity:SetCustomData(DataKeys.TransientBaseAttributes .. attribute, value)
 end
 
 local function ClampAttribute(user, attribute, value)
@@ -68,27 +68,27 @@ Character.SeleneMethods.getMaxAttributePoints = function(user)
 end
 
 Character.SeleneMethods.getPoisonValue = function(user)
-    return user.SeleneEntity():GetCustomData(DataKeys.PoisonValue, 0)
+    return user.SeleneEntity:GetCustomData(DataKeys.PoisonValue, 0)
 end
 
 Character.SeleneMethods.setPoisonValue = function(user, value)
-    user.SeleneEntity():SetCustomData(DataKeys.PoisonValue, value)
+    user.SeleneEntity:SetCustomData(DataKeys.PoisonValue, value)
 end
 
 Character.SeleneMethods.increasePoisonValue = function(user, amount)
-    user.SeleneEntity():SetCustomData(DataKeys.PoisonValue, user.SeleneEntity():GetCustomData(DataKeys.PoisonValue, 0) + amount)
+    user.SeleneEntity:SetCustomData(DataKeys.PoisonValue, user.SeleneEntity:GetCustomData(DataKeys.PoisonValue, 0) + amount)
 end
 
 Character.SeleneMethods.getMentalCapacity = function(user)
-    return user.SeleneEntity():GetCustomData(DataKeys.MentalCapacity, 0)
+    return user.SeleneEntity:GetCustomData(DataKeys.MentalCapacity, 0)
 end
 
 Character.SeleneMethods.setMentalCapacity = function(user, value)
-    user.SeleneEntity():SetCustomData(DataKeys.MentalCapacity, value)
+    user.SeleneEntity:SetCustomData(DataKeys.MentalCapacity, value)
 end
 
 Character.SeleneMethods.increaseMentalCapacity = function(user, amount)
-    user.SeleneEntity():SetCustomData(DataKeys.MentalCapacity, user.SeleneEntity():GetCustomData(DataKeys.MentalCapacity, 0) + amount)
+    user.SeleneEntity:SetCustomData(DataKeys.MentalCapacity, user.SeleneEntity:GetCustomData(DataKeys.MentalCapacity, 0) + amount)
 end
 
 Character.SeleneMethods.increaseAttrib = function(user, attribute, value)

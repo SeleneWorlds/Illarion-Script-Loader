@@ -18,6 +18,7 @@
     "server/lua/triggerfields.lua",
     "server/lua/warps.lua",
     "server/lua/scheduled_scripts.lua",
+    "server/lua/script_vars.lua",
     "server/lua/actions.lua",
     "server/lua/world.lua",
     "server/lua/monsters.lua"
