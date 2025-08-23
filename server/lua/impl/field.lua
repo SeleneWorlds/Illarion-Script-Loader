@@ -1,3 +1,40 @@
+Field.SeleneMethods.tile = function(field)
+    local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
+    if #tiles > 0 then
+        return tiles[1]:GetMetadata("tileId")
+    end
+    return 0
+end
+
+Field.SeleneMethods.isPassable = function(field)
+    return not field.SeleneDimension:HasCollisionAt(field.SelenePosition)
+end
+
+Field.SeleneMethods.countItems = function(field)
+    local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
+    local count = 0
+    for _, tile in ipairs(tiles) do
+        if tile:GetMetadata("itemId") ~= nil then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+Field.SeleneMethods.getStackItem = function(field, index)
+    local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
+    local i = -1
+    for _, tile in ipairs(tiles) do
+        if tile:GetMetadata("itemId") ~= nil then
+            i = i + 1
+            if i == index then
+                return Item.fromSeleneTile(tile)
+            end
+        end
+    end
+    return Item.fromSeleneEmpty()
+end
+
 function Field.fromSelenePosition(Dimension, Position)
     return setmetatable({ SeleneDimension = Dimension, SelenePosition = Position }, Field.SeleneMetatable)
 end

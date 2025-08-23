@@ -22,6 +22,9 @@
     "server/lua/impl/world.lua",
     "server/lua/impl/monsters.lua",
     "server/lua/impl/field.lua",
+    "server/lua/impl/container.lua",
+    "server/lua/impl/inventory.lua",
+    "server/lua/impl/item.lua",
     "server/lua/lifecycle.lua"
   ]
 }

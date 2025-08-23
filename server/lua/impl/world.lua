@@ -244,3 +244,25 @@ world.getTime = function(world, timeType)
 
     return -1
 end
+
+world.createItemFromId = function(world, itemId, count, pos, always, quality, data)
+    local dimension = Dimensions.GetDefault()
+    local tileDef = Registries.FindByMetadata("tiles", "itemId", itemId)
+    if not tileDef then
+        error("Unknown tile for item id " .. itemId)
+    end
+    local tile = dimension:PlaceTile(pos, tileDef.Name)
+    return Item.fromSeleneTile(tile)
+end
+
+world.getMonstersInRangeOf = function(world, pos, range)
+    local dimension = Dimensions.GetDefault()
+    local entities = dimension:GetEntitiesInRange(pos, range)
+    local monsters = {}
+    for _, entity in ipairs(entities) do
+        if entity:GetCustomData(DataKeys.CharacterType) == Character.monster then
+            table.insert(monsters, Character.fromSeleneEntity(entity))
+        end
+    end
+    return monsters
+end
