@@ -35,6 +35,15 @@ Character.SeleneMethods.isNewPlayer = function(user)
     return user.SelenePlayer:GetCustomData(DataKeys.TotalOnlineTime, 0) < 10 * 60 * 60
 end
 
+Character.SeleneMethods.idleTime = function(user)
+    return user.SelenePlayer.IdleTime
+end
+
+Character.SeleneMethods.logAdmin = function(user, message)
+    local playerTypePrefix = user:isAdmin() and "Admin" or "Player"
+    print("[Admin]", playerTypePrefix, user.name, "(" .. user.id .. ")", "uses admin tool:", message)
+end
+
 Players.PlayerJoined:Connect(function(player)
     local entity = Entities.Create("illarion:race_0_1")
     entity:SetCoordinate(-97, -109, 0)
@@ -71,12 +80,3 @@ Players.PlayerLeft:Connect(function(player)
     local totalOnlineTime = player:GetCustomData(DataKeys.TotalOnlineTime, 0)
     player:SetCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
 end)
-
-Character.SeleneMethods.idleTime = function(user)
-    return user.SelenePlayer.IdleTime
-end
-
-Character.SeleneMethods.logAdmin = function(user, message)
-    local playerTypePrefix = user:isAdmin() and "Admin" or "Player"
-    print("[Admin]", playerTypePrefix, user.name, "(" .. user.id .. ")", "uses admin tool:", message)
-end

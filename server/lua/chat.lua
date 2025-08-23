@@ -12,7 +12,7 @@ Character.SeleneGetters.activeLanguage = function(user)
     return entity:GetCustomData(DataKeys.Language, 0)
 end
 
-Interface.Chat.SetLanguage = function(user, language)
+Character.SeleneSetters.activeLanguage = function(user, language)
     entity:SetCustomData(DataKeys.Language, language)
 end
 

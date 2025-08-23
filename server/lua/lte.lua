@@ -17,7 +17,7 @@ local function EnsureSeleneEffectData(effect)
     return data
 end
 
-Character.SeleneMethods.effects = function(user)
+Character.SeleneGetters.effects = function(user)
     return {
         addEffect = function(self, effect)
             return Interface.LTE.AddEffect(user, effect)

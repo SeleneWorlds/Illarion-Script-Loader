@@ -39,7 +39,7 @@ Interface.Attributes.ClampAttribute = function(user, attribute, value)
 end
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
-    local raceId = Interface.Character.GetRace(user)
+    local raceId = user:getRace()
     local race = Registries.FindByMetadata("illarion:races", "id", raceId)
     if not race then
         return false
@@ -56,7 +56,7 @@ Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
 end
 
 Character.SeleneMethods.getMaxAttributePoints = function(user)
-    local raceId = Interface.Character.GetRace(user)
+    local raceId = user:getRace()
     local race = Registries.FindByMetadata("illarion:races", "id", raceId)
     if not race then
         return 0

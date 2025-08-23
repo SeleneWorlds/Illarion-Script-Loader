@@ -17,14 +17,30 @@ Character.SeleneMethods.getMinorSkill = function(user, skillId)
     return user.SeleneEntity():GetCustomData(DataKeys.MinorSkills .. skillId, 0)
 end
 
-Interface.Skills.SetSkill = function(user, skillId, major)
-    user.SeleneEntity():SetCustomData(DataKeys.Skills .. skillId, major)
+Character.SeleneMethods.increaseSkill = function(user, skillId, amount)
+    local skill = user.SeleneEntity():GetCustomData(DataKeys.Skills .. skillId, 0)
+    skill = skill + amount
+    user.SeleneEntity():SetCustomData(DataKeys.Skills .. skillId, skill)
 end
 
-Interface.Skills.SetSkillMinor = function(user, skillId, minor)
+Character.SeleneMethods.increaseMinorSkill = function(user, skillId, amount)
+    local skill = user.SeleneEntity():GetCustomData(DataKeys.MinorSkills .. skillId, 0)
+    skill = skill + amount
+    user.SeleneEntity():SetCustomData(DataKeys.MinorSkills .. skillId, skill)
+end
+
+Character.SeleneMethods.setSkill = function(user, skillId, major, minor)
+    user.SeleneEntity():SetCustomData(DataKeys.Skills .. skillId, major)
     user.SeleneEntity():SetCustomData(DataKeys.MinorSkills .. skillId, minor)
 end
 
 Character.SeleneMethods.learn = function(user, skillId, actionPoints, learnLimit)
     illaLearn.learn(user, skillId, actionPoints, learnLimit)
+end
+
+Character.SeleneMethods.getSkillValue = function(user, skillId)
+     return {
+         major = user:getSkill(skillId),
+         minor = user:getMinorSkill(skillId)
+     }
 end

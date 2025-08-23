@@ -14,7 +14,7 @@ end
 Character.SeleneMethods.setRace = function(user, raceId)
     local entity = user.SeleneEntity()
     entity:SetCustomData(DataKeys.Race, raceId)
-    local sex = Interface.Character.GetSex(user)
+    local sex = user:increaseAttrib("sex", 0)
     entity:AddComponent("illarion:body", {
         type = "visual",
         visual = "illarion:race_" .. raceId .. "_" .. sex
