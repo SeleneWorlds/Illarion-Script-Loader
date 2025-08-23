@@ -74,3 +74,7 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
         end
     end
 end)
+
+Interface.Character.Introduce = function(user, other)
+    user.SeleneEntity():SetCustomData(DataKeys.Introduction .. ":" .. other.id, true)
+end

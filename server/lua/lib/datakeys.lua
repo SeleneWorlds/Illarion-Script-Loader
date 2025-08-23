@@ -26,5 +26,6 @@ m.CurrentAction = "illarion:currentAction"
 m.LastActionScript = "illarion:lastActionScript"
 m.LastActionFunction = "illarion:lastActionFunction"
 m.LastActionArgs = "illarion:lastActionArgs"
+m.Introduction = "illarion:introduction"
 
 return m
