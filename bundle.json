@@ -21,6 +21,7 @@
     "server/lua/impl/actions.lua",
     "server/lua/impl/world.lua",
     "server/lua/impl/monsters.lua",
+    "server/lua/impl/field.lua",
     "server/lua/lifecycle.lua"
   ]
 }
