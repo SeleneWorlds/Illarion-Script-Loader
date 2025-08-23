@@ -27,5 +27,6 @@ m.LastActionScript = "illarion:lastActionScript"
 m.LastActionFunction = "illarion:lastActionFunction"
 m.LastActionArgs = "illarion:lastActionArgs"
 m.Introduction = "illarion:introduction"
+m.MonsterType = "illarion:monsterType"
 
 return m
