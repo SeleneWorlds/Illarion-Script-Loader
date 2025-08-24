@@ -9,7 +9,7 @@ local illaLogout = require("server.logout")
 
 Players.PlayerJoined:Connect(function(player)
     local entity = Entities.Create("illarion:race_0_1")
-    entity:SetCoordinate(-97, -109, 0)
+    entity:SetCoordinate(702, 283, 0)
     entity:AddDynamicComponent("illarion:name", function(entity, forPlayer)
         return {
             type = "visual",
