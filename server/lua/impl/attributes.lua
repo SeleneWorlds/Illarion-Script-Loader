@@ -1,6 +1,11 @@
 local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
+local maxHitpoints = 10000
+local maxFoodLevel = 60000
+local maxMana = 10000
+local maxAttribute = 255
+
 local function GetAttributeOffset(user, attribute)
     return user.SeleneEntity:GetCustomData(DataKeys.AttributeOffsets .. attribute, 0)
 end
@@ -27,17 +32,26 @@ end
 
 local function ClampAttribute(user, attribute, value)
     local max = 0
-    if attribute == "hitpoints" or attribute == "mana" then
-        max = 10000
-    elseif attribute == "food" then
-        max = 60000
+    if attribute == "hitpoints" then
+        max = maxHitpoints
+    elseif attribute == "mana" then
+        max = maxMana
+    elseif attribute == "foodlevel" then
+        max = maxFood
     elseif attribute == "strength" or attribute == "dexterity" or attribute == "constitution" or attribute == "agility" or attribute == "intelligence" or attribute == "essence" or attribute == "perception" or attribute == "willpower" then
-        max = 255
+        max = maxAttribute
     end
     return max ~= 0 and math.clamp(value, 0, max) or math.max(value, 0)
 end
 
-local function HandleAttributeChange(user)
+local function HandleAttributeChange(user, attribute)
+    if attribute == "hitpoints" then
+        Network.SendToEntity(entity.super, "illarion:health", { value = value / maxHitpoints })
+    elseif attribute == "foodlevel" then
+        Network.SendToEntity(entity.super, "illarion:food", { value = value / maxFoodLevel })
+    elseif attribute == "mana" then
+        Network.SendToEntity(entity.super, "illarion:mana", { value = value / maxMana })
+    end
 end
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
