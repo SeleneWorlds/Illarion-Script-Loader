@@ -17,8 +17,8 @@ end
 
 Character.SeleneMethods.isAdmin = function(user)
     -- TODO Temporary solution until we have basic permission support in Selene
-    local admins = string.split(Config.GetProperty("admins"), ",")
-    return table.find(admins, user.SelenePlayer.UserId)
+    local admins = stringx.split(Config.GetProperty("admins"), ",")
+    return tablex.find(admins, user.SelenePlayer.UserId)
 end
 
 Character.SeleneMethods.getPlayerLanguage = function(user)
