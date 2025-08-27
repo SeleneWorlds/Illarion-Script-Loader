@@ -1,6 +1,7 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 
 Character.SeleneMethods.getType = function(user)
     return user.SeleneEntity:GetCustomData(DataKeys.CharacterType, Character.player)
