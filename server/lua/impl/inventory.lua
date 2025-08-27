@@ -24,3 +24,26 @@ Character.SeleneMethods.getItemAt = function(user, slot)
     end
     return Item.fromSeleneEmpty()
 end
+
+Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
+    local entity = user.SeleneEntity
+    local beltAttribute = entity:GetAttribute("belt")
+    local beltData = beltAttribute.Value
+    local slots = beltData.slots
+    local slotIds = beltData:Lookup("slotIds")
+    for _, slotId in ipairs(slotIds) do
+        local slot = slots[slotId]
+        local slotItem = slot:Lookup("item")
+        if slotItem == nil then
+            slot.item = {
+                id = itemId,
+                number = count,
+                quality = quality,
+                data = data
+            }
+            beltAttribute:Refresh(slotId)
+            break
+        end
+    end
+    return 0
+end
