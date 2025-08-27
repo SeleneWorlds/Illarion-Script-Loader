@@ -170,6 +170,11 @@ Character.SeleneGetters.SeleneEntity = function(user)
     return user.SelenePlayer and user.SelenePlayer.ControlledEntity or rawget(user, "SeleneEntity")
 end
 
+isValidChar = function(user)
+    -- TODO This should actually check if the user is truly still valid
+    return true
+end
+
 function Character.fromSelenePlayer(player)
     return setmetatable({SelenePlayer = player}, Character.SeleneMetatable)
 end
