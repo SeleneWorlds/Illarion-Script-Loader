@@ -45,13 +45,6 @@ local function ClampAttribute(user, attribute, value)
 end
 
 local function HandleAttributeChange(user, attribute)
-    if attribute == "hitpoints" then
-        Network.SendToEntity(entity.super, "illarion:health", { value = value / maxHitpoints })
-    elseif attribute == "foodlevel" then
-        Network.SendToEntity(entity.super, "illarion:food", { value = value / maxFoodLevel })
-    elseif attribute == "mana" then
-        Network.SendToEntity(entity.super, "illarion:mana", { value = value / maxMana })
-    end
 end
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
