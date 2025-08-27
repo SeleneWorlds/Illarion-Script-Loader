@@ -29,7 +29,7 @@ Character.SeleneMethods.getPlayerLanguage = function(user)
 end
 
 Character.SeleneMethods.isNewPlayer = function(user)
-    return user.SelenePlayer:GetCustomData(DataKeys.TotalOnlineTime, 0) < 10 * 60 * 60
+    return user.SelenePlayer.CustomData[DataKeys.TotalOnlineTime] or 0 < 10 * 60 * 60
 end
 
 Character.SeleneMethods.idleTime = function(user)

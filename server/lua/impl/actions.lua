@@ -4,7 +4,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function ClearAction(user)
     local entity = user.SeleneEntity
-    local action = entity:GetCustomData(DataKeys.CurrentAction, {})
+    local action = entity.CustomData[DataKeys.CurrentAction] or {}
      if action.ActionHandle then
          Schedules.ClearTimeout(action.ActionHandle)
      end
@@ -14,7 +14,7 @@ local function ClearAction(user)
      if action.SfxHandle then
          Schedules.ClearInterval(action.SfxHandle)
      end
-    entity:SetCustomData(DataKeys.CurrentAction, nil)
+    entity.CustomData[DataKeys.CurrentAction] = nil
 end
 
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
@@ -33,18 +33,18 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     end
 
     local actionHandle = Schedules.SetTimeout(duration, function()
-        local func = entity:GetCustomData(DataKeys.LastActionFunction)
-        local args = entity:GetCustomData(DataKeys.LastActionArgs)
+        local func = entity.CustomData[DataKeys.LastActionFunction]
+        local args = entity.CustomData[DataKeys.LastActionArgs]
         if type(func) == "function" and args then
             pcall(func, table.unpack(args), Action.success)
         end
         ClearAction(user)
     end)
-    entity:SetCustomData(DataKeys.CurrentAction, {
+    entity.CustomData[DataKeys.CurrentAction] = {
         ActionHandle = actionHandle,
         GfxHandle = gfxHandle,
         SfxHandle = sfxHandle
-    })
+    }
 end
 
 Character.SeleneMethods.disturbAction = function(user, disturber)
@@ -52,10 +52,10 @@ Character.SeleneMethods.disturbAction = function(user, disturber)
     -- TODO special handling for crafting dialogs
     local shouldAbort = false
     local entity = user.SeleneEntity
-    local script = entity:GetCustomData(DataKeys.LastActionScript)
+    local script = entity.CustomData[DataKeys.LastActionScript]
     if script and type(script.actionDisturbed) == "function" then
-        shouldAbort = script.actionDisturbed(user, disturber)
-        entity:SetCustomData(DataKeys.CurrentAction, nil)
+        shouldAbort = script.actionDisturbed(user] or disturber
+        entity.CustomData[DataKeys.CurrentAction] = nil
     end
 
     if shouldAbort then
@@ -70,7 +70,7 @@ Character.SeleneMethods.successAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
-    local func = entity:GetCustomData(DataKeys.LastActionFunction)
+    local func = entity.CustomData[DataKeys.LastActionFunction]
      if type(func) == "function" then
          pcall(func, table.unpack(args), Action.success)
      end
@@ -82,7 +82,7 @@ Character.SeleneMethods.abortAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
-    local func = entity:GetCustomData(DataKeys.LastActionFunction)
+    local func = entity.CustomData[DataKeys.LastActionFunction]
     if type(func) == "function" then
         pcall(func, table.unpack(args), Action.abort)
     end
@@ -92,7 +92,7 @@ end
 
 Character.SeleneMethods.isActionRunning = function(user)
     local entity = user.SeleneEntity
-    return entity:GetCustomData(DataKeys.CurrentAction) ~= nil
+    return entity.CustomData[DataKeys.CurrentAction] ~= nil
 end
 
 Character.SeleneMethods.changeSource = function(user, item)
@@ -116,7 +116,7 @@ Character.SeleneMethods.changeSource = function(user, item)
     if type(script.UseItem) ~= "function" then
         error("changeSource target item script has no UseItem function")
     end
-    entity:SetCustomData(DataKeys.LastActionScript, script)
-    entity:SetCustomData(DataKeys.LastActionFunction, script.UseItem)
-    entity:SetCustomData(DataKeys.LastActionArgs, { user, item })
+    entity.CustomData[DataKeys.LastActionScript] = script
+    entity.CustomData[DataKeys.LastActionFunction] = script.UseItem
+    entity.CustomData[DataKeys.LastActionArgs] = { user, item }
 end

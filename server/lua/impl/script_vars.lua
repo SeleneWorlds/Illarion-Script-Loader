@@ -1,16 +1,16 @@
 local Server = require("selene.server")
 
 ScriptVars.find = function(self, key)
-    local value = Server.GetCustomData(key)
+    local value = Server.CustomData[key]
     return value ~= nil, value
 end
 
 ScriptVars.set = function(self, key, value)
-    Server.SetCustomData(key, value)
+    Server.CustomData[key] = value
 end
 
 ScriptVars.remove = function(self, key)
-    Server.SetCustomData(key, nil)
+    Server.CustomData[key] = nil
 end
 
 ScriptVars.save = function(self)

@@ -6,7 +6,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.countItem = function(user, itemId)
     local count = 0
-    local items = user.SeleneEntity:GetCustomData(DataKeys.Inventory, {})
+    local items = user.SeleneEntity.CustomData[DataKeys.Inventory] or {}
     for _, item in pairs(items) do
         if item.id == itemId then
             count = count + item.count
@@ -21,7 +21,7 @@ Character.SeleneMethods.countItem = function(user, itemId)
 end
 
 Character.SeleneMethods.getItemAt = function(user, slot)
-    local items = user.SeleneEntity:GetCustomData(DataKeys.Inventory, {})
+    local items = user.SeleneEntity.CustomData[DataKeys.Inventory] or {}
     local item = items[slot]
     if item then
         return Item.fromSeleneEntityData(user.SeleneEntity, items, slot, item)

@@ -32,14 +32,14 @@ local function AddEffect(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity:GetCustomData(DataKeys.Effects, {})
+        local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or {}
         effects[effect.SeleneEffectDefinition.Name] = data
-        user.SeleneEntity:SetCustomData(DataKeys.Effects, effects)
+        user.SeleneEntity.CustomData[DataKeys.Effects] = effects
     end
 end
 
 local function FindEffect(user, idOrName)
-    local effects = user.SeleneEntity:GetCustomData(DataKeys.Effects, {})
+    local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or {}
     local effectDef = nil
     if type(idOrName) == "number" then
         effectDef = Registries.FindByMetadata("illarion:effects", "id", idOrName)
@@ -53,7 +53,7 @@ local function FindEffect(user, idOrName)
 end
 
 local function RemoveEffect(user, effect)
-   local effects = user.SeleneEntity:GetCustomData(DataKeys.Effects, {})
+   local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or {}
    local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
        local effectScriptName = effectDef:GetMetadata("script")
@@ -63,7 +63,7 @@ local function RemoveEffect(user, effect)
        end
    end
    effects[effectDef.Name] = nil
-   user.SeleneEntity:SetCustomData(DataKeys.Effects, effects)
+   user.SeleneEntity.CustomData[DataKeys.Effects] = effects
    return true
 end
 
@@ -147,7 +147,7 @@ Schedules.EverySecond:Connect(function()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity
         if entity then
-            local effects = entity:GetCustomData(DataKeys.Effects, {})
+            local effects = entity.CustomData[DataKeys.Effects] or {}
             local removedEffects = {}
             for effectName, effectData in pairs(effects) do
                 effectData.nextCalled = (effectData.nextCalled or 0) - 1
@@ -169,7 +169,7 @@ Schedules.EverySecond:Connect(function()
             for _, effectName in pairs(removedEffects) do
                 effects[effectName] = nil
             end
-            entity:SetCustomData(DataKeys.Effects, effects)
+            entity.CustomData[DataKeys.Effects] = effects
         end
     end
 end)

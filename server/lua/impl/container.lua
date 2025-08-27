@@ -1,7 +1,7 @@
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getDepot = function(user, depotId)
-    local depotData = user.SeleneEntity:GetCustomData(DataKeys.Depot .. depotId, {})
+    local depotData = user.SeleneEntity.CustomData[DataKeys.Depot .. depotId] or {}
     return Container.fromSeleneEntityData(user.SeleneEntity, depotData)
 end
 

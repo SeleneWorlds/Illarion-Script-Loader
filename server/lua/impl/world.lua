@@ -260,7 +260,7 @@ world.getMonstersInRangeOf = function(world, pos, range)
     local entities = dimension:GetEntitiesInRange(pos, range)
     local monsters = {}
     for _, entity in ipairs(entities) do
-        if entity:GetCustomData(DataKeys.CharacterType) == Character.monster then
+        if entity.CustomData[DataKeys.CharacterType] == Character.monster then
             table.insert(monsters, Character.fromSeleneEntity(entity))
         end
     end

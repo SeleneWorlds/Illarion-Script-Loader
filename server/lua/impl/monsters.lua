@@ -3,7 +3,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
-    return user:GetCustomData(DataKeys.MonsterType, 0)
+    return user.CustomData[DataKeys.MonsterType] or 0
 end
 
 Character.SeleneMethods.getLoot = function(user)
@@ -29,7 +29,7 @@ world.createMonster = function(world, monsterId, pos, movePoints)
     end
 
     local entity = Entities.Create(race.Name .. "_0")
-    entity:SetCustomData(DataKeys.CharacterType, Character.monster)
+    entity.CustomData[DataKeys.CharacterType] = Character.monster
     entity:SetCoordinate(pos)
     entity:Spawn()
 end

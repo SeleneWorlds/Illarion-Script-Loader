@@ -32,8 +32,8 @@ Players.PlayerJoined:Connect(function(player)
     manaAttribute:AddObserver(function(attribute)
         Network.SendToEntity(attribute.Owner, "illarion:mana", { value = attribute.EffectiveValue / 10000 })
     end)
-    entity:SetCustomData(DataKeys.ID, 8147)
-    entity:SetCustomData(DataKeys.CharacterType, Character.player)
+    entity.CustomData[DataKeys.ID] = 8147
+    entity.CustomData[DataKeys.CharacterType] = Character.player
     entity:Spawn()
     player.ControlledEntity = entity
     player.CameraEntity = entity
@@ -48,7 +48,7 @@ Players.PlayerJoined:Connect(function(player)
     healthAttribute.Value = 10000
     foodAttribute.Value = 60000
 
-    player:SetCustomData(DataKeys.CurrentLoginTimestamp, os.time())
+    player.CustomData[DataKeys.CurrentLoginTimestamp] = os.time()
 
     illaLogin.onLogin(Character.fromSelenePlayer(player))
 end)
@@ -57,11 +57,11 @@ Players.PlayerLeft:Connect(function(player)
     illaLogout.onLogout(Character.fromSelenePlayer(player))
     player.ControlledEntity:Remove()
 
-    local loginTimestamp = player:GetCustomData(DataKeys.CurrentLoginTimestamp, 0)
+    local loginTimestamp = player.CustomData[DataKeys.CurrentLoginTimestamp] or 0
     local logoutTimestamp = os.time()
     local sessionOnlineTime = logoutTimestamp - loginTimestamp
-    local totalOnlineTime = player:GetCustomData(DataKeys.TotalOnlineTime, 0)
-    player:SetCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
+    local totalOnlineTime = player.CustomData[DataKeys.TotalOnlineTime] or 0
+    player.CustomData[DataKeys.TotalOnlineTime] = totalOnlineTime + sessionOnlineTime
 end)
 
 Server.ServerStarted:Connect(function()

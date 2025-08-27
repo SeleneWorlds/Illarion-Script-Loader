@@ -4,16 +4,16 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 
 Character.SeleneMethods.getType = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.CharacterType, Character.player)
+    return user.SeleneEntity.CustomData[DataKeys.CharacterType] or Character.player
 end
 
 Character.SeleneMethods.getRace = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.Race, 0)
+    return user.SeleneEntity.CustomData[DataKeys.Race] or 0
 end
 
 Character.SeleneMethods.setRace = function(user, raceId)
     local entity = user.SeleneEntity
-    entity:SetCustomData(DataKeys.Race, raceId)
+    entity.CustomData[DataKeys.Race] = raceId
     local sex = user:increaseAttrib("sex", 0)
     entity:AddComponent("illarion:body", {
         type = "visual",
@@ -22,35 +22,35 @@ Character.SeleneMethods.setRace = function(user, raceId)
 end
 
 Character.SeleneMethods.getSkinColour = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.SkinColor, colour(255, 255, 255))
+    return user.SeleneEntity.CustomData[DataKeys.SkinColor] or colour(255, 255, 255)
 end
 
 Character.SeleneMethods.setSkinColour = function(user, skinColor)
-    user.SeleneEntity:SetCustomData(DataKeys.SkinColor, skinColor)
+    user.SeleneEntity.CustomData[DataKeys.SkinColor] = skinColor
 end
 
 Character.SeleneMethods.getHairColour = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.HairColor, colour(255, 255, 255))
+    return user.SeleneEntity.CustomData[DataKeys.HairColor] or colour(255, 255, 255)
 end
 
 Character.SeleneMethods.setHairColour = function(user, hairColor)
-    user.SeleneEntity:SetCustomData(DataKeys.HairColor, hairColor)
+    user.SeleneEntity.CustomData[DataKeys.HairColor] = hairColor
 end
 
 Character.SeleneMethods.getHair = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.Hair, 0)
+    return user.SeleneEntity.CustomData[DataKeys.Hair] or 0
 end
 
 Character.SeleneMethods.setHair = function(user, hairId)
-    user.SeleneEntity:SetCustomData(DataKeys.Hair, hairId)
+    user.SeleneEntity.CustomData[DataKeys.Hair] = hairId
 end
 
 Character.SeleneMethods.getBeard = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.Beard, 0)
+    return user.SeleneEntity.CustomData[DataKeys.Beard] or 0
 end
 
 Character.SeleneMethods.setBeard = function(user, beardId)
-    user.SeleneEntity:SetCustomData(DataKeys.Beard, beardId)
+    user.SeleneEntity.CustomData[DataKeys.Beard] = beardId
 end
 
 Network.HandlePayload("illarion:use_at", function(player, payload)
@@ -70,9 +70,9 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
                     if status and type(tileScript.UseItem) == "function" then
                         local illaUser = Character.fromSelenePlayer(player)
                         local illaItem = Item.fromSeleneTile(tile)
-                        entity:SetCustomData(DataKeys.LastActionScript, tileScript)
-                        entity:SetCustomData(DataKeys.LastActionFunction, tileScript.UseItem)
-                        entity:SetCustomData(DataKeys.LastActionArgs, { user, illaItem })
+                        entity.CustomData[DataKeys.LastActionScript] = tileScript
+                        entity.CustomData[DataKeys.LastActionFunction] = tileScript.UseItem
+                        entity.CustomData[DataKeys.LastActionArgs] = { user, illaItem }
                         tileScript.UseItem(illaUser, illaItem)
                     end
                 end
@@ -82,13 +82,13 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
 end)
 
 Character.SeleneMethods.introduce = function(user, other)
-    user.SeleneEntity:SetCustomData(DataKeys.Introduction .. ":" .. other.id, true)
+    user.SeleneEntity.CustomData[DataKeys.Introduction .. ":" .. other.id] = true
     -- TODO sync name component
     error("introduce is not fully implemented - does not sync new nameplate yet")
 end
 
 Character.SeleneGetters.id = function(user)
-    return user.SeleneEntity:GetCustomData(DataKeys.ID, 0)
+    return user.SeleneEntity.CustomData[DataKeys.ID] or 0
 end
 
 Character.SeleneGetters.name = function(user)
