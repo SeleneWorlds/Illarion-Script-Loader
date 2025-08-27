@@ -1,3 +1,7 @@
+local Registries = require("selene.registries")
+
+local Inventory = require("moonlight-inventory.server.lua.inventory")
+
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.countItem = function(user, itemId)
@@ -26,24 +30,32 @@ Character.SeleneMethods.getItemAt = function(user, slot)
 end
 
 Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
-    local entity = user.SeleneEntity
-    local beltAttribute = entity:GetAttribute("belt")
-    local beltData = beltAttribute.Value
-    local slots = beltData.slots
-    local slotIds = beltData:Lookup("slotIds")
-    for _, slotId in ipairs(slotIds) do
-        local slot = slots[slotId]
-        local slotItem = slot:Lookup("item")
-        if slotItem == nil then
-            slot.item = {
-                id = itemId,
-                number = count,
-                quality = quality,
-                data = data
-            }
-            beltAttribute:Refresh(slotId)
-            break
-        end
+    local belt = user.SeleneBelt
+    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    if not itemDef then
+        error("Tried to create unknown item id " .. itemId)
     end
+    belt:addItem({
+        name = itemDef.Name,
+        count = count,
+        quality = quality,
+        data = data
+    })
     return 0
+end
+
+local beltSlotIds = { "inventory:12", "inventory:13", "inventory:14", "inventory:15", "inventory:16", "inventory:17" }
+
+Character.SeleneMethods.GetSeleneInventory = function(user, inventoryName, slotIds)
+    user.SeleneInventories = user.SeleneInventories or {}
+    local inventory = user.SeleneInventories[inventoryName]
+    if not inventory then
+        inventory = Inventory:fromEntityAttributes(user.SeleneEntity, slotIds)
+        user.SeleneInventories[inventoryName] = inventory
+    end
+    return inventory
+end
+
+Character.SeleneGetters.SeleneBelt = function(user)
+    return user:GetSeleneInventory("belt", beltSlotIds)
 end

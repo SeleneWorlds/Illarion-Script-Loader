@@ -21,38 +21,29 @@ Players.PlayerJoined:Connect(function(player)
         }
     end)
     local healthAttribute = entity:GetOrCreateAttribute("hitpoints", 0)
-    healthAttribute:AddObserver(function(attribute, observer)
+    healthAttribute:AddObserver(function(attribute)
         Network.SendToEntity(attribute.Owner, "illarion:health", { value = attribute.EffectiveValue / 10000 })
     end)
     local foodAttribute = entity:GetOrCreateAttribute("foodlevel", 0)
-    foodAttribute:AddObserver(function(attribute, observer)
+    foodAttribute:AddObserver(function(attribute)
         Network.SendToEntity(attribute.Owner, "illarion:food", { value = attribute.EffectiveValue / 60000 })
     end)
     local manaAttribute = entity:GetOrCreateAttribute("mana", 0)
-    manaAttribute:AddObserver(function(attribute, observer)
+    manaAttribute:AddObserver(function(attribute)
         Network.SendToEntity(attribute.Owner, "illarion:mana", { value = attribute.EffectiveValue / 10000 })
     end)
-    local beltAttribute = entity:GetOrCreateAttribute("belt", tablex.managed({
-        slots = tablex.managed({
-            [12] = tablex.managed({}),
-            [13] = tablex.managed({}),
-            [14] = tablex.managed({}),
-            [15] = tablex.managed({}),
-            [16] = tablex.managed({}),
-            [17] = tablex.managed({}),
-        }),
-        slotIds = {12, 13, 14, 15, 16, 17}
-    }))
-    beltAttribute:AddObserver(function(attribute, observerData, observableData)
-        local item = attribute.Value:Lookup("slots", observableData, "item")
-        Network.SendToEntity(attribute.Owner, "illarion:update_slot", { viewId = observerData, slotId = observableData, item = item })
-    end, 1)
     entity:SetCustomData(DataKeys.ID, 8147)
     entity:SetCustomData(DataKeys.CharacterType, Character.player)
     entity:Spawn()
     player.ControlledEntity = entity
     player.CameraEntity = entity
     player:SetCameraToFollowTarget()
+
+    local character = Character.fromSelenePlayer(player)
+    local beltView = entity:CreateAttributeView("belt", function(view, attributeKey, attribute)
+        Network.SendToEntity(view.Owner, "illarion:update_slot", { viewId = view.Name, slotId = attributeKey, item = attribute.Value })
+    end)
+    character.SeleneBelt:addToView(beltView)
 
     healthAttribute.Value = 10000
     foodAttribute.Value = 60000

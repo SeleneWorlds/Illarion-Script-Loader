@@ -1,6 +1,7 @@
 {
   "name": "illarion-script-loader",
-  "description": "",
+  "description": "Implementation to the Illarion API and entrypoints to load Illarion scripts. ",
+  "dependencies": ["moonlight-inventory"],
   "entrypoints": [
     "server/lua/init.lua",
     "server/lua/impl/player.lua",
