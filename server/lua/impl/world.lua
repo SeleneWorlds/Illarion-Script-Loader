@@ -75,15 +75,14 @@ end
 world.erase = function(world, item, amount)
     local TileDef = Registries.FindByMetadata("tiles", "itemId", item.id)
     if TileDef == nil then
-        print("No such tile " .. item.id) -- TODO throw an error
-        return
+        error("Missing tile for item " .. item.id)
     end
 
     if item:getType() == scriptItem.field then
         local dimension = Dimensions.GetDefault()
         -- TODO erase from entity items if found
-        if dimension:HasTile(tile.Coordinate, TileDef.Name) then
-            dimension.Map:RemoveTile(tile.Coordinate, TileDef.Name)
+        if dimension:HasTile(item.pos, TileDef.Name) then
+            dimension.Map:RemoveTile(item.pos, TileDef.Name)
             return true
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
