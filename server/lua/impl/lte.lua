@@ -10,7 +10,7 @@ end
 local function EnsureSeleneEffectData(effect)
     local data = effect.SeleneEffectData
     if not data then
-        data = {}
+        data = tablex.managed({})
         effect.SeleneEffectData = data
     end
     return data
@@ -32,7 +32,7 @@ local function AddEffect(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or {}
+        local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.managed({})
         effects[effect.SeleneEffectDefinition.Name] = data
         user.SeleneEntity.CustomData[DataKeys.Effects] = effects
     end
@@ -53,7 +53,7 @@ local function FindEffect(user, idOrName)
 end
 
 local function RemoveEffect(user, effect)
-   local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or {}
+   local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.managed({})
    local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
        local effectScriptName = effectDef:GetMetadata("script")
@@ -147,9 +147,9 @@ Schedules.EverySecond:Connect(function()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity
         if entity then
-            local effects = entity.CustomData[DataKeys.Effects] or {}
+            local effects = entity.CustomData[DataKeys.Effects] or tablex.managed({})
             local removedEffects = {}
-            for effectName, effectData in pairs(effects) do
+            for effectName, effectData in effects:Pairs() do
                 effectData.nextCalled = (effectData.nextCalled or 0) - 1
                 if effectData.nextCalled <= 0 then
                     effectData.numberCalled = (effectData.numberCalled or 0) + 1
@@ -162,7 +162,13 @@ Schedules.EverySecond:Connect(function()
                             if not effectScript.callEffect(effect, player) then
                                 table.insert(removedEffects, effectName)
                             end
+                        else
+                            print("Missing script for long time effect " .. effectName)
+                            table.insert(removedEffects, effectName)
                         end
+                    else
+                        print("Unknown long time effect " .. effectName)
+                        table.insert(removedEffects, effectName)
                     end
                 end
             end

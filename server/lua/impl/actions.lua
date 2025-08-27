@@ -4,7 +4,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function ClearAction(user)
     local entity = user.SeleneEntity
-    local action = entity.CustomData[DataKeys.CurrentAction] or {}
+    local action = entity.CustomData:Lookup(DataKeys.CurrentAction) or {}
      if action.ActionHandle then
          Schedules.ClearTimeout(action.ActionHandle)
      end
@@ -34,7 +34,7 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
 
     local actionHandle = Schedules.SetTimeout(duration, function()
         local func = entity.CustomData[DataKeys.LastActionFunction]
-        local args = entity.CustomData[DataKeys.LastActionArgs]
+        local args = entity.CustomData:Lookup(DataKeys.LastActionArgs)
         if type(func) == "function" and args then
             pcall(func, table.unpack(args), Action.success)
         end
