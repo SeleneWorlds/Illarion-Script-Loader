@@ -37,7 +37,7 @@ local function ClampAttribute(user, attribute, value)
     elseif attribute == "mana" then
         max = maxMana
     elseif attribute == "foodlevel" then
-        max = maxFood
+        max = maxFoodLevel
     elseif attribute == "strength" or attribute == "dexterity" or attribute == "constitution" or attribute == "agility" or attribute == "intelligence" or attribute == "essence" or attribute == "perception" or attribute == "willpower" then
         max = maxAttribute
     end
