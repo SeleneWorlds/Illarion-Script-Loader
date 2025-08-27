@@ -1,3 +1,4 @@
+local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
@@ -92,4 +93,30 @@ end
 Character.SeleneMethods.isActionRunning = function(user)
     local entity = user.SeleneEntity
     return entity:GetCustomData(DataKeys.CurrentAction) ~= nil
+end
+
+Character.SeleneMethods.changeSource = function(user, item)
+    local entity = user.SeleneEntity
+    local itemId = item.SeleneTile:GetMetadata("itemId")
+    if itemId == nil then
+        error("changeSource target tile does not have an item id")
+    end
+    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+    if item == nil then
+        error("changeSource target tile is missing item definition")
+    end
+    local scriptName = item:GetField("script")
+    if item == nil then
+        error("changeSource target item does not have a script")
+    end
+    local status, script = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+    if not status then
+        error("changeSource target item script failed to load")
+    end
+    if type(script.UseItem) ~= "function" then
+        error("changeSource target item script has no UseItem function")
+    end
+    entity:SetCustomData(DataKeys.LastActionScript, script)
+    entity:SetCustomData(DataKeys.LastActionFunction, script.UseItem)
+    entity:SetCustomData(DataKeys.LastActionArgs, { user, item })
 end
