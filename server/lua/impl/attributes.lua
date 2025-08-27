@@ -41,7 +41,7 @@ local function ClampAttribute(user, attribute, value)
     elseif attribute == "strength" or attribute == "dexterity" or attribute == "constitution" or attribute == "agility" or attribute == "intelligence" or attribute == "essence" or attribute == "perception" or attribute == "willpower" then
         max = maxAttribute
     end
-    return max ~= 0 and math.clamp(value, 0, max) or math.max(value, 0)
+    return max ~= 0 and mathx.clamp(value, 0, max) or math.max(value, 0)
 end
 
 local function HandleAttributeChange(user, attribute)
