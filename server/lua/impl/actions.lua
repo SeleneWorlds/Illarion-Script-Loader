@@ -54,7 +54,7 @@ Character.SeleneMethods.disturbAction = function(user, disturber)
     local entity = user.SeleneEntity
     local script = entity.CustomData[DataKeys.LastActionScript]
     if script and type(script.actionDisturbed) == "function" then
-        shouldAbort = script.actionDisturbed(user] or disturber
+        shouldAbort = script.actionDisturbed(user, disturber)
         entity.CustomData[DataKeys.CurrentAction] = nil
     end
 
