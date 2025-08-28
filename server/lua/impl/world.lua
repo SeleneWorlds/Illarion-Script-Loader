@@ -3,6 +3,8 @@ local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 local Sounds = require("selene.sounds")
 
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+
 world.gfx = function(world, gfxId, pos)
     local entityType = Registries.FindByMetadata("entities", "gfxId", gfxId)
     if entityType == nil then
