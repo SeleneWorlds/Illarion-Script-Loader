@@ -4,7 +4,7 @@ local Players = require("selene.players")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function WrapLongTimeEffect(def, entity, data)
-    return setmetatable({SeleneEffectDefinition = def, SeleneEntity = entity, SeleneEffectData = data}, LongTimeEffectMT)
+    return setmetatable({SeleneEffectDefinition = def, SeleneEntity = entity, SeleneEffectData = data}, LongTimeEffect.SeleneMetatable)
 end
 
 local function EnsureSeleneEffectData(effect)
