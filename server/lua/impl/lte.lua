@@ -16,7 +16,6 @@ local function EnsureSeleneEffectData(effect)
     return data
 end
 
-
 local function AddEffect(user, effect)
     local found, existing = user.effects:find(effect.id)
     if found then
@@ -122,7 +121,7 @@ end
 LongTimeEffect.SeleneMethods.addValue = function(effect, key, value)
     local data = EnsureSeleneEffectData(effect)
     if not data.values then
-        data.values = {}
+        data.values = tablex.managed({})
     end
     data.values[key] = value
 end
