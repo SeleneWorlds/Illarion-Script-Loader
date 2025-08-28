@@ -109,7 +109,7 @@ Character.SeleneMethods.changeSource = function(user, item)
     if item == nil then
         error("changeSource target item does not have a script")
     end
-    local status, script = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+    local status, script = pcall(require, scriptName)
     if not status then
         error("changeSource target item script failed to load")
     end

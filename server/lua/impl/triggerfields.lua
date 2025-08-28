@@ -16,7 +16,7 @@ Entities.SteppedOnTile:Connect(function(entity, coordinate)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName then
-            local status, script = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+            local status, script = pcall(require, scriptName)
             if status and type(script.MoveToField) == "function" then
                 script.MoveToField(Character.fromSeleneEntity(entity))
             end
@@ -32,7 +32,7 @@ Entities.SteppedOffTile:Connect(function(entity, coordinate)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName then
-            local status, script = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+            local status, script = pcall(require, scriptName)
             if status and type(script.MoveFromField) == "function" then
                 script.MoveFromField(Character.fromSeleneEntity(entity))
             end

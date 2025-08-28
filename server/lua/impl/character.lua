@@ -66,7 +66,7 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
             if item then
                 local scriptName = item:GetField("script")
                 if scriptName then
-                    local status, tileScript = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+                    local status, tileScript = pcall(require, scriptName)
                     if status and type(tileScript.UseItem) == "function" then
                         local illaUser = Character.fromSelenePlayer(player)
                         local illaItem = Item.fromSeleneTile(tile)

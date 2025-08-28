@@ -13,7 +13,7 @@ for _, scheduledScript in ipairs(allScheduledScripts) do
     scheduledCallbacks[scheduledScript.Name] = function()
        local scriptName = scheduledScript:GetField("script")
        local functionName = scheduledScript:GetField("function")
-       local status, script = pcall(require, "illarion-vbu.server.lua." .. scriptName)
+       local status, script = pcall(require, scriptName)
        if status and type(script[functionName]) == "function" then
            script[functionName]()
            scheduleNext(scheduledScript)
