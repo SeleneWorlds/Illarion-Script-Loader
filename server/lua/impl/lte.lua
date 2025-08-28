@@ -104,7 +104,7 @@ LongTimeEffect.SeleneSetters.nextCalled = function(effect, value)
 end
 
 LongTimeEffect.SeleneGetters.effectId = function(effect)
-    return tonumber(effect.SeleneEffectDefinition:GetMetadata("lteId"))
+    return tonumber(effect.SeleneEffectDefinition:GetMetadata("id"))
 end
 
 LongTimeEffect.SeleneGetters.effectName = function(effect)
