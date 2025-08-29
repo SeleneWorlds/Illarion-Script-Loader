@@ -52,7 +52,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     end
                 end
             elseif characterType == Character.npc then
-                local npc = entity.CustomData[DataKeys.Npc]
+                local npc = entity.CustomData[DataKeys.NPC]
                 local scriptName = npc:GetField("script")
                 if scriptName then
                     local status, script = pcall(require, scriptName)
