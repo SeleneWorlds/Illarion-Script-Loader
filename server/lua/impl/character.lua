@@ -10,7 +10,7 @@ end
 Character.SeleneMethods.getRace = function(user)
     local race = user.SeleneEntity.CustomData[DataKeys.Race]
     if not race then
-        error("Unknown race " .. tostring(user.SeleneEntity.CustomData:Lookup(DataKeys.Race)))
+        error("Unknown race " .. tostring(user.SeleneEntity.CustomData:RawLookup(DataKeys.Race)))
     end
     return race:GetMetadata("id")
 end

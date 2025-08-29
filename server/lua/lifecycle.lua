@@ -27,7 +27,7 @@ Players.PlayerJoined:Connect(function(player)
                 local key = "nameTag." .. stringx.substringAfter(race.Name, "illarion:") .. "." .. sex
                 effectiveName = I18n.Get(key, player.Locale) or key
             else
-                effectiveName = tostring(entity.CustomData:Lookup(DataKeys.Race))
+                effectiveName = tostring(entity.CustomData:RawLookup(DataKeys.Race))
             end
         end
         return {
