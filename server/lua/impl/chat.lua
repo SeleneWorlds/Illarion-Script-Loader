@@ -6,14 +6,14 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local illaPlayerTalk = require("server.playertalk")
 
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
+    local userEntity = user.SeleneEntity
     if messageEnglish == nil then
-        entity.CustomData[DataKeys.LastActionScript] = illaPlayerTalk
-        entity.CustomData[DataKeys.LastActionFunction] = illaPlayerTalk.talk
-        entity.CustomData[DataKeys.LastActionArgs] = { user, mode, message }
+        userEntity.CustomData[DataKeys.LastActionScript] = illaPlayerTalk
+        userEntity.CustomData[DataKeys.LastActionFunction] = illaPlayerTalk.talk
+        userEntity.CustomData[DataKeys.LastActionArgs] = { user, mode, message }
         message = illaPlayerTalk.talk(user, mode, message)
     end
 
-    local userEntity = user.SeleneEntity
     local range = 0
     local zRange = 2
     if mode == Character.say then
@@ -27,14 +27,14 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local dimension = user.SeleneEntity.Dimension
     local entities = dimension:GetEntitiesInRange(userEntity.Coordinate, range)
     for _, entity in ipairs(entities) do
-        if userEntity.ZCoordinate < entity.ZCoordinate + zRange and userEntity.ZCoordinate > entity.ZCoordinate - zRange then
+        if userEntity.Coordinate.Z < entity.Coordinate.Z + zRange and userEntity.Coordinate.Z > entity.Coordinate.Z - zRange then
             local characterType = entity.CustomData[DataKeys.CharacterType]
             if characterType == Character.player then
                 local effectiveMessage = message
                 if messageEnglish and user:getPlayerLanguage() == Player.english then
                     effectiveMessage = messageEnglish
                 end
-                Network.SendToPlayer(player, "illarion:chat", {
+                Network.SendToEntity(entity, "illarion:chat", {
                     author = userEntity.NetworkId,
                     authorName = user.name,
                     mode = mode,
@@ -63,20 +63,19 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
             end
         end
     end
-    entity.CustomData[DataKeys.LastSpokenText] = message
+    userEntity.CustomData[DataKeys.LastSpokenText] = message
 end
 
 Character.SeleneGetters.activeLanguage = function(user)
-    local entity = user.SeleneEntity
-    return entity.CustomData[DataKeys.Language] or 0
+    return user.SeleneEntity.CustomData[DataKeys.Language] or 0
 end
 
 Character.SeleneSetters.activeLanguage = function(user, language)
-    entity.CustomData[DataKeys.Language] = language
+    user.SeleneEntity.CustomData[DataKeys.Language] = language
 end
 
 Character.SeleneGetters.lastSpokenText = function(user)
-    return entity.CustomData[DataKeys.LastSpokenText] or ""
+    return user.SeleneEntity.CustomData[DataKeys.LastSpokenText] or ""
 end
 
 world.broadcast = function(world, messageDe, messageEn)

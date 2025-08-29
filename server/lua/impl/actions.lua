@@ -118,7 +118,7 @@ Character.SeleneMethods.changeSource = function(user, item)
     if type(script.UseItem) ~= "function" then
         error("changeSource target item script has no UseItem function")
     end
-    local action = entity.CustomData[DataKeys.CurrentAction]
+    local action = entity.CustomData[DataKeys.CurrentAction] or {}
     action.Script = script
     action.Function = script.UseItem
     action.Args = { user, item }

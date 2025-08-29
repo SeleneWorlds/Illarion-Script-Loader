@@ -12,15 +12,16 @@ for _, field in pairs(allTriggerFields) do
 end
 
 Entities.SteppedOnTile:Connect(function(entity, coordinate)
+    local dimension = entity.Dimension
     local warpAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:warp")
     if warpAnnotation then
         entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
         return
     end
 
-    local tiles = entity:CollisionMap(coordinate):GetTilesAt(coordinate)
+    local tiles = dimension:GetTilesAt(coordinate, entity.Collision)
     for _, tile in ipairs(tiles) do
-        local itemId = tile.Definition.GetMetadata("itemId")
+        local itemId = tile.Definition:GetMetadata("itemId")
         if itemId then
             local item = Registries.FindByMetadata("illarion:items", "id", itemId)
             if item and item:GetField("specialItem") == 1 then
