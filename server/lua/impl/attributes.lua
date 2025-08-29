@@ -119,8 +119,9 @@ Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
     else
         local offsetAttribute = GetAttribute(user, attributeName .. "Offset")
         offsetAttribute.Value = offsetAttribute.Value + value
+        attribute:Refresh()
+        return attribute.EffectiveValue
     end
-    return new
 end
 
 Character.SeleneMethods.setAttrib = function(user, attributeName, value)
@@ -141,6 +142,7 @@ Character.SeleneMethods.setAttrib = function(user, attributeName, value)
     local offsetAttribute = GetAttribute(user, attributeName .. "Offset")
     local offset = value - attribute.Value
     offsetAttribute.Value = offset
+    attribute:Refresh()
 end
 
 Character.SeleneMethods.getBaseAttributeSum = function(user)
