@@ -33,14 +33,16 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     end
 
     local actionHandle = Schedules.SetTimeout(duration, function()
-        local func = entity.CustomData[DataKeys.LastActionFunction]
-        local args = entity.CustomData:RawLookup(DataKeys.LastActionArgs)
-        if type(func) == "function" and args then
-            pcall(func, table.unpack(args), Action.success)
+        local currentAction = entity.CustomData:RawLookup(DataKeys.CurrentAction)
+        if type(currentAction.Function) == "function" and currentAction.Args then
+            pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
         end
         ClearAction(user)
     end)
     entity.CustomData[DataKeys.CurrentAction] = {
+        Script = entity.CustomData[DataKeys.LastActionScript]
+        Function = entity.CustomData[DataKeys.LastActionFunction]
+        Args = entity.CustomData:RawLookup(DataKeys.LastActionArgs)
         ActionHandle = actionHandle,
         GfxHandle = gfxHandle,
         SfxHandle = sfxHandle
@@ -52,9 +54,9 @@ Character.SeleneMethods.disturbAction = function(user, disturber)
     -- TODO special handling for crafting dialogs
     local shouldAbort = false
     local entity = user.SeleneEntity
-    local script = entity.CustomData[DataKeys.LastActionScript]
-    if script and type(script.actionDisturbed) == "function" then
-        shouldAbort = script.actionDisturbed(user, disturber)
+    local currentAction = entity.CustomData:RawLookup(DataKeys.CurrentAction)
+    if currentAction.Script and type(currentAction.Script.actionDisturbed) == "function" then
+        shouldAbort = currentAction.Script.actionDisturbed(user, disturber)
         entity.CustomData[DataKeys.CurrentAction] = nil
     end
 
@@ -70,9 +72,9 @@ Character.SeleneMethods.successAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
-    local func = entity.CustomData[DataKeys.LastActionFunction]
-     if type(func) == "function" then
-         pcall(func, table.unpack(args), Action.success)
+    local currentAction = entity.CustomData:RawLookup(DataKeys.CurrentAction)
+     if type(currentAction.Function) == "function" then
+         pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
      end
 
     ClearAction(user)
@@ -82,9 +84,9 @@ Character.SeleneMethods.abortAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
-    local func = entity.CustomData[DataKeys.LastActionFunction]
-    if type(func) == "function" then
-        pcall(func, table.unpack(args), Action.abort)
+    local currentAction = entity.CustomData:RawLookup(DataKeys.CurrentAction)
+    if type(currentAction.Function) == "function" then
+        pcall(currentAction.Function, table.unpack(currentAction.Args), Action.abort)
     end
 
     ClearAction(user)
@@ -116,7 +118,8 @@ Character.SeleneMethods.changeSource = function(user, item)
     if type(script.UseItem) ~= "function" then
         error("changeSource target item script has no UseItem function")
     end
-    entity.CustomData[DataKeys.LastActionScript] = script
-    entity.CustomData[DataKeys.LastActionFunction] = script.UseItem
-    entity.CustomData[DataKeys.LastActionArgs] = { user, item }
+    local action = entity.CustomData[DataKeys.CurrentAction]
+    action.Script = script
+    action.Function = script.UseItem
+    action.Args = { user, item }
 end

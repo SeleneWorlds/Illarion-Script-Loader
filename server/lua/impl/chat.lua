@@ -3,7 +3,16 @@ local Network = require("selene.network")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
+local illaPlayerTalk = require("server.playertalk")
+
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
+    if messageEnglish == nil then
+        entity.CustomData[DataKeys.LastActionScript] = illaPlayerTalk
+        entity.CustomData[DataKeys.LastActionFunction] = illaPlayerTalk.talk
+        entity.CustomData[DataKeys.LastActionArgs] = { user, mode, message }
+        message = illaPlayerTalk.talk(user, mode, message)
+    end
+
     local userEntity = user.SeleneEntity
     local range = 0
     local zRange = 2
@@ -38,7 +47,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     local status, script = pcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
                         local illaMonster = Character.fromSeleneEntity(entity)
-                        script.receiveText(illaMonster, mode, messageEnglish or messageGerman, user)
+                        script.receiveText(illaMonster, mode, messageEnglish or message, user)
                     end
                 end
             elseif characterType == Character.npc then
@@ -48,7 +57,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     local status, script = pcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
                         local illaNpc = Character.fromSeleneEntity(entity)
-                        script.receiveText(illaNpc, mode, messageEnglish or messageGerman, user)
+                        script.receiveText(illaNpc, mode, messageEnglish or message, user)
                     end
                 end
             end
