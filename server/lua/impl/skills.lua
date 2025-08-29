@@ -1,4 +1,5 @@
 local Registries = require("selene.registries")
+local Schedules = require("selene.schedules")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local illaLearn = require("server.learn")
@@ -43,3 +44,10 @@ Character.SeleneMethods.getSkillValue = function(user, skillId)
          minor = user:getMinorSkill(skillId)
      }
 end
+
+Schedules.SetInterval(10000, function()
+    for _, player in Players.GetOnlinePlayers() do
+        illaLearn.reduceMC(Character.fromSelenePlayer(player))
+    end
+    -- TODO for all NPCs and Monsters too
+end)
