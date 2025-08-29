@@ -14,6 +14,7 @@ local function GetAttribute(user, attributeName)
             attribute:AddModifier("clamp", Attributes.ClampFilter(0, max))
             attribute:AddConstraint("clamp", Attributes.ClampFilter(0, max))
             attribute:AddObserver(function(attribute)
+                user:SeleneSetDead(attribute.EffectiveValue <= 0)
                 Network.SendToEntity(attribute.Owner, "illarion:health", { value = attribute.EffectiveValue / max })
             end)
         elseif attributeName == "foodlevel" then

@@ -31,5 +31,6 @@ m.NPCType = "illarion:npcType"
 m.MonsterType = "illarion:monsterType"
 m.Inventory = "illarion:inventory"
 m.Depot = "illarion:depot:"
+m.Dead = "illarion:dead"
 
 return m

@@ -3,6 +3,34 @@ local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 
+local illaPlayerDeath = require("server.playerdeath")
+
+local function IsDead(user)
+    return user.SeleneEntity.CustomData[DataKeys.Dead]
+end
+
+Character.SeleneMethods.SeleneSetDead(user, dead)
+    local wasDead = IsDead(user)
+    user.SeleneEntity.CustomData[DataKeys.Dead] = dead
+    if not wasDead and dead then
+        local characterType = user.SeleneEntity.CustomData[DataKeys.CharacterType]
+        if characterType == Character.player then
+            user:abortAction()
+            illaPlayerDeath.playerDeath(user)
+        elseif characterType == Character.monster then
+            local monster = user.SeleneEntity.CustomData[DataKeys.Monster]
+            local scriptName = monster:GetField("script")
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.onDeath) == "function" then
+                    local illaMonster = Character.fromSeleneEntity(user.SeleneEntity)
+                    script.onDeath(illaMonster)
+                end
+            end
+        end
+    end
+end
+
 Character.SeleneMethods.getType = function(user)
     return user.SeleneEntity.CustomData[DataKeys.CharacterType] or Character.player
 end
