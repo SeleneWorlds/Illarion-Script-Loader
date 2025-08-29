@@ -31,6 +31,7 @@ world.createMonster = function(world, monsterId, pos, movePoints)
     local entity = Entities.Create(race.Name .. "_0")
     entity.CustomData[DataKeys.CharacterType] = Character.monster
     entity.CustomData[DataKeys.Race] = race
+    entity.CustomData[DataKeys.MonsterType] = monsterDef
     entity:SetCoordinate(pos)
     entity:Spawn()
 end

@@ -15,6 +15,7 @@ for _, npc in pairs(allNPCs) do
     entity:SetFacing(DirectionUtils.IllaToSelene(npc:GetField("facing")))
     entity.CustomData[DataKeys.ID] = npc:GetMetadata("id" .. 4278190080)
     entity.CustomData[DataKeys.CharacterType] = Character.npc
+    entity.CustomData[DataKeys.NPCType] = npc
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Sex] = npc:GetField("sex") == 1 and "female" or "male"
     entity:Spawn()
