@@ -16,6 +16,9 @@ Character.SeleneMethods.pageGM = function(user, message)
 end
 
 Character.SeleneMethods.isAdmin = function(user)
+    if not user.SelenePlayer then
+        return false
+    end
     -- TODO Temporary solution until we have basic permission support in Selene
     local admins = stringx.split(Config.GetProperty("admins"), ",")
     return tablex.find(admins, user.SelenePlayer.UserId)
