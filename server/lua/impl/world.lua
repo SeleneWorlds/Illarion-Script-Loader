@@ -33,7 +33,7 @@ world.isCharacterOnField = function(world, pos)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesAt(pos)
     for _, entity in ipairs(entities) do
-        if entity:HasTag("illarion:player") then
+        if entity:HasTag("illarion:character") then
             return true
         end
     end
