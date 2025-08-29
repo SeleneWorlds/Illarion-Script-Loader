@@ -4,19 +4,55 @@ local Network = require("selene.network")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
-    local entity = user.SeleneEntity
-    for _, player in ipairs(Players.GetOnlinePlayers()) do
-        -- TODO send to all in range
-        local effectiveMessage = message
-        if messageEnglish and user:getPlayerLanguage() == Player.english then
-            effectiveMessage = messageEnglish
+    local userEntity = user.SeleneEntity
+    local range = 0
+    local zRange = 2
+    if mode == Character.say then
+        range = 14
+    elseif mode == Character.whisper then
+        range = 2
+        zRange = 0
+    elseif mode == Character.yell then
+        range = 30
+    end
+    local dimension = user.SeleneEntity.Dimension
+    local entities = dimension:GetEntitiesInRange(userEntity.Coordinate, range)
+    for _, entity in ipairs(entities) do
+        if userEntity.ZCoordinate < entity.ZCoordinate + zRange and userEntity.ZCoordinate > entity.ZCoordinate - zRange then
+            local characterType = entity.CustomData[DataKeys.CharacterType]
+            if characterType == Character.player then
+                local effectiveMessage = message
+                if messageEnglish and user:getPlayerLanguage() == Player.english then
+                    effectiveMessage = messageEnglish
+                end
+                Network.SendToPlayer(player, "illarion:chat", {
+                    author = userEntity.NetworkId,
+                    authorName = user.name,
+                    mode = mode,
+                    message = effectiveMessage
+                })
+            elseif characterType == Character.monster then
+                local monster = entity.CustomData[DataKeys.Monster]
+                local scriptName = monster:GetField("script")
+                if scriptName then
+                    local status, script = pcall(require, scriptName)
+                    if status and type(script.receiveText) == "function" then
+                        local illaMonster = Character.fromSeleneEntity(entity)
+                        script.receiveText(illaMonster, mode, messageEnglish or messageGerman, user)
+                    end
+                end
+            elseif characterType == Character.npc then
+                local npc = entity.CustomData[DataKeys.Npc]
+                local scriptName = npc:GetField("script")
+                if scriptName then
+                    local status, script = pcall(require, scriptName)
+                    if status and type(script.receiveText) == "function" then
+                        local illaNpc = Character.fromSeleneEntity(entity)
+                        script.receiveText(illaNpc, mode, messageEnglish or messageGerman, user)
+                    end
+                end
+            end
         end
-        Network.SendToPlayer(player, "illarion:chat", {
-            author = entity.NetworkId,
-            authorName = user.name,
-            mode = mode,
-            message = effectiveMessage
-        })
     end
     entity.CustomData[DataKeys.LastSpokenText] = message
 end
