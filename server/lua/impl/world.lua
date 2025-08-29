@@ -2,6 +2,7 @@ local Entities = require("selene.entities")
 local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 local Sounds = require("selene.sounds")
+local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
@@ -40,19 +41,17 @@ world.isCharacterOnField = function(world, pos)
     return false
 end
 
-world.getItemName = function(world, ItemId, Language)
-    local tile = Registries.FindByMetadata("tiles", "itemId", ItemId)
-    if tile then
-        if Language == Player.german then
-            return tile:GetMetadata("nameGerman")
-        elseif Language == Player.english then
-            return tile:GetMetadata("nameEnglish")
+world.getItemName = function(world, itemId, language)
+    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+    if item then
+        if language == Player.german then
+            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "de")
         else
-            return tile:GetMetadata("nameEnglish")
+            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "en")
         end
     end
 
-    return "unknown_item_" .. ItemId
+    error("Unknown item id " .. itemId)
 end
 
 world.swap = function(world, item, newId, newQuality)
