@@ -1,50 +1,44 @@
+local Network = require("selene.network")
+local Attributes = require("selene.attributes")
 local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
-local maxHitpoints = 10000
-local maxFoodLevel = 60000
-local maxMana = 10000
-local maxAttribute = 255
-
-local function GetAttributeOffset(user, attribute)
-    return user.SeleneEntity.CustomData[DataKeys.AttributeOffsets .. attribute] or 0
-end
-
-local function SetAttributeOffset(user, attribute, value)
-    user.SeleneEntity.CustomData[DataKeys.AttributeOffsets .. attribute] = value
-end
-
-local function GetSavedBaseAttribute(user, attribute)
-    return user.SeleneEntity.CustomData[DataKeys.BaseAttributes .. attribute] or 0
-end
-
-local function SetSavedBaseAttribute(user, attribute, value)
-    user.SeleneEntity.CustomData[DataKeys.BaseAttributes .. attribute] = value
-end
-
-local function GetTransientBaseAttribute(user, attribute)
-    return user.SeleneEntity.CustomData[DataKeys.TransientBaseAttributes .. attribute] or 0
-end
-
-local function SetTransientBaseAttribute(user, attribute, value)
-    user.SeleneEntity.CustomData[DataKeys.TransientBaseAttributes .. attribute] = value
-end
-
-local function ClampAttribute(user, attribute, value)
-    local max = 0
-    if attribute == "hitpoints" then
-        max = maxHitpoints
-    elseif attribute == "mana" then
-        max = maxMana
-    elseif attribute == "foodlevel" then
-        max = maxFoodLevel
-    elseif attribute == "strength" or attribute == "dexterity" or attribute == "constitution" or attribute == "agility" or attribute == "intelligence" or attribute == "essence" or attribute == "perception" or attribute == "willpower" then
-        max = maxAttribute
+local function GetAttribute(user, attributeName)
+    local attributeKey = "illarion:" .. attributeName
+    local attribute = user.SeleneEntity:GetAttribute(attributeKey)
+    if attribute == nil then
+        attribute = user.SeleneEntity:CreateAttribute(attributeKey, 0)
+        if attributeName == "hitpoints" then
+            local max = 10000
+            attribute:AddModifier("offset", Attributes.MathOpFilter(GetAttribute(user, "hitpointsOffset"), "+"))
+            attribute:AddModifier("clamp", Attributes.ClampFilter(0, max))
+            attribute:AddConstraint("clamp", Attributes.ClampFilter(0, max))
+            attribute:AddObserver(function(attribute)
+                Network.SendToEntity(attribute.Owner, "illarion:health", { value = attribute.EffectiveValue / max })
+            end)
+        elseif attributeName == "foodlevel" then
+            local max = 60000
+            attribute:AddModifier("offset", Attributes.MathOpFilter(GetAttribute(user, "foodlevelOffset"), "+"))
+            attribute:AddModifier("clamp", Attributes.ClampFilter(0, max))
+            attribute:AddConstraint("clamp", Attributes.ClampFilter(0, max))
+            attribute:AddObserver(function(attribute)
+                Network.SendToEntity(attribute.Owner, "illarion:food", { value = attribute.EffectiveValue / max })
+            end)
+        elseif attributeName == "mana" then
+            local max = 10000
+            attribute:AddModifier("offset", Attributes.MathOpFilter(GetAttribute(user, "manaOffset"), "+"))
+            attribute:AddModifier("clamp", Attributes.ClampFilter(0, max))
+            attribute:AddConstraint("clamp", Attributes.ClampFilter(0, max))
+            attribute:AddObserver(function(attribute)
+                Network.SendToEntity(attribute.Owner, "illarion:mana", { value = attribute.EffectiveValue / max })
+            end)
+        elseif attributeName == "strength" or attributeName == "dexterity" or attributeName == "constitution" or attributeName == "agility" or attributeName == "intelligence" or attributeName == "essence" or attributeName == "perception" or attributeName == "willpower" then
+            attribute:AddModifier("offset", Attributes.MathOpFilter(GetAttribute(user, attributeName .. "Offset"), "+"))
+            attribute:AddModifier("clamp", Attributes.ClampFilter(0, 255))
+            attribute:AddConstraint("clamp", Attributes.ClampFilter(0, 255))
+        end
     end
-    return max ~= 0 and mathx.clamp(value, 0, max) or math.max(value, 0)
-end
-
-local function HandleAttributeChange(user, attribute)
+    return attribute
 end
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
@@ -75,64 +69,78 @@ Character.SeleneMethods.getMaxAttributePoints = function(user)
 end
 
 Character.SeleneMethods.getPoisonValue = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.PoisonValue] or 0
+    return GetAttribute(user, "poisonvalue").EffectiveValue
 end
 
 Character.SeleneMethods.setPoisonValue = function(user, value)
-    user.SeleneEntity.CustomData[DataKeys.PoisonValue] = value
+    GetAttribute(user, "poisonvalue").Value = value
 end
 
 Character.SeleneMethods.increasePoisonValue = function(user, amount)
-    user.SeleneEntity.CustomData[DataKeys.PoisonValue] = (user.SeleneEntity.CustomData[DataKeys.PoisonValue] or 0) + amount
+    local attribute = GetAttribute(user, "poisonvalue")
+    attribute.Value = attribute.Value + amount
 end
 
 Character.SeleneMethods.getMentalCapacity = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.MentalCapacity] or 0
+    return GetAttribute(user, "mentalcapacity").EffectiveValue
 end
 
 Character.SeleneMethods.setMentalCapacity = function(user, value)
-    user.SeleneEntity.CustomData[DataKeys.MentalCapacity] = value
+    GetAttribute(user, "mentalcapacity").Value = value
 end
 
 Character.SeleneMethods.increaseMentalCapacity = function(user, amount)
-    user.SeleneEntity.CustomData[DataKeys.MentalCapacity] = (user.SeleneEntity.CustomData[DataKeys.MentalCapacity] or 0) + amount
+    local attribute = GetAttribute(user, "mentalcapacity")
+    attribute.Value = attribute.Value + amount
 end
 
-Character.SeleneMethods.increaseAttrib = function(user, attribute, value)
-    if attribute == "sex" then
-        error("sex is not yet implemented 😏")
+Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
+    if attributeName == "sex" then
+        local sex = user.SeleneEntity.CustomData[DataKeys.Sex]
+        if sex == "female" then
+            return Character.female
+        else
+            return Character.male
+        end
+    elseif attributeName == "poisonvalue" or attributeName == "attitude" or attributeName == "luck" or attributeName == "age" or attributeName == "body_height" then
+        local attribute = GetAttribute(user, attributeName)
+        attribute.Value = attribute.Value + value
+        return attribute.EffectiveValue
     end
 
-    local baseValue = GetTransientBaseAttribute(user, attribute)
-    local offset = GetAttributeOffset(user, attribute)
-    local prev = ClampAttribute(user, attribute, baseValue + offset)
-    local new = ClampAttribute(user, attribute, prev + value)
-    if prev ~= new then
-        if baseValue == 0 then
-            user:setBaseAttribute(attribute, new)
-            SetAttributeOffset(user, attribute, 0)
-        else
-            SetAttributeOffset(user, attribute, new - baseValue)
-        end
-        HandleAttributeChange(user, attribute)
+    local attribute = GetAttribute(user, attributeName)
+    if value == 0 then
+        return attribute.EffectiveValue
+    end
+
+    if attribute.Value == 0 then
+        attribute.Value = value
+        return attribute.EffectiveValue
+    else
+        local offsetAttribute = GetAttribute(user, attributeName .. "Offset")
+        offsetAttribute.Value = offsetAttribute.Value + value
     end
     return new
 end
 
-Character.SeleneMethods.setAttrib = function(user, attribute, value)
-   local baseValue = GetTransientBaseAttribute(user, attribute)
-   local offset = GetAttributeOffset(user, attribute)
-   local prev = ClampAttribute(user, attribute, baseValue + offset)
-   local new = ClampAttribute(user, attribute, value)
-   if prev ~= new then
-       if baseValue == 0 then
-           user:setBaseAttribute(attribute, new)
-           SetAttributeOffset(user, attribute, 0)
-       else
-           SetAttributeOffset(user, attribute, new - baseValue)
-       end
-       HandleAttributeChange(user, attribute)
-   end
+Character.SeleneMethods.setAttrib = function(user, attributeName, value)
+    if attributeName == "sex" then
+        user.SeleneEntity.CustomData[DataKeys.Sex] = value == Character.female and "female" or "male"
+        return
+    elseif attributeName == "poisonvalue" or attributeName == "attitude" or attributeName == "luck" or attributeName == "age" or attributeName == "body_height" then
+        GetAttribute(user, attributeName).Value = value
+        return
+    end
+
+    local attribute = GetAttribute(user, attributeName)
+    if attribute.Value == 0 then
+        attribute.Value = value
+        return
+    end
+
+    local offsetAttribute = GetAttribute(user, attributeName .. "Offset")
+    local offset = value - attribute.Value
+    offsetAttribute.Value = offset
 end
 
 Character.SeleneMethods.getBaseAttributeSum = function(user)
@@ -145,50 +153,29 @@ end
 Character.SeleneMethods.saveBaseAttributes = function(user)
     -- This behaviour is insane and should not exist
     if user:getMaxAttributePoints(use) ~= user:getBaseAttributeSum() then
-        SetTransientBaseAttribute(user, "agility", GetSavedBaseAttribute(user, "agility"))
-        SetTransientBaseAttribute(user, "constitution", GetSavedBaseAttribute(user, "constitution"))
-        SetTransientBaseAttribute(user, "dexterity", GetSavedBaseAttribute(user, "dexterity"))
-        SetTransientBaseAttribute(user, "essence", GetSavedBaseAttribute(user, "essence"))
-        SetTransientBaseAttribute(user, "intelligence", GetSavedBaseAttribute(user, "intelligence"))
-        SetTransientBaseAttribute(user, "perception", GetSavedBaseAttribute(user, "perception"))
-        SetTransientBaseAttribute(user, "strength", GetSavedBaseAttribute(user, "strength"))
-        SetTransientBaseAttribute(user, "willpower", GetSavedBaseAttribute(user, "willpower"))
+        -- TODO load base attributes to reset changes
         return false
     end
 
-    SetSavedBaseAttribute(user, "agility", GetTransientBaseAttribute(user, "agility"))
-    SetSavedBaseAttribute(user, "constitution", GetTransientBaseAttribute(user, "constitution"))
-    SetSavedBaseAttribute(user, "dexterity", GetTransientBaseAttribute(user, "dexterity"))
-    SetSavedBaseAttribute(user, "essence", GetTransientBaseAttribute(user, "essence"))
-    SetSavedBaseAttribute(user, "intelligence", GetTransientBaseAttribute(user, "intelligence"))
-    SetSavedBaseAttribute(user, "perception", GetTransientBaseAttribute(user, "perception"))
-    SetSavedBaseAttribute(user, "strength", GetTransientBaseAttribute(user, "strength"))
-    SetSavedBaseAttribute(user, "willpower", GetTransientBaseAttribute(user, "willpower"))
+    -- TODO save base attributes
     return true
 end
 
-Character.SeleneMethods.setBaseAttribute = function(user, attribute, value)
-    if user:isBaseAttributeValid(attribute, value) then
-        local prev = GetTransientBaseAttribute(user, attribute)
-        local new = ClampAttribute(user, attribute, value)
-        if prev ~= new then
-            SetTransientBaseAttribute(user, attribute, new)
-            HandleAttributeChange(user, attribute)
-        end
+Character.SeleneMethods.setBaseAttribute = function(user, attributeName, value)
+    if user:isBaseAttributeValid(attributeName, value) then
+        local attribute = GetAttribute(user, attributeName)
+        attribute.Value = value
         return true
     end
     return false
 end
 
-Character.SeleneMethods.increaseBaseAttribute = function(user, attribute, amount)
-    local prev = GetTransientBaseAttribute(user, attribute)
+Character.SeleneMethods.increaseBaseAttribute = function(user, attributeName, amount)
+    local attribute = GetAttribute(user, attributeName)
+    local prev = attribute.Value
     local new = prev + amount
-    if user:isBaseAttributeValid(attribute, new) then
-        new = ClampAttribute(user, attribute, new)
-        if prev ~= new then
-            SetTransientBaseAttribute(user, attribute, new)
-            HandleAttributeChange(user, attribute)
-        end
+    if user:isBaseAttributeValid(attributeName, new) then
+        attribute.Value = new
         return true
     end
     return false

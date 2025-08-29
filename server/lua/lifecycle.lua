@@ -39,18 +39,6 @@ Players.PlayerJoined:Connect(function(player)
             }
         }
     end)
-    local healthAttribute = entity:GetOrCreateAttribute("hitpoints", 0)
-    healthAttribute:AddObserver(function(attribute)
-        Network.SendToEntity(attribute.Owner, "illarion:health", { value = attribute.EffectiveValue / 10000 })
-    end)
-    local foodAttribute = entity:GetOrCreateAttribute("foodlevel", 0)
-    foodAttribute:AddObserver(function(attribute)
-        Network.SendToEntity(attribute.Owner, "illarion:food", { value = attribute.EffectiveValue / 60000 })
-    end)
-    local manaAttribute = entity:GetOrCreateAttribute("mana", 0)
-    manaAttribute:AddObserver(function(attribute)
-        Network.SendToEntity(attribute.Owner, "illarion:mana", { value = attribute.EffectiveValue / 10000 })
-    end)
     entity:Spawn()
     player.ControlledEntity = entity
     player.CameraEntity = entity
@@ -62,12 +50,12 @@ Players.PlayerJoined:Connect(function(player)
     end)
     character.SeleneBelt:addToView(beltView)
 
-    healthAttribute.Value = 10000
-    foodAttribute.Value = 60000
+    character:setAttrib("hitpoints", 10000)
+    character:setAttrib("foodlevel", 30000)
 
     player.CustomData[DataKeys.CurrentLoginTimestamp] = os.time()
 
-    illaLogin.onLogin(Character.fromSelenePlayer(player))
+    illaLogin.onLogin(character)
 end)
 
 Players.PlayerLeft:Connect(function(player)
