@@ -8,12 +8,20 @@ Character.SeleneMethods.getType = function(user)
 end
 
 Character.SeleneMethods.getRace = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.Race] or 0
+    local race = user.SeleneEntity.CustomData[DataKeys.Race]
+    if not race then
+        error("Unknown race " .. tostring(user.SeleneEntity.CustomData:Lookup(DataKeys.Race)))
+    end
+    return race:GetMetadata("id")
 end
 
 Character.SeleneMethods.setRace = function(user, raceId)
+    local race = Registries.FindByMetadata("illarion:races", "id", raceId)
+    if race == nil then
+        error("Invalid race id: " .. raceId)
+    end
     local entity = user.SeleneEntity
-    entity.CustomData[DataKeys.Race] = raceId
+    entity.CustomData[DataKeys.Race] = race
     local sex = user:increaseAttrib("sex", 0)
     entity:AddComponent("illarion:body", {
         type = "visual",
@@ -82,7 +90,7 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
 end)
 
 Character.SeleneMethods.introduce = function(user, other)
-    user.SeleneEntity.CustomData[DataKeys.Introduction .. ":" .. other.id] = true
+    user.SeleneEntity.CustomData[DataKeys.Introduction(other.id)] = true
     -- TODO sync name component
     error("introduce is not fully implemented - does not sync new nameplate yet")
 end

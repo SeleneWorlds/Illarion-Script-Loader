@@ -4,7 +4,7 @@ local Dimensions = require("selene.dimensions")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 
 local allTriggerFields = Registries.FindAll("illarion:triggerfields")
-for _, field in ipairs(allTriggerFields) do
+for _, field in pairs(allTriggerFields) do
     local dimension = Dimensions.GetDefault()
     dimension.Map:AnnotateTile(field:GetField("x"), field:GetField("y"), field:GetField("z"), "illarion:triggerfield", {
         script = field:GetField("script")

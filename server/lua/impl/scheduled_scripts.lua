@@ -9,7 +9,7 @@ function scheduleNext(scheduledScript)
 end
 
 local allScheduledScripts = Registries.FindAll("illarion:scheduled_scripts")
-for _, scheduledScript in ipairs(allScheduledScripts) do
+for _, scheduledScript in pairs(allScheduledScripts) do
     scheduledCallbacks[scheduledScript.Name] = function()
        local scriptName = scheduledScript:GetField("script")
        local functionName = scheduledScript:GetField("function")
