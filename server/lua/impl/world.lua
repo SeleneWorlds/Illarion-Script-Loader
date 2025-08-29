@@ -12,7 +12,7 @@ world.gfx = function(world, gfxId, pos)
         return
     end
 
-    local entity = Entities.CreateTransient(entityType.Name)
+    local entity = Entities.CreateTransient(entityType)
     entity:SetCoordinate(pos)
     entity:Spawn()
 end
@@ -20,7 +20,7 @@ end
 world.makeSound = function(world, soundId, pos)
     local sound = Registries.FindByMetadata("sounds", "soundId", soundId)
     if sound ~= nil then
-        Sounds.PlaySoundAt(pos.x, pos.y, pos.z, sound.Name)
+        Sounds.PlaySoundAt(pos.x, pos.y, pos.z, sound)
     end
 end
 
@@ -65,7 +65,7 @@ world.swap = function(world, item, newId, newQuality)
     if item:getType() == scriptItem.field then
         if item.SeleneTile ~= nil then
             local map = item.SeleneTile.Dimension.Map
-            map:SwapTile(item.SeleneTile.Coordinate, item.SeleneTile.Name, NewTileDef.Name)
+            map:SwapTile(item.SeleneTile.Coordinate, item.SeleneTile, NewTileDef)
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
         item.owner:swapAtPos(item.itempos, newId, newQuality)
@@ -83,8 +83,8 @@ world.erase = function(world, item, amount)
     if item:getType() == scriptItem.field then
         local dimension = Dimensions.GetDefault()
         -- TODO erase from entity items if found
-        if dimension:HasTile(item.pos, TileDef.Name) then
-            dimension.Map:RemoveTile(item.pos, TileDef.Name)
+        if dimension:HasTile(item.pos, TileDef) then
+            dimension.Map:RemoveTile(item.pos, TileDef)
             return true
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
@@ -253,7 +253,7 @@ world.createItemFromId = function(world, itemId, count, pos, always, quality, da
     if not tileDef then
         error("Unknown tile for item id " .. itemId)
     end
-    local tile = dimension:PlaceTile(pos, tileDef.Name)
+    local tile = dimension:PlaceTile(pos, tileDef)
     return Item.fromSeleneTile(tile)
 end
 
