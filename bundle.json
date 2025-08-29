@@ -16,7 +16,6 @@
     "server/lua/impl/combat.lua",
     "server/lua/impl/npc.lua",
     "server/lua/impl/triggerfields.lua",
-    "server/lua/impl/warps.lua",
     "server/lua/impl/scheduled_scripts.lua",
     "server/lua/impl/script_vars.lua",
     "server/lua/impl/actions.lua",

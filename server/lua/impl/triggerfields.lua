@@ -12,6 +12,29 @@ for _, field in pairs(allTriggerFields) do
 end
 
 Entities.SteppedOnTile:Connect(function(entity, coordinate)
+    local warpAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:warp")
+    if warpAnnotation then
+        entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
+        return
+    end
+
+    local tiles = entity:CollisionMap(coordinate):GetTilesAt(coordinate)
+    for _, tile in ipairs(tiles) do
+        local itemId = tile.Definition.GetMetadata("itemId")
+        if itemId then
+            local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+            if item and item:GetField("specialItem") == 1 then
+                local scriptName = item:GetField("script")
+                if scriptName then
+                    local status, script = pcall(require, scriptName)
+                    if status and type(script.CharacterOnField) == "function" then
+                        script.CharacterOnField(Character.fromSeleneEntity(entity))
+                    end
+                end
+            end
+        end
+    end
+
     local triggerfieldAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:triggerfield")
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
