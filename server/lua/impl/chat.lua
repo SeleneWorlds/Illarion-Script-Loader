@@ -26,6 +26,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     end
     local dimension = user.SeleneEntity.Dimension
     local entities = dimension:GetEntitiesInRange(userEntity.Coordinate, range)
+    local nonPlayerListeners = {}
     for _, entity in ipairs(entities) do
         local diffZ = math.abs(userEntity.Coordinate.Z - entity.Coordinate.Z)
         if diffZ <= zRange then
@@ -41,25 +42,31 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     mode = mode,
                     message = effectiveMessage
                 })
-            elseif characterType == Character.monster then
-                local monster = entity.CustomData[DataKeys.Monster]
-                local scriptName = monster:GetField("script")
-                if scriptName then
-                    local status, script = pcall(require, scriptName)
-                    if status and type(script.receiveText) == "function" then
-                        local illaMonster = Character.fromSeleneEntity(entity)
-                        script.receiveText(illaMonster, mode, messageEnglish or message, user)
-                    end
+            elseif characterType == Character.npc or characterType == Character.monster then
+                table.insert(nonPlayerListeners, entity)
+            end
+        end
+    end
+    for _, entity in ipairs(nonPlayerListeners) do
+        local characterType = entity.CustomData[DataKeys.CharacterType]
+        if characterType == Character.monster then
+            local monster = entity.CustomData[DataKeys.Monster]
+            local scriptName = monster:GetField("script")
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.receiveText) == "function" then
+                    local illaMonster = Character.fromSeleneEntity(entity)
+                    script.receiveText(illaMonster, mode, messageEnglish or message, user)
                 end
-            elseif characterType == Character.npc then
-                local npc = entity.CustomData[DataKeys.NPC]
-                local scriptName = npc:GetField("script")
-                if scriptName then
-                    local status, script = pcall(require, scriptName)
-                    if status and type(script.receiveText) == "function" then
-                        local illaNpc = Character.fromSeleneEntity(entity)
-                        script.receiveText(illaNpc, mode, messageEnglish or message, user)
-                    end
+            end
+        elseif characterType == Character.npc then
+            local npc = entity.CustomData[DataKeys.NPC]
+            local scriptName = npc:GetField("script")
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.receiveText) == "function" then
+                    local illaNpc = Character.fromSeleneEntity(entity)
+                    script.receiveText(illaNpc, mode, messageEnglish or message, user)
                 end
             end
         end
