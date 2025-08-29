@@ -5,6 +5,7 @@
   "entrypoints": [
     "server/lua/init.lua",
     "server/lua/impl/player.lua",
+    "server/lua/impl/world.lua",
     "server/lua/impl/character.lua",
     "server/lua/impl/attributes.lua",
     "server/lua/impl/skills.lua",
@@ -19,7 +20,6 @@
     "server/lua/impl/scheduled_scripts.lua",
     "server/lua/impl/script_vars.lua",
     "server/lua/impl/actions.lua",
-    "server/lua/impl/world.lua",
     "server/lua/impl/monsters.lua",
     "server/lua/impl/field.lua",
     "server/lua/impl/container.lua",

@@ -9,7 +9,7 @@ local function IsDead(user)
     return user.SeleneEntity.CustomData[DataKeys.Dead]
 end
 
-Character.SeleneMethods.SeleneSetDead(user, dead)
+Character.SeleneMethods.SeleneSetDead = function(user, dead)
     local wasDead = IsDead(user)
     user.SeleneEntity.CustomData[DataKeys.Dead] = dead
     if not wasDead and dead then

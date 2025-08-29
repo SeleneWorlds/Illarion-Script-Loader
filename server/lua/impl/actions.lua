@@ -40,9 +40,9 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
         ClearAction(user)
     end)
     entity.CustomData[DataKeys.CurrentAction] = {
-        Script = entity.CustomData[DataKeys.LastActionScript]
-        Function = entity.CustomData[DataKeys.LastActionFunction]
-        Args = entity.CustomData:RawLookup(DataKeys.LastActionArgs)
+        Script = entity.CustomData[DataKeys.LastActionScript],
+        Function = entity.CustomData[DataKeys.LastActionFunction],
+        Args = entity.CustomData:RawLookup(DataKeys.LastActionArgs),
         ActionHandle = actionHandle,
         GfxHandle = gfxHandle,
         SfxHandle = sfxHandle
