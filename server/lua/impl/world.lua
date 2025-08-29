@@ -41,6 +41,17 @@ world.isCharacterOnField = function(world, pos)
     return false
 end
 
+world.getCharacterOnField = function(world, pos)
+    local dimension = Dimensions.GetDefault()
+    local entities = dimension:GetEntitiesAt(pos)
+    for _, entity in ipairs(entities) do
+        if entity:HasTag("illarion:character") then
+            return Character.fromSeleneEntity(entity)
+        end
+    end
+    return nil
+end
+
 world.getItemName = function(world, itemId, language)
     local item = Registries.FindByMetadata("illarion:items", "id", itemId)
     if item then
