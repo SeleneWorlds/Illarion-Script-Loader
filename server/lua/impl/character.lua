@@ -236,7 +236,7 @@ Character.SeleneMethods.turn = function(user, direction)
 end
 
 Character.SeleneMethods.isInRange = function(user, other, distance)
-    return user:isInRangeToPosition(other.position, distance)
+    return user:isInRangeToPosition(other.pos, distance)
 end
 
 Character.SeleneMethods.isInRangeToPosition = function(user, position, distance)
@@ -247,7 +247,7 @@ Character.SeleneMethods.isInRangeToPosition = function(user, position, distance)
 end
 
 Character.SeleneMethods.distanceMetric = function(user, other)
-    return user:distanceMetricToPosition(other.position)
+    return user:distanceMetricToPosition(other.pos)
 end
 
 Character.SeleneMethods.distanceMetricToPosition = function(user, position)

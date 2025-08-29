@@ -28,7 +28,7 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     end
     if sfxId ~= 0 then
         sfxHandle = Schedules.SetInterval(100, function()
-            world:makeSound(sfxId, user.position)
+            world:makeSound(sfxId, user.pos)
         end, { immediate = true })
     end
 
