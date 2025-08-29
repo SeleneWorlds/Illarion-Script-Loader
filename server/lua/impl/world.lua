@@ -65,7 +65,7 @@ world.swap = function(world, item, newId, newQuality)
     if item:getType() == scriptItem.field then
         if item.SeleneTile ~= nil then
             local map = item.SeleneTile.Dimension.Map
-            map:SwapTile(item.SeleneTile.Coordinate, item.SeleneTile, NewTileDef)
+            map:SwapTile(item.SeleneTile.Coordinate, item.SeleneTile.Definition, NewTileDef)
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
         item.owner:swapAtPos(item.itempos, newId, newQuality)
