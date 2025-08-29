@@ -18,9 +18,10 @@ Players.PlayerJoined:Connect(function(player)
     entity.CustomData[DataKeys.Sex] = "female"
     entity:SetCoordinate(702, 283, 0)
     entity:AddDynamicComponent("illarion:name", function(entity, forPlayer)
+        local isControlled = forPlayer.ControlledEntity == entity
         local isIntroduced = forPlayer.ControlledEntity and forPlayer.ControlledEntity.CustomData[DataKeys.Introduction(entity.CustomData[DataKeys.ID])]
         local effectiveName = entity.Name
-        if not isIntroduced then
+        if not isIntroduced and not isControlled then
             local race = entity.CustomData[DataKeys.Race]
             if race then
                 local sex = entity.CustomData[DataKeys.Sex] or "male"
