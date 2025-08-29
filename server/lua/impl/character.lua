@@ -187,7 +187,7 @@ Character.SeleneGetters.name = function(user)
 end
 
 Character.SeleneGetters.pos = function(user)
-    return user.SeleneEntity.Coordinate
+    return position.FromSeleneCoordinate(user.SeleneEntity.Coordinate)
 end
 
 Character.SeleneGetters.isinvisible = function(user)
