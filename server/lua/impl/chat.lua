@@ -27,7 +27,8 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local dimension = user.SeleneEntity.Dimension
     local entities = dimension:GetEntitiesInRange(userEntity.Coordinate, range)
     for _, entity in ipairs(entities) do
-        if userEntity.Coordinate.Z < entity.Coordinate.Z + zRange and userEntity.Coordinate.Z > entity.Coordinate.Z - zRange then
+        local diffZ = math.abs(userEntity.Coordinate.Z - entity.Coordinate.Z)
+        if diffZ <= zRange then
             local characterType = entity.CustomData[DataKeys.CharacterType]
             if characterType == Character.player then
                 local effectiveMessage = message
