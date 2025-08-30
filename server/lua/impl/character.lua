@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
+local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 
 local illaPlayerDeath = require("server.playerdeath")
 
@@ -255,6 +256,22 @@ Character.SeleneMethods.distanceMetricToPosition = function(user, position)
     local dy = math.abs(user.pos.y - position.y)
     local dz = math.abs(user.pos.z - position.z)
     return math.max(dx, dy, dz)
+end
+
+Character.SeleneGetters.movepoints = function(user)
+    return AttributeManager.GetAttribute(user, "actionpoints").EffectiveValue
+end
+
+Character.SeleneSetters.movepoints = function(user, value)
+    AttributeManager.GetAttribute(user, "actionpoints").Value = value
+end
+
+Character.SeleneGetters.speed = function(user)
+    return AttributeManager.GetAttribute(user, "speed").EffectiveValue
+end
+
+Character.SeleneSetters.speed = function(user, value)
+    AttributeManager.GetAttribute(user, "speed").Value = value
 end
 
 Character.SeleneGetters.SeleneEntity = function(user)

@@ -34,5 +34,6 @@ m.MonsterScript = "illarion:monsterScript"
 m.Inventory = "illarion:inventory"
 m.Depot = "illarion:depot:"
 m.Dead = "illarion:dead"
+m.CombatTarget = "illarion:combatTarget"
 
 return m
