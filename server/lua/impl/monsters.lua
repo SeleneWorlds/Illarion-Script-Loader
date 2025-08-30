@@ -3,7 +3,11 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
-    return user.CustomData[DataKeys.MonsterType] or 0
+    local monsterDef = user.CustomData[DataKeys.Monster]
+    if monsterDef then
+        return monsterDef:GetMetadata("id")
+    end
+    return 0
 end
 
 Character.SeleneMethods.getLoot = function(user)
