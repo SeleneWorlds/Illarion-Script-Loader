@@ -44,4 +44,26 @@ function m.GetAttributeBasedInventory(user, inventoryName, attributeName, slotId
     return inventory
 end
 
+function m.SetItemQuality(item, amount)
+    local tmpQuality = amount + item.durability <= 99 and amount + item.quality or item.quality - item.durability + 99
+    item.quality = amount
+end
+
+function m.ItemMatchesFilter(itemDef, data)
+    return function(item)
+        if item.def ~= itemDef then
+            return false
+        end
+
+        if data then
+            for key, value in pairs(data) do
+                if item.data[key] ~= value then
+                    return false
+                end
+            end
+        end
+        return true
+    end
+end
+
 return m

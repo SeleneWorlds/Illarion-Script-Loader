@@ -17,10 +17,7 @@ Container.SeleneMethods.countItem = function(container, itemId, data)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
-    local filter = function(item)
-        -- TODO check data too
-        return item.def == itemDef
-    end
+    local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
     return container.SeleneInventory:countItem(filter)
 end
 
@@ -30,7 +27,7 @@ end
 
 Container.SeleneMethods.weight = function(container)
     local weight = 0
-    local items = container.SeleneInventory:findItems()
+    local items = container.SeleneInventory:findInventoryItems()
     for _, item in ipairs(items) do
         if item.def then
             weight = weight + item.def:GetField("weight")
@@ -40,24 +37,28 @@ Container.SeleneMethods.weight = function(container)
 end
 
 Container.SeleneMethods.takeItemNr = function(container, slotId, amount)
-    local item = container.SeleneInventory:getItemAt(slotId)
+    local item = container.SeleneInventory:getItem(slotId)
     if item then
         item:decrease(amount)
-        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemInventory(item))
+        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemChildInventory(item))
     end
     return false, nil, nil
 end
 
 Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
-    local item = container.SeleneInventory:getItemAt(slotId)
+    local item = container.SeleneInventory:getItem(slotId)
     if item then
-        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemInventory(item))
+        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemChildInventory(item))
     end
     return false, nil
 end
 
 Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
-    -- TODO changeQualityAt
+    local item = container.SeleneInventory:getItem(slotId)
+    if item then
+        InventoryManager.SetItemQuality(item, amount)
+        return true
+    end
     return false
 end
 

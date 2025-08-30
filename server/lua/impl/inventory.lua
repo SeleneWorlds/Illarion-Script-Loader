@@ -5,30 +5,13 @@ local Inventory = require("moonlight-inventory.server.lua.inventory")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
-local function ItemMatchesFilter(itemDef, data)
-    return function(item)
-        if item.def ~= itemDef then
-            return false
-        end
-
-        if data then
-            for key, value in pairs(data) do
-                if item.data[key] ~= value then
-                    return false
-                end
-            end
-        end
-        return true
-    end
-end
-
 Character.SeleneMethods.countItem = function(user, itemId)
     local count = 0
     local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
-    local filter = ItemMatchesFilter(itemDef)
+    local filter = InventoryManager.ItemMatchesFilter(itemDef)
     count = count + InventoryManager.GetBelt(user):countItem(filter)
     count = count + InventoryManager.GetEquipment(user):countItem(filter)
     count = count + InventoryManager.GetBackpack(user):countItem(filter)
@@ -41,7 +24,7 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
-    local filter = ItemMatchesFilter(itemDef, data)
+    local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
     if where == "all" or where == "belt" then
         local belt = InventoryManager.GetBelt(user)
         count = count + belt:countItem(filter)
@@ -66,8 +49,7 @@ end
 Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
     local inventory = InventoryManager.GetInventory(user)
     local item = inventory:getItem(slotId)
-    -- TODO changeQualityAt
-    print("changeQualityAt", tablex.tostring(item), amount)
+    InventoryManager.SetItemQuality(item, amount)
 end
 
 Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
@@ -130,7 +112,15 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     if not itemDef then
         error("Tried to list unknown item id " .. itemId)
     end
-    -- TODO getItemList
-    return 0
+    local result = {}
+    local inventory = InventoryManager.GetInventory(user)
+    for _, inventoryItem in inventory:findInventoryItems() do
+        table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
+    end
+    local backpack = InventoryManager.GetBackpack(user)
+    for _, inventoryItem in backpack:findInventoryItems() do
+        table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
+    end
+    return result
 end
 
