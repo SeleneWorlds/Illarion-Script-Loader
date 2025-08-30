@@ -10,6 +10,22 @@ Field.SeleneMethods.isPassable = function(field)
     return not field.SeleneDimension:HasCollisionAt(field.SelenePosition)
 end
 
+Field.SeleneMethods.isWarp = function(field)
+    return field.SeleneDimension:GetAnnotationAt(field.SelenePosition, "illarion:warp") ~= nil
+end
+
+Field.SeleneMethods.setWarp = function(field, position)
+    field.SeleneDimension:AnnotateTile(field.SelenePosition, "illarion:warp", {
+        ToX = position.x,
+        ToY = position.y,
+        ToLevel = position.z
+    })
+end
+
+Field.SeleneMethods.removeWarp = function(field)
+    field.SeleneDimension:AnnotateTile(field.SelenePosition, "illarion:warp", nil)
+end
+
 Field.SeleneMethods.countItems = function(field)
     local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
     local count = 0
