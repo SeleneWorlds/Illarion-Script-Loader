@@ -46,11 +46,22 @@ function m.Spawn(player)
     player.CameraEntity = entity
     player:SetCameraToFollowTarget()
 
-    local character = Character.fromSelenePlayer(player)
-    local beltView = entity:CreateAttributeView("belt", function(view, attributeKey, attribute)
-        Network.SendToEntity(view.Owner, "illarion:update_slot", { viewId = view.Name, slotId = attributeKey, item = attribute.Value })
+    m.EntitiesById[id] = entity
+    local character = CharacterManager.AddEntity(entity)
+
+    local inventory = InventoryManager.GetInventory(character)
+    local inventoryView = entity:CreateAttributeView("inventory", function(view, attributeKey, attribute)
+        local slotId = attribute.Value.dirtySlot
+        if slotId ~= nil then
+            local item = inventory:getItem(slotId)
+            Network.SendToEntity(view.Owner, "illarion:update_slot", {
+                viewId = view.Name,
+                slotId = slotId,
+                item = item and { id = item.id } or nil
+            })
+        end
     end)
-    InventoryManager.GetBelt(character):addToView(beltView)
+    inventory:addToView(inventoryView)
 
     character:setAttrib("hitpoints", 10000)
     character:setAttrib("foodlevel", 30000)
@@ -58,8 +69,6 @@ function m.Spawn(player)
 
     player.CustomData[DataKeys.CurrentLoginTimestamp] = os.time()
 
-    m.EntitiesById[id] = entity
-    CharacterManager.AddEntity(entity)
     return character
 end
 
