@@ -11,7 +11,9 @@ function m.AddEntity(entity)
         error("Tried to add an entity without an ID to character manager")
     end
     m.EntitiesById[id] = entity
-    m.CharactersById[id] = Character.fromSeleneEntity(entity)
+    local character = Character.fromSeleneEntity(entity)
+    m.CharactersById[id] = character
+    return character
 end
 
 function m.RemoveEntity(entity)
