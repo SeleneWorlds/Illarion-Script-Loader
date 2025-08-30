@@ -6,6 +6,10 @@ local Config = require("selene.config")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
+    if not user.SelenePlayer then
+        return
+    end
+
     local localizedMessage = user:getPlayerLanguage() == Player.english and messageEnglish or message
     Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = localizedMessage })
 end
@@ -21,22 +25,22 @@ Character.SeleneMethods.isAdmin = function(user)
     end
     -- TODO Temporary solution until we have basic permission support in Selene
     local admins = stringx.split(Config.GetProperty("admins"), ",")
-    return tablex.find(admins, user.SelenePlayer.UserId)
+    return tablex.find(admins, user.SelenePlayer.UserId) ~= nil
 end
 
 Character.SeleneMethods.getPlayerLanguage = function(user)
-    if user.SelenePlayer.Language == "de" then
+    if user.SelenePlayer and user.SelenePlayer.Language == "de" then
         return Player.german
     end
     return Player.english
 end
 
 Character.SeleneMethods.isNewPlayer = function(user)
-    return user.SelenePlayer.CustomData[DataKeys.TotalOnlineTime] or 0 < 10 * 60 * 60
+    return user.SelenePlayer and (user.SelenePlayer.CustomData[DataKeys.TotalOnlineTime] or 0) < 10 * 60 * 60 or false
 end
 
 Character.SeleneMethods.idleTime = function(user)
-    return user.SelenePlayer.IdleTime
+    return user.SelenePlayer and user.SelenePlayer.IdleTime or 0
 end
 
 Character.SeleneMethods.logAdmin = function(user, message)
@@ -59,7 +63,7 @@ world.getPlayersInRangeOf = function(world, pos, range)
     local result = {}
     for _, player in ipairs(players) do
         local entity = player.ControlledEntity
-        if entity.Coordinate:GetHorizontalDistanceTo(pos) <= range then
+        if entity and entity.Coordinate:GetHorizontalDistanceTo(pos) <= range then
             table.insert(result, Character.fromSelenePlayer(player))
         end
     end

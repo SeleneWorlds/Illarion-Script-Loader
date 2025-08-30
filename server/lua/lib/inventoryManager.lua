@@ -1,3 +1,5 @@
+local Inventory = require("moonlight-inventory.server.lua.inventory")
+
 local m = {}
 
 local equipmentSlotIds = { "inventory:0", "inventory:1", "inventory:2", "inventory:3", "inventory:4", "inventory:5", "inventory:6", "inventory:7", "inventory:8", "inventory:9", "inventory:10", "inventory:11" }
@@ -9,7 +11,7 @@ local function DepotSlotIds(depotId)
 end
 
 function m.GetDepot(user, depotId)
-    return m.GetInventory(user, "depot:" .. depotId), DepotSlotIds(depotId)
+    return m.GetInventory(user, "depot:" .. depotId, DepotSlotIds(depotId))
 end
 
 function m.GetBackpack(user)
@@ -17,11 +19,11 @@ function m.GetBackpack(user)
 end
 
 function m.GetBelt(user)
-    return user:GetSeleneInventory("belt", beltSlotIds)
+    return m.GetInventory(user, "belt", beltSlotIds)
 end
 
 function m.GetEquipment(user)
-    return user:GetSeleneInventory("equipment", equipmentSlotIds)
+    return m.GetInventory(user, "equipment", equipmentSlotIds)
 end
 
 function m.GetInventory(user, inventoryName, slotIds)
@@ -36,9 +38,9 @@ end
 
 function m.GetInventoryByPos(user, pos)
     if pos < 12 then
-        return user.SeleneEquipment
+        return m.GetEquipment(user)
     elseif pos < 18 then
-        return user.SeleneBelt
+        return m.GetBelt(user)
     end
     return nil
 end

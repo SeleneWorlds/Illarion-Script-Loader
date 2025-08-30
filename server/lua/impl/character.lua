@@ -213,6 +213,9 @@ isValidChar = function(user)
 end
 
 function Character.fromSelenePlayer(player)
+    if not player.ControlledEntity then
+        error("fromSelenePlayer called before the player had a controlled entity")
+    end
     return setmetatable({SelenePlayer = player}, Character.SeleneMetatable)
 end
 

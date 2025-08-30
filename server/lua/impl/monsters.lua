@@ -1,4 +1,6 @@
 local Registries = require("selene.registries")
+local Schedules = require("selene.schedules")
+
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 

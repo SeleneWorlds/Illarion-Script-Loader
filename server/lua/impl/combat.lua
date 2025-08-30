@@ -2,6 +2,7 @@ local Registries = require("selene.registries")
 local Network = require("selene.network")
 local Entities = require("selene.entities")
 local Players = require("selene.players")
+local Schedules = require("selene.schedules")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
@@ -66,11 +67,13 @@ Network.HandlePayload("illarion:set_combat_target", function(player, payload)
     end
 end)
 
-Schedule.SetInterval(100, function()
+Schedules.SetInterval(100, function()
     local players = Players.GetOnlinePlayers()
     for _, player in ipairs(players) do
-        local user = Character.fromSeleneEntity(player)
-        user.movepoints = user.movepoints + 1
-        user.fightpoints = user.fightpoints + 1
+        if player.ControlledEntity then
+            local user = Character.fromSelenePlayer(player)
+            user.movepoints = user.movepoints + 1
+            user.fightpoints = user.fightpoints + 1
+        end
     end
 end)

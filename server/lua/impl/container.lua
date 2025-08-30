@@ -1,3 +1,6 @@
+local Registries = require("selene.registries")
+local Network = require("selene.network")
+
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
@@ -15,7 +18,8 @@ Container.SeleneMethods.countItem = function(container, itemId, data)
         error("Tried to count unknown item id " .. itemId)
     end
     local filter = function(item)
-        return item.def == itemDef -- TODO check data too
+        -- TODO check data too
+        return item.def == itemDef
     end
     return container.SeleneInventory:countItem(filter)
 end
@@ -84,7 +88,7 @@ Container.SeleneMethods.swapAtPos = function(container, pos, newId, newQuality)
     -- TODO swapAtPos
 end
 
-function Container.fromMoonlightInventory(inventeory)
+function Container.fromMoonlightInventory(inventory)
     return setmetatable({SeleneInventory = inventory}, Container.SeleneMetatable)
 end
 

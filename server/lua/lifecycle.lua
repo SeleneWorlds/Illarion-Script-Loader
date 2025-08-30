@@ -1,6 +1,8 @@
 local Server = require("selene.server")
 local Players = require("selene.players")
 
+local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
+
 local illaReload = require("server.reload")
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")

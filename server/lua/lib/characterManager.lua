@@ -1,4 +1,4 @@
-local DataKeys = require("illarion-script-loader.server.lua.lib.dataKeys")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local m = {}
 

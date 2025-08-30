@@ -1,3 +1,6 @@
+local Network = require("selene.network")
+local Registries = require("selene.registries")
+
 Network.HandlePayload("illarion:use_at", function(player, payload)
     local entity = player.ControlledEntity
     local dimension = entity.Dimension

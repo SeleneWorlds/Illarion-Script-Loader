@@ -1,5 +1,5 @@
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
-local DataKeys = require("illarion-script-loader.server.lua.lib.dataKeys")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 local m = {}
@@ -24,7 +24,7 @@ function m.Spawn(monsterDef, pos)
     local scriptName = monsterDef:GetField("script")
     if scriptName then
         local status, script = pcall(require, scriptName)
-        if status, script then
+        if status then
             entity.CustomData[DataKeys.MonsterScript] = script
         else
             error("Failed to load script " .. scriptName .. " for monster " .. monsterDef.Name)

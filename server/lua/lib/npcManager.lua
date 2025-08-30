@@ -2,7 +2,8 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
-local DataKeys = require("illarion-script-loader.server.lua.lib.dataKeys")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 local m = {}
@@ -25,7 +26,7 @@ function m.Spawn(npc)
     local scriptName = npc:GetField("script")
     if scriptName then
         local status, script = pcall(require, scriptName)
-        if status, script then
+        if status then
             entity.CustomData[DataKeys.NPCScript] = script
         else
             error("Failed to load script " .. scriptName .. " for NPC " .. npc.Name)
@@ -41,7 +42,7 @@ end
 function m.Update()
     for _, entity in pairs(m.EntitiesByNpcId) do
         local npc = Character.fromSeleneEntity(entity)
-        if not npc:IsDead() then
+        if not entity.CustomData[DataKeys.Dead] then
             -- TODO run LTE
             -- TODO skip if no player nearby and not on route
             local script = entity.CustomData[DataKeys.NPCScript]

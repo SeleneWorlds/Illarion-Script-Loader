@@ -20,7 +20,7 @@ Character.SeleneMethods.countItem = function(user, itemId)
     return count
 end
 
-Character.SeleneMethods.countItemAt = (user, where, itemId, data)
+Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
     local count = 0
     local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
     if not itemDef then
@@ -44,10 +44,14 @@ Character.SeleneMethods.countItemAt = (user, where, itemId, data)
     return count
 end
 
-Character.SeleneMethods.getItemAt = function(user, slot)
+Character.SeleneMethods.getItemAt = function(user, pos)
     local inventory = InventoryManager.GetInventoryByPos(user, pos)
-    local item = inventory:getItem("inventory:" .. pos)
-    -- TODO
+    if inventory then
+        local item = inventory:getItem("inventory:" .. pos)
+        -- TODO getItemAt
+    else
+        -- TODO why can this be nil?
+    end
     return Item.fromSeleneEmpty()
 end
 
