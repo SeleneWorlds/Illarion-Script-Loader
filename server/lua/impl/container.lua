@@ -22,6 +22,10 @@ Container.SeleneMethods.countItem = function(container, itemId, data)
     return count
 end
 
+function Container.fromMoonlightInventory(inventeory)
+    return setmetatable({SeleneInventory = inventory}, Container.SeleneMetatable)
+end
+
 function Container.fromSeleneEntityData(entity, data)
     return setmetatable({SeleneEntity = entity, SeleneData = data}, Container.SeleneMetatable)
 end

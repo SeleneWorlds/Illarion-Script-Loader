@@ -129,9 +129,20 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     return 0
 end
 
+Character.SeleneMethods.getBackPack = function(user, itemId)
+    return Container.fromMoonlightInventory(user.SeleneBackpack)
+end
+
+Character.SeleneMethods.getDepot = function(user, depotId)
+    return Container.fromMoonlightInventory(user:GetSeleneInventory("depot:" .. depotId), DepotSlotIds(depotId))
+end
+
 local equipmentSlotIds = { "inventory:0", "inventory:1", "inventory:2", "inventory:3", "inventory:4", "inventory:5", "inventory:6", "inventory:7", "inventory:8", "inventory:9", "inventory:10", "inventory:11" }
 local beltSlotIds = { "inventory:12", "inventory:13", "inventory:14", "inventory:15", "inventory:16", "inventory:17" }
 local backpackSlotIds = {}
+local function DepotSlotIds(depotId)
+    return {}
+end
 
 Character.SeleneMethods.GetSeleneInventoryByPos = function(user, pos)
     if pos < 12 then
