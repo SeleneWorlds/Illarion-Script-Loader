@@ -14,5 +14,5 @@ ScriptVars.remove = function(self, key)
 end
 
 ScriptVars.save = function(self)
-    print("scriptVars.save called - noop")
+    -- TODO ScriptVars.save
 end
