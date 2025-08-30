@@ -1,9 +1,10 @@
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
+local EntityManager = require("illarion-script-loader.server.lua.lib.entityManager")
 
 local m = {}
 
 m.IdCounter = 0
-m.MonstersById = {}
+m.EntitiesById = {}
 m.NewMonsters = {}
 
 function m.Spawn(monsterDef, pos)
@@ -15,7 +16,9 @@ function m.Spawn(monsterDef, pos)
 
     local entity = Entities.Create(race.Name .. "_0")
     idCounter = idCounter + 1
-    entity.CustomData[DataKeys.ID] = (idCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
+    local id = (idCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
+    entity.CustomData[DataKeys.ID] = id
+    EntityManager.EntitiesById[id] = entity
     entity.CustomData[DataKeys.CharacterType] = Character.monster
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Monster] = monsterDef
@@ -34,7 +37,7 @@ end
 
 function m.Update()
     for _, entity in pairs(m.NewMonsters) do
-        m.MonstersById[entity.CustomData[DataKeys.ID]] = entity
+        m.EntitiesById[entity.CustomData[DataKeys.ID]] = entity
         entity:Spawn()
 
         local script = entity.CustomData[DataKeys.MonsterScript]

@@ -1,8 +1,10 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
-local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local
+DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
+local EntityManager = require("illarion-script-loader.server.lua.lib.entityManager")
 
 local illaPlayerDeath = require("server.playerdeath")
 
@@ -272,6 +274,16 @@ end
 
 Character.SeleneSetters.speed = function(user, value)
     AttributeManager.GetAttribute(user, "speed").Value = value
+end
+
+Character.SeleneMethods.sendCharDescription = function(user, id, description)
+    local target = EntityManager.EntitiesById[id]
+    if target then
+        Network.SendToEntity(user.SeleneEntity, "illarion:char_description", {
+            networkId = target.NetworkId,
+            description = description
+        })
+    end
 end
 
 Character.SeleneGetters.SeleneEntity = function(user)
