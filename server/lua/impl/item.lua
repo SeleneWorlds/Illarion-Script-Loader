@@ -37,20 +37,19 @@ end
 Item.SeleneMethods.getData = function(item, key)
     if item.SeleneTile then
         local dimension = item.SeleneTile.Dimension
-        local data = dimension:GetAnnotation(item.SeleneTile.Name)
-        return data and data[key] or nil
+        local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name)
+        return data and data[key] or 0
     end
-    return nil
+    return 0
 end
 
 Item.SeleneMethods.setData = function(item, key, value)
     if item.SeleneTile then
         local dimension = item.SeleneTile.Dimension
-        local data = dimension:GetAnnotation(item.SeleneTile.Coordinate, item.SeleneTile.Name) or {}
+        local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name) or {}
         data[key] = value
         dimension:AnnotateTile(item.SeleneTile.Coordinate, item.SeleneTile.Name, data)
     end
-    return nil
 end
 
 function Item.fromSeleneTile(Tile)
