@@ -54,6 +54,7 @@ function m.Spawn(player)
 
     character:setAttrib("hitpoints", 10000)
     character:setAttrib("foodlevel", 30000)
+    character:setMentalCapacity(10000)
 
     player.CustomData[DataKeys.CurrentLoginTimestamp] = os.time()
 
