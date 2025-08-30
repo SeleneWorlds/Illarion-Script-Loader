@@ -4,9 +4,6 @@ local Network = require("selene.network")
 local m = {}
 
 function m.GetAttribute(user, attributeName)
-    if not user.SeleneEntity then
-        print(debug.traceback())
-    end
     local attributeKey = "illarion:" .. attributeName
     local attribute = user.SeleneEntity:GetAttribute(attributeKey)
     if attribute == nil then
