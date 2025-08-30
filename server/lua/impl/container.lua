@@ -20,6 +20,70 @@ Container.SeleneMethods.countItem = function(container, itemId, data)
     return container.SeleneInventory:countItem(filter)
 end
 
+Container.SeleneMethods.getSlotCount = function(container)
+    return container.SeleneInventory:getSlotCount()
+end
+
+Container.SeleneMethods.weight = function(container)
+    local weight = 0
+    local items = container.SeleneInventory:findItems()
+    for _, item in ipairs(items) do
+        if item.def then
+            weight = weight + item.def:GetField("weight")
+        end
+    end
+    return weight
+end
+
+Container.SeleneMethods.takeItemNr = function(container, slotId, amount)
+    local item = container.SeleneInventory:getItemAt(slotId)
+    if item then
+        item:decrease(amount)
+        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemInventory(item))
+    end
+    return false, nil, nil
+end
+
+Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
+    local item = container.SeleneInventory:getItemAt(slotId)
+    if item then
+        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemInventory(item))
+    end
+    return false, nil
+end
+
+Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
+    -- TODO changeQualityAt
+    return false
+end
+
+Container.SeleneMethods.insertContainer = function(container, item, container, pos)
+    -- TODO insertContainer
+    return false
+end
+
+Container.SeleneMethods.insertItem = function(container, item, mergeOrSlotId)
+    -- TODO insertItem
+    return false
+end
+
+Container.SeleneMethods.eraseItem = function(container, item, amount, data)
+    -- TODO eraseItem
+    return 0
+end
+
+Container.SeleneMethods.increaseAtPos = function(container, pos, amount)
+    return container.SeleneInventory:increaseItemAt(pos, amount)
+end
+
+Container.SeleneMethods.swapAtPos = function(container, pos, newId, newQuality)
+    local itemDef = Registries.FindByMetadata("illarion:items", "id", newId)
+    if not itemDef then
+        error("Tried to swap to unknown item id " .. newId)
+    end
+    -- TODO swapAtPos
+end
+
 function Container.fromMoonlightInventory(inventeory)
     return setmetatable({SeleneInventory = inventory}, Container.SeleneMetatable)
 end
