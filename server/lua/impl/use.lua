@@ -1,6 +1,8 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
 
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+
 Network.HandlePayload("illarion:use_at", function(player, payload)
     local entity = player.ControlledEntity
     local dimension = entity.Dimension
