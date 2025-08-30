@@ -214,6 +214,7 @@ end
 
 function Character.fromSelenePlayer(player)
     if not player.ControlledEntity then
+        print(debug.traceback())
         error("fromSelenePlayer called before the player had a controlled entity")
     end
     return setmetatable({SelenePlayer = player}, Character.SeleneMetatable)
