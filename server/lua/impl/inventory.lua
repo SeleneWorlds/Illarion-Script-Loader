@@ -86,7 +86,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         quality = quality,
         data = data
     })
-    if rest then
+    if rest > 0 then
         rest = InventoryManager.GetBackpack(user):addItem({
             def = itemDef,
             count = count,
@@ -94,7 +94,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
             data = data
         })
     end
-    return rest and rest.count or 0
+    return rest
 end
 
 Character.SeleneMethods.createAtPos = function(user, pos, itemId, count)
