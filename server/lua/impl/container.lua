@@ -1,31 +1,33 @@
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Character.SeleneMethods.getDepot = function(user, depotId)
-    local depotData = user.SeleneEntity.CustomData[DataKeys.Depot .. depotId] or {}
-    return Container.fromSeleneEntityData(user.SeleneEntity, depotData)
+    return Container.fromMoonlightInventory(InventoryManager.GetDepot(user, depotId))
+end
+
+Character.SeleneMethods.getBackPack = function(user, itemId)
+    return Container.fromMoonlightInventory(InventoryManager.GetBackpack(user))
 end
 
 Container.SeleneMethods.countItem = function(container, itemId, data)
-    local count = 0
-    local items = container.SeleneData.Items or {}
-    for _, item in pairs(items) do
-        if item.id == itemId then
-            -- TODO check against data too
-            count = count + item.count
-        end
-
-        if item.container then
-            local childContainer = Container.fromSeleneEntityData(container.SeleneEntity, item.container)
-            count = count + childContainer:countItem(itemId, data)
-        end
+    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    if not itemDef then
+        error("Tried to count unknown item id " .. itemId)
     end
-    return count
+    local filter = function(item)
+        return item.def == itemDef -- TODO check data too
+    end
+    return container.SeleneInventory:countItem(filter)
 end
 
 function Container.fromMoonlightInventory(inventeory)
     return setmetatable({SeleneInventory = inventory}, Container.SeleneMetatable)
 end
 
-function Container.fromSeleneEntityData(entity, data)
-    return setmetatable({SeleneEntity = entity, SeleneData = data}, Container.SeleneMetatable)
-end
+Network.HandlePayload("illarion:open_container_at", function(player, payload)
+    -- TODO open_container_at
+end)
+
+Network.HandlePayload("illarion:open_container_slot", function(player, payload)
+    -- TODO open_container_slot
+end)
