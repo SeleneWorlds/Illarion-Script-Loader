@@ -278,3 +278,15 @@ world.getMonstersInRangeOf = function(world, pos, range)
     end
     return monsters
 end
+
+world.getNPCSInRangeOf = function(world, pos, range)
+    local dimension = Dimensions.GetDefault()
+    local entities = dimension:GetEntitiesInRange(pos, range)
+    local npcs = {}
+    for _, entity in ipairs(entities) do
+        if entity.CustomData[DataKeys.CharacterType] == Character.npc then
+            table.insert(npcs, Character.fromSeleneEntity(entity))
+        end
+    end
+    return npcs
+end
