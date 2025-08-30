@@ -44,13 +44,4 @@ function m.GetAttributeBasedInventory(user, inventoryName, attributeName, slotId
     return inventory
 end
 
-function m.GetInventoryByPos(user, pos)
-    if pos < 12 then
-        return m.GetEquipment(user)
-    elseif pos < 18 then
-        return m.GetBelt(user)
-    end
-    return nil
-end
-
 return m

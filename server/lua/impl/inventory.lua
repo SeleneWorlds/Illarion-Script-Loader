@@ -5,15 +5,30 @@ local Inventory = require("moonlight-inventory.server.lua.inventory")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
+local function ItemMatchesFilter(itemDef, data)
+    return function(item)
+        if item.def ~= itemDef then
+            return false
+        end
+
+        if data then
+            for key, value in pairs(data) do
+                if item.data[key] ~= value then
+                    return false
+                end
+            end
+        end
+        return true
+    end
+end
+
 Character.SeleneMethods.countItem = function(user, itemId)
     local count = 0
     local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
-    local filter = function(item)
-        return item.def == itemDef
-    end
+    local filter = ItemMatchesFilter(itemDef)
     count = count + InventoryManager.GetBelt(user):countItem(filter)
     count = count + InventoryManager.GetEquipment(user):countItem(filter)
     count = count + InventoryManager.GetBackpack(user):countItem(filter)
@@ -26,9 +41,7 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
-    local filter = function(item)
-        return item.def == itemDef -- TODO check data too
-    end
+    local filter = ItemMatchesFilter(itemDef, data)
     if where == "all" or where == "belt" then
         local belt = InventoryManager.GetBelt(user)
         count = count + belt:countItem(filter)
@@ -44,35 +57,22 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
     return count
 end
 
-Character.SeleneMethods.getItemAt = function(user, pos)
-    local inventory = InventoryManager.GetInventoryByPos(user, pos)
-    if inventory then
-        local item = inventory:getItem("inventory:" .. pos)
-        -- TODO getItemAt
-    else
-        -- TODO why can this be nil?
-    end
-    return Item.fromSeleneEmpty()
+Character.SeleneMethods.getItemAt = function(user, slotId)
+    local inventory = InventoryManager.GetInventory(user)
+    local inventoryItem = inventory:getInventoryItem(slotId)
+    return Item.fromSeleneInventoryItem(inventoryItem)
 end
 
-Character.SeleneMethods.changeQualityAt = function(user, pos, amount)
-    local inventory = InventoryManager.GetInventoryByPos(user, pos)
-    if not inventory then
-        return
-    end
-
-    local item = inventory:getItem("inventory:" .. pos)
+Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
+    local inventory = InventoryManager.GetInventory(user)
+    local item = inventory:getItem(slotId)
     -- TODO changeQualityAt
     print("changeQualityAt", tablex.tostring(item), amount)
 end
 
-Character.SeleneMethods.increaseAtPos = function(user, pos, amount)
-    local inventory = InventoryManager.GetInventoryByPos(user, pos)
-    if not inventory then
-        return
-    end
-
-    return inventory:increaseItemAt("inventory:" .. pos, amount)
+Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
+    local inventory = InventoryManager.GetInventory(user)
+    return inventory:increaseCountAt(slotId, amount)
 end
 
 Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
@@ -97,12 +97,12 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
     return rest
 end
 
-Character.SeleneMethods.createAtPos = function(user, pos, itemId, count)
+Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
     local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to create unknown item id " .. itemId)
     end
-    local inventory = InventoryManager.GetInventoryByPos(user, pos)
+    local inventory = InventoryManager.GetInventory(user)
     -- TODO createAtPos
     return 0
 end
@@ -116,7 +116,7 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
     return 0
 end
 
-Character.SeleneMethods.swapAtPos = function(user, pos, newId, newQuality)
+Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
     local itemDef = Registries.FindByMetadata("illarion:items", "id", newId)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
