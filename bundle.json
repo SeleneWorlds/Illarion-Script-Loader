@@ -26,6 +26,8 @@
     "server/lua/impl/inventory.lua",
     "server/lua/impl/item.lua",
     "server/lua/impl/music.lua",
+    "server/lua/impl/use.lua",
+    "server/lua/impl/lookat.lua",
     "server/lua/lifecycle.lua"
   ]
 }
