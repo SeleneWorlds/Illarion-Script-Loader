@@ -1,0 +1,6 @@
+local m = {}
+
+m.MONSTER_BASE_ID = 4261412864
+m.NPC_BASE_ID = 4278190080
+
+return m

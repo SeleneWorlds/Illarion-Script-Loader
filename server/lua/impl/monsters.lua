@@ -1,5 +1,6 @@
 local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
@@ -47,16 +48,9 @@ world.createMonster = function(world, monsterId, pos, movePoints)
          error("Unknown monster id " .. monsterId)
     end
 
-    local raceName = monsterDef:GetField("race")
-    local race = Registries.FindByName("illarion:races", raceName)
-    if not race then
-        error("Unknown monster race " .. raceName)
-    end
-
-    local entity = Entities.Create(race.Name .. "_0")
-    entity.CustomData[DataKeys.CharacterType] = Character.monster
-    entity.CustomData[DataKeys.Race] = race
-    entity.CustomData[DataKeys.Monster] = monsterDef
-    entity:SetCoordinate(pos)
-    entity:Spawn()
+    MonsterManager.Spawn(monsterDef, pos)
 end
+
+Schedules.SetInterval(100, function()
+    MonsterManager.Update()
+end)

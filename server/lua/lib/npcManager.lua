@@ -1,0 +1,56 @@
+local Registries = require("selene.registries")
+local Entities = require("selene.entities")
+
+local Constants = require("illarion-script-loader.server.lua.lib.constants")
+
+local m = {}
+
+m.EntitiesByNpcId = {}
+
+function m.Spawn(npc)
+    local race = Registries.FindByName("illarion:races", npc:GetField("race"))
+    if race == nil then
+        error("Unknown race " .. npc:GetField("race") .. " for NPC " .. npc.Name)
+    end
+    local entity = Entities.Create(npc:GetField("entity"))
+    entity.Name = npc:GetField("name")
+    entity:SetCoordinate(npc:GetField("x"), npc:GetField("y"), npc:GetField("z"))
+    entity:SetFacing(DirectionUtils.IllaToSelene(npc:GetField("facing")))
+    entity.CustomData[DataKeys.ID] = npc:GetMetadata("id") + Constants.NPC_BASE_ID
+    entity.CustomData[DataKeys.CharacterType] = Character.npc
+    entity.CustomData[DataKeys.NPC] = npc
+    local scriptName = npc:GetField("script")
+    if scriptName then
+        local status, script = pcall(require, scriptName)
+        if status, script then
+            entity.CustomData[DataKeys.NPCScript] = script
+        else
+            error("Failed to load script " .. scriptName .. " for NPC " .. npc.Name)
+        end
+    end
+    entity.CustomData[DataKeys.Race] = race
+    entity.CustomData[DataKeys.Sex] = npc:GetField("sex") == 1 and "female" or "male"
+    entity:Spawn()
+    m.EntitiesByNpcId[npc:GetMetadata("id")] = entity
+end
+
+function m.Update()
+    for _, entity in pairs(m.EntitiesByNpcId) do
+        local npc = Character.fromSeleneEntity(entity)
+        if not npc:IsDead() then
+            -- TODO run LTE
+            -- TODO skip if no player nearby and not on route
+            local script = entity.CustomData[DataKeys.NPCScript]
+            if script and type(script.nextCycle) == "function" then
+                script.nextCycle(npc)
+            end
+
+            -- TODO make a move if on route
+            -- TODO abortRoute if route ended
+        else
+            npc:increaseAttrib("hitpoints", 10000)
+        end
+    end
+end
+
+return m
