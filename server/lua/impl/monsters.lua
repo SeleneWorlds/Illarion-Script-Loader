@@ -11,11 +11,32 @@ Character.SeleneMethods.getMonsterType = function(user)
 end
 
 Character.SeleneMethods.getLoot = function(user)
-    local monsterId = user:getMonsterType()
-    local monsterDef = Registries.FindByMetadata("illarion:monsters", "id", monsterId)
+    local monsterDef = user.CustomData[DataKeys.Monster]
     if monsterDef then
-        -- TODO monsters.json missing loot right now
-        error("Not yet implemented")
+        local drops = monsterDef:GetField("drops")
+        local loot = {}
+        for categoryId, items in pairs(drops) do
+            local category = {}
+            for lootId, item in pairs(items) do
+                local itemDef = Registries.FindByName("illarion:items", item.item)
+                if not itemDef then
+                    error("Unknown item " .. item.item .. " in loot of " .. monsterDef.Name)
+                end
+                local itemTable = {}
+                itemTable.probability = item.chance
+                itemTable.itemId = itemDef:GetMetadata("id")
+                itemTable.minAmount = item.minCount
+                itemTable.maxAmount = item.maxCount
+                itemTable.minQuality = item.minQuality
+                itemTable.maxQuality = item.maxQuality
+                itemTable.minDurability = item.minDurability
+                itemTable.maxDurability = item.maxDurability
+                itemTable.data = item.data
+                category[item.lootId] = itemTable
+            end
+            loot[tonumber(categoryId)] = category
+        end
+        return loot
     end
     return {}
 end
