@@ -2,7 +2,8 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
-local EntityManager = require("illarion-script-loader.server.lua.lib.entityManager")
+local DataKeys = require("illarion-script-loader.server.lua.lib.dataKeys")
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 local m = {}
 
@@ -19,7 +20,6 @@ function m.Spawn(npc)
     entity:SetFacing(DirectionUtils.IllaToSelene(npc:GetField("facing")))
     local id = npc:GetMetadata("id") + Constants.NPC_BASE_ID
     entity.CustomData[DataKeys.ID] = id
-    EntityManager.EntitiesById = id
     entity.CustomData[DataKeys.CharacterType] = Character.npc
     entity.CustomData[DataKeys.NPC] = npc
     local scriptName = npc:GetField("script")
@@ -35,6 +35,7 @@ function m.Spawn(npc)
     entity.CustomData[DataKeys.Sex] = npc:GetField("sex") == 1 and "female" or "male"
     entity:Spawn()
     m.EntitiesByNpcId[npc:GetMetadata("id")] = entity
+    CharacterManager.AddEntity(entity)
 end
 
 function m.Update()

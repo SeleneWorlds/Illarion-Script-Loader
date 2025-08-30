@@ -4,7 +4,7 @@ local
 DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
-local EntityManager = require("illarion-script-loader.server.lua.lib.entityManager")
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 local illaPlayerDeath = require("server.playerdeath")
 
@@ -194,7 +194,7 @@ Character.SeleneSetters.speed = function(user, value)
 end
 
 Character.SeleneMethods.sendCharDescription = function(user, id, description)
-    local target = EntityManager.EntitiesById[id]
+    local target = CharacterManager.EntitiesById[id]
     if target then
         Network.SendToEntity(user.SeleneEntity, "illarion:char_description", {
             networkId = target.NetworkId,
@@ -217,5 +217,7 @@ function Character.fromSelenePlayer(player)
 end
 
 function Character.fromSeleneEntity(entity)
-    return setmetatable({SeleneEntity = entity}, Character.SeleneMetatable)
+    local players = entity:GetControllingPlayers()
+    local player = #players > 0 and players[1] or nil
+    return setmetatable({SeleneEntity = entity, SelenePlayer = player}, Character.SeleneMetatable)
 end

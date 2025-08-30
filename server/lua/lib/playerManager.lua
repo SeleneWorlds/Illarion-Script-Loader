@@ -4,7 +4,7 @@ local Network = require("selene.network")
 local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.dataKeys")
-local EntityManager = require("illarion-script-loader.server.lua.lib.entityManager")
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 local m = {}
 
@@ -15,7 +15,7 @@ function m.Spawn(player)
     local id = 8147
     entity.CustomData[DataKeys.ID] = id
     m.EntitiesById[id] = entity
-    EntityManager.EntitiesById[id] = entity
+    CharacterManager.AddEntity(entity)
     entity.CustomData[DataKeys.CharacterType] = Character.player
     entity.CustomData[DataKeys.Race] = Registries.FindByName("illarion:races", "illarion:race_0")
     entity.CustomData[DataKeys.Sex] = "female"
