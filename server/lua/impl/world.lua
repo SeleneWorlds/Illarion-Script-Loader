@@ -6,6 +6,7 @@ local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
+local NPCManager = require("illarion-script-loader.server.lua.lib.npcManager")
 
 world.SeleneMethods.gfx = function(world, gfxId, pos)
     local entityType = Registries.FindByMetadata("entities", "gfxId", gfxId)
@@ -292,6 +293,14 @@ world.SeleneMethods.getNPCSInRangeOf = function(world, pos, range)
         if entity.CustomData[DataKeys.CharacterType] == Character.npc then
             table.insert(npcs, Character.fromSeleneEntity(entity))
         end
+    end
+    return npcs
+end
+
+world.SeleneMethods.getNPCS = function(world)
+    local npcs = {}
+    for _, npc in pairs(m.EntitiesByNpcId) do
+        table.insert(npcs, m.EntitiesByNpcId)
     end
     return npcs
 end
