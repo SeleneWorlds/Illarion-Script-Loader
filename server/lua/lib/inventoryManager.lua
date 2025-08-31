@@ -9,28 +9,44 @@ local beltSlotIds = { 12, 13, 14, 15, 16, 17 }
 local inventorySlotIds = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 }
 
 local function DepotSlotIds(depotId)
-    return {}
+    local slotIds = {}
+    for i = 1, 100 do
+        table.insert(slotIds, i)
+    end
+    return slotIds
 end
 
 function m.GetDepot(user, depotId)
-    return m.GetAttributeBasedInventory(user, "depot:" .. depotId, "illarion:depot:" .. depotId, DepotSlotIds(depotId))
+    return m.GetAttributeBasedInventory(user, "depot:" .. depotId, "illarion:depot:" .. depotId, DepotSlotIds(depotId), {
+        isContainer = true
+    })
 end
 
 function m.GetBackpack(user)
-    -- TODO grab content from the item data in backpack slot
-    return ManagedTableInventory:new()
+    local item = user:getItemAt(0)
+    if not item then
+        return nil
+    end
+
+    return m.GetChildContainer(item)
 end
 
 function m.GetInventory(user)
-    return m.GetAttributeBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds)
+    return m.GetAttributeBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds, {
+        owner = user
+    })
 end
 
 function m.GetBelt(user)
-    return m.GetAttributeBasedInventory(user, "belt", "illarion:inventory", beltSlotIds)
+    return m.GetAttributeBasedInventory(user, "belt", "illarion:inventory", beltSlotIds, {
+        owner = user
+    })
 end
 
 function m.GetEquipment(user)
-    return m.GetAttributeBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds)
+    return m.GetAttributeBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds, {
+        owner = user
+    })
 end
 
 function m.GetAttributeBasedInventory(user, inventoryName, attributeName, slotIds)
@@ -42,6 +58,28 @@ function m.GetAttributeBasedInventory(user, inventoryName, attributeName, slotId
         user.SeleneInventories[inventoryName] = inventory
     end
     return inventory
+end
+
+function m.GetChildContainer(item)
+    if item.SeleneItem then
+        local itemDef = item.SeleneItem.def
+        local slotCount = itemDef:GetField("containerSlots")
+        if slotCount == nil then
+            return nil
+        end
+        local content = item.SeleneItem.content or tablex.managed()
+        local slots = {}
+        for i = 1, slotCount do
+            table.insert(slots, i)
+        end
+        return ManagedTableInventory:new({
+            data = content,
+            slots = slots,
+            isContainer = true
+        })
+    else
+        return nil
+    end
 end
 
 function m.SetItemQuality(item, amount)
