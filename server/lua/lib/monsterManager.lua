@@ -19,8 +19,8 @@ function m.Spawn(monsterDef, pos)
     end
 
     local entity = Entities.Create(race.Name .. "_0")
-    idCounter = idCounter + 1
-    entity.CustomData[DataKeys.ID] = (idCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
+    m.IdCounter = m.IdCounter + 1
+    entity.CustomData[DataKeys.ID] = (m.IdCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
     entity.CustomData[DataKeys.CharacterType] = Character.monster
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Monster] = monsterDef
