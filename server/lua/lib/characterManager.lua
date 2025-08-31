@@ -20,4 +20,30 @@ function m.RemoveEntity(entity)
     m.EntitiesById[entity.CustomData[DataKeys.ID]] = nil
 end
 
+function m.IsDead(character)
+    return character.SeleneEntity.CustomData[DataKeys.Dead]
+end
+
+function m.SetDead(character, dead)
+    local wasDead = m.IsDead(character)
+    character.SeleneEntity.CustomData[DataKeys.Dead] = dead
+    if not wasDead and dead then
+        local characterType = character.SeleneEntity.CustomData[DataKeys.CharacterType]
+        if characterType == Character.player then
+            character:abortAction()
+            illaPlayerDeath.playerDeath(character)
+        elseif characterType == Character.monster then
+            local monster = character.SeleneEntity.CustomData[DataKeys.Monster]
+            local scriptName = monster:GetField("script")
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.onDeath) == "function" then
+                    local illaMonster = Character.fromSeleneEntity(character.SeleneEntity)
+                    script.onDeath(illaMonster)
+                end
+            end
+        end
+    end
+end
+
 return m

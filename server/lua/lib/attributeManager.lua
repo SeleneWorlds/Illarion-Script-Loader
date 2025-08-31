@@ -1,6 +1,8 @@
 local Attributes = require("selene.attributes")
 local Network = require("selene.network")
 
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+
 local m = {}
 
 function m.GetAttribute(user, attributeName)
@@ -18,7 +20,7 @@ function m.GetAttribute(user, attributeName)
             attribute:AddModifier("clamp", Attributes.ClampFilter(0, max))
             attribute:AddConstraint("clamp", Attributes.ClampFilter(0, max))
             attribute:AddObserver(function(attribute)
-                user:SeleneSetDead(attribute.EffectiveValue <= 0)
+                CharacterManager.SetDead(user, attribute.EffectiveValue <= 0)
                 Network.SendToEntity(attribute.Owner, "illarion:health", { value = attribute.EffectiveValue / max })
             end)
         elseif attributeName == "foodlevel" then
