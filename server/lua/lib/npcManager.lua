@@ -40,8 +40,8 @@ function m.SpawnDynamic(name, race, sex, pos, scriptName)
     local entity = Entities.Create(entityType)
     entity.Name = name
     entity:SetCoordinate(pos)
-    idCounter = idCounter + 1
-    entity.CustomData[DataKeys.ID] = idCounter + Constants.DYNAMIC_NPC_BASE_ID
+    m.IdCounter = m.IdCounter + 1
+    entity.CustomData[DataKeys.ID] = m.IdCounter + Constants.DYNAMIC_NPC_BASE_ID
     entity.CustomData[DataKeys.CharacterType] = Character.npc
     entity.CustomData[DataKeys.Script] = scriptName
     entity.CustomData[DataKeys.Race] = race
