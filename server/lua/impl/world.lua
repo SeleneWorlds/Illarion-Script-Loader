@@ -393,3 +393,8 @@ world.SeleneMethods.changeTile = function(world, tileId, pos)
     local dimension = Dimensions.GetDefault()
     dimension:PlaceTile(pos, tileDef)
 end
+
+world.SeleneMethods.sendMonitoringMessage = function(world, message, type)
+    local webhookUrl = Config.GetProperty("notifyAdminDiscordWebhook")
+    HTTP.Post(webhookUrl, { content = message })
+end
