@@ -36,7 +36,7 @@ function m.Update()
         CharacterManager.AddEntity(entity)
         entity:Spawn()
 
-        local status, script = pcall(require, entity.CustomData[Script])
+        local status, script = pcall(require, entity.CustomData[DataKeys.Script])
         if status and type(script.onSpawn) == "function" then
             script.onSpawn(Character.fromSeleneEntity(entity))
         end
