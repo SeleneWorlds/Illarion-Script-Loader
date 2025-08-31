@@ -339,3 +339,7 @@ world.SeleneMethods.getNaturalArmor = function(world, raceId)
      end
      return false, nil
 end
+
+world.SeleneMethods.getItemStats = function(world, item)
+    return world:getItemStatsFromId(itemOrItemId.id)
+end
