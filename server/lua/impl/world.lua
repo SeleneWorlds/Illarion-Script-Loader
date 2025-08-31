@@ -268,6 +268,10 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
     return Item.fromSeleneTile(tile)
 end
 
+world.SeleneMethods.createItemFromItem = function(world, item, pos, always)
+    return world:createItemFromId(item.id, item.count, pos, always)
+end
+
 world.SeleneMethods.getMonstersInRangeOf = function(world, pos, range)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesInRange(pos, range)
