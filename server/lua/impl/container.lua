@@ -5,11 +5,11 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Character.SeleneMethods.getDepot = function(user, depotId)
-    return Container.fromMoonlightInventory(InventoryManager.GetDepot(user, depotId))
+    return Container.fromSeleneInventory(InventoryManager.GetDepot(user, depotId))
 end
 
 Character.SeleneMethods.getBackPack = function(user, itemId)
-    return Container.fromMoonlightInventory(InventoryManager.GetBackpack(user))
+    return Container.fromSeleneInventory(InventoryManager.GetBackpack(user))
 end
 
 Container.SeleneMethods.countItem = function(container, itemId, data)
@@ -37,18 +37,20 @@ Container.SeleneMethods.weight = function(container)
 end
 
 Container.SeleneMethods.takeItemNr = function(container, slotId, amount)
-    local item = container.SeleneInventory:getItem(slotId)
-    if item then
-        item:decrease(amount)
-        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemChildInventory(item))
+    local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
+    if inventoryItem then
+        inventoryItem.item:decrease(amount)
+        local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
+        return true, illaItem, Container.fromSeleneInventory(InventoryManager.GetChildContainer(illaItem))
     end
     return false, nil, nil
 end
 
 Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
-    local item = container.SeleneInventory:getItem(slotId)
-    if item then
-        return true, item, Container.fromMoonlightInventory(InventoryManager.GetItemChildInventory(item))
+    local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
+    if inventoryItem then
+        local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
+        return true, illaItem, Container.fromSeleneInventory(InventoryManager.GetChildContainer(illaItem))
     end
     return false, nil
 end
@@ -123,7 +125,10 @@ Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQualit
     return true
 end
 
-function Container.fromMoonlightInventory(inventory)
+function Container.fromSeleneInventory(inventory)
+    if inventory == nil then
+        return nil
+    end
     return setmetatable({SeleneInventory = inventory}, Container.SeleneMetatable)
 end
 
