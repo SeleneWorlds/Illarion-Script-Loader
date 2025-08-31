@@ -290,3 +290,40 @@ world.SeleneMethods.getNPCSInRangeOf = function(world, pos, range)
     end
     return npcs
 end
+
+world.SeleneMethods.getArmorStruct = function(world, itemId)
+    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local armor = item and item:GetField("armor") or nil
+    if armor ~= nil then
+        return true, {
+            BodyParts = armor.bodyParts,
+            PunctureArmor = armor.puncture,
+            StrokeArmor = armor.stroke,
+            ThrustArmor = armor.thrust,
+            MagicDisturbance = armor.magicDisturbance,
+            Absorb = armor.absorb
+            Stiffness = armor.stiffness
+            Type = armor.type
+        }
+    end
+    return false, nil
+end
+
+world.SeleneMethods.getWeaponStruct = function(world, item)
+    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local weapon = item and item:GetField("weapon") or nil
+    if weapon ~= nil then
+        return true, {
+            Attack = weapon.attack,
+            Defence = weapon.defense,
+            Accuracy = weapon.accuracy,
+            Range = weapon.range,
+            WeaponType = weapon.weaponType,
+            AmmunitionType = weapon.ammunitionType,
+            ActionPoints = weapon.actionPoints,
+            MagicDisturbance = weapon.magicDisturbance,
+            PoisonStrength = weapon.posion
+        }
+    end
+    return false, nil
+end
