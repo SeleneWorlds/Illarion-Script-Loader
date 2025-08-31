@@ -65,7 +65,7 @@ Network.HandlePayload("illarion:look_at_entity", function(player, payload)
         if characterType == Character.player then
             illaPlayerLookAt.lookAtPlayer(character, target, mode)
         elseif characterType == Character.npc then
-            local status, script = pcall(require, entity.CustomData[DataKeys.NPC]:GetField("script"))
+            local status, script = pcall(require, entity.CustomData[DataKeys.Script])
             if status and type(script.lookAtNpc) == "function" then
                 script.lookAtNpc(target, character, mode)
             else
@@ -77,7 +77,7 @@ Network.HandlePayload("illarion:look_at_entity", function(player, payload)
                 })
             end
         elseif characterType == Character.monster then
-            local status, script = pcall(require, entity.CustomData[DataKeys.Monster]:GetField("script"))
+            local status, script = pcall(require, entity.CustomData[DataKeys.Script])
             if status and type(script.lookAtMonster) == "function" then
                 script.lookAtMonster(character, target, mode)
             end

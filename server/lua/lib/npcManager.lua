@@ -8,6 +8,7 @@ local CharacterManager = require("illarion-script-loader.server.lua.lib.characte
 
 local m = {}
 
+m.IdCounter = 0
 m.EntitiesByNpcId = {}
 m.PendingRemoval = {}
 
@@ -24,10 +25,28 @@ function m.Spawn(npc)
     entity.CustomData[DataKeys.ID] = id
     entity.CustomData[DataKeys.CharacterType] = Character.npc
     entity.CustomData[DataKeys.NPC] = npc
+    entity.CustomData[DataKeys.Script] = npc:GetField("script")
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Sex] = npc:GetField("sex") == 1 and "female" or "male"
     entity:Spawn()
     m.EntitiesByNpcId[npc:GetMetadata("id")] = entity
+    CharacterManager.AddEntity(entity)
+end
+
+function m.SpawnDynamic(name, race, sex, pos, scriptName)
+    local raceId = race:GetMetadata("id")
+    local typeId = sex == "female" and 1 or 0
+    local entityType = "illarion:race_" .. raceId .. "_" .. typeId
+    local entity = Entities.Create(entityType)
+    entity.Name = name
+    entity:SetCoordinate(pos)
+    idCounter = idCounter + 1
+    entity.CustomData[DataKeys.ID] = idCounter + Constants.DYNAMIC_NPC_BASE_ID
+    entity.CustomData[DataKeys.CharacterType] = Character.npc
+    entity.CustomData[DataKeys.Script] = scriptName
+    entity.CustomData[DataKeys.Race] = race
+    entity.CustomData[DataKeys.Sex] = sex
+    entity:Spawn()
     CharacterManager.AddEntity(entity)
 end
 
@@ -48,7 +67,7 @@ function m.Update()
         if not entity.CustomData[DataKeys.Dead] then
             -- TODO run LTE
             -- TODO skip if no player nearby and not on route
-            local status, script = pcall(require, entity.CustomData[DataKeys.NPC]:GetField("script"))
+            local status, script = pcall(require, entity.CustomData[DataKeys.Script])
             if status and type(script.nextCycle) == "function" then
                 script.nextCycle(npc)
             end

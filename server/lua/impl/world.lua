@@ -425,3 +425,12 @@ world.SeleneMethods.sendMonitoringMessage = function(world, message, type)
     local webhookUrl = Config.GetProperty("notifyAdminDiscordWebhook")
     HTTP.Post(webhookUrl, { content = message })
 end
+
+world.SeleneMethods.createDynamicNPC = function(world, name, raceId, pos, sex, scriptName)
+    local race = Registries.FindByMetadata("illarion:races", "id", raceId)
+    if race == nil then
+        error("Unknown race id " .. raceId)
+    end
+    NPCManager.SpawnDynamic(name, race, sex == 1 and "female" or "male", pos, scriptName)
+    return true
+end

@@ -56,8 +56,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     for _, entity in ipairs(nonPlayerListeners) do
         local characterType = entity.CustomData[DataKeys.CharacterType]
         if characterType == Character.monster then
-            local monster = entity.CustomData[DataKeys.Monster]
-            local scriptName = monster:GetField("script")
+            local scriptName = entity.CustomData[DataKeys.Script]
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.receiveText) == "function" then
@@ -66,8 +65,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                 end
             end
         elseif characterType == Character.npc then
-            local npc = entity.CustomData[DataKeys.NPC]
-            local scriptName = npc:GetField("script")
+            local scriptName = entity.CustomData[DataKeys.Script]
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.receiveText) == "function" then

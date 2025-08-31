@@ -11,11 +11,7 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
         local entity = entities[i]
         local characterType = entity.CustomData[DataKeys.CharacterType]
         if characterType == Character.monster then
-            local monster = entity.CustomData[DataKeys.Monster]
-            if not monster then
-                error("Missing Monster data on Monster character")
-            end
-            local scriptName = monster:GetField("script")
+            local scriptName = entity.CustomData[DataKeys.Script]
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.useMonster) == "function" then
@@ -29,11 +25,7 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
                 end
             end
         elseif characterType == Character.npc then
-            local npc = entity.CustomData[DataKeys.NPC]
-            if not npc then
-                error("Missing NPC data on NPC character")
-            end
-            local scriptName = npc:GetField("script")
+            local scriptName = entity.CustomData[DataKeys.Script]
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.useNPC) == "function" then

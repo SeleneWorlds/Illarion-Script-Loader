@@ -33,8 +33,7 @@ function m.SetDead(character, dead)
             character:abortAction()
             illaPlayerDeath.playerDeath(character)
         elseif characterType == Character.monster then
-            local monster = character.SeleneEntity.CustomData[DataKeys.Monster]
-            local scriptName = monster:GetField("script")
+            local scriptName = character.SeleneEntity.CustomData[DataKeys.Script]
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.onDeath) == "function" then

@@ -21,6 +21,7 @@ function m.Spawn(monsterDef, pos)
     entity.CustomData[DataKeys.CharacterType] = Character.monster
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Monster] = monsterDef
+    entity.CustomData[DataKeys.Script] = monsterDef:GetField("script")
     entity:SetCoordinate(pos)
     table.insert(m.NewMonsters, entity)
 end
@@ -31,7 +32,7 @@ function m.Update()
         CharacterManager.AddEntity(entity)
         entity:Spawn()
 
-        local status, script = pcall(require, entity.CustomData[DataKeys.Monster]:GetField("script"))
+        local status, script = pcall(require, entity.CustomData[Script])
         if status and type(script.onSpawn) == "function" then
             script.onSpawn(Character.fromSeleneEntity(entity))
         end
