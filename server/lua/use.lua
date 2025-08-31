@@ -85,6 +85,9 @@ Network.HandlePayload("illarion:use_slot", function(player, payload)
     if payload.viewId == "inventory" then
         inventory = InventoryManager.GetInventory(character)
     end
+    if not inventory then
+        return
+    end
 
     local inventoryItem = inventory:getInventoryItem(payload.slotId)
     if inventoryItem then
