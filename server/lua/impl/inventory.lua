@@ -85,8 +85,10 @@ Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
         error("Tried to create unknown item id " .. itemId)
     end
     local inventory = InventoryManager.GetInventory(user)
-    -- TODO createAtPos
-    return 0
+    return inventory:addItemAt(slotId, {
+        def = itemDef,
+        count = count
+    })
 end
 
 Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
@@ -94,8 +96,9 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
     if not itemDef then
         error("Tried to erase unknown item id " .. itemId)
     end
-    -- TODO eraseItem
-    return 0
+    local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
+    local inventory = InventoryManager.GetInventory(user)
+    return inventory:removeItem(filter, count)
 end
 
 Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
@@ -103,8 +106,20 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
     end
-    -- TODO swapAtPos
-    return 0
+    local item = inventory:getItem(slotId)
+    if item ~= nil then
+        item.def = itemDef
+        if newQuality > 0 then
+            item.quality = newQuality
+        end
+    else
+        inventory:setItem(slotId, {
+            def = itemDef,
+            count = 1,
+            quality = newQuality
+        })
+    end
+    return true
 end
 
 Character.SeleneMethods.getItemList = function(user, itemId)
@@ -113,12 +128,13 @@ Character.SeleneMethods.getItemList = function(user, itemId)
         error("Tried to list unknown item id " .. itemId)
     end
     local result = {}
+    local filter = InventoryManager.ItemMatchesFilter(itemDef)
     local inventory = InventoryManager.GetInventory(user)
-    for _, inventoryItem in inventory:findInventoryItems() do
+    for _, inventoryItem in inventory:findInventoryItems(filter) do
         table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
     end
     local backpack = InventoryManager.GetBackpack(user)
-    for _, inventoryItem in backpack:findInventoryItems() do
+    for _, inventoryItem in backpack:findInventoryItems(filter) do
         table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
     end
     return result
