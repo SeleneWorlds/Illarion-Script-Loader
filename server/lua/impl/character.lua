@@ -61,35 +61,35 @@ Character.SeleneMethods.setRace = function(user, raceId)
 end
 
 Character.SeleneMethods.getSkinColour = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.SkinColor] or colour(255, 255, 255)
+    return AttributeManager.GetAttribute(user, "skinColor").EffectiveValue
 end
 
 Character.SeleneMethods.setSkinColour = function(user, skinColor)
-    user.SeleneEntity.CustomData[DataKeys.SkinColor] = skinColor
+    AttributeManager.GetAttribute(user, "skinColor").Value = skinColor
 end
 
 Character.SeleneMethods.getHairColour = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.HairColor] or colour(255, 255, 255)
+    return AttributeManager.GetAttribute(user, "hairColor").EffectiveValue
 end
 
 Character.SeleneMethods.setHairColour = function(user, hairColor)
-    user.SeleneEntity.CustomData[DataKeys.HairColor] = hairColor
+    AttributeManager.GetAttribute(user, "hairColor").Value = hairColor
 end
 
 Character.SeleneMethods.getHair = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.Hair] or 0
+    return AttributeManager.GetAttribute(user, "hair").EffectiveValue
 end
 
 Character.SeleneMethods.setHair = function(user, hairId)
-    user.SeleneEntity.CustomData[DataKeys.Hair] = hairId
+    AttributeManager.GetAttribute(user, "hair").Value = hairId
 end
 
 Character.SeleneMethods.getBeard = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.Beard] or 0
+    return AttributeManager.GetAttribute(user, "beard").EffectiveValue
 end
 
 Character.SeleneMethods.setBeard = function(user, beardId)
-    user.SeleneEntity.CustomData[DataKeys.Beard] = beardId
+    AttributeManager.GetAttribute(user, "beard").Value = beardId
 end
 
 Character.SeleneMethods.introduce = function(user, other)

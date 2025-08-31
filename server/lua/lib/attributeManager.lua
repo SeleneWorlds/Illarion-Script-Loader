@@ -7,7 +7,11 @@ function m.GetAttribute(user, attributeName)
     local attributeKey = "illarion:" .. attributeName
     local attribute = user.SeleneEntity:GetAttribute(attributeKey)
     if attribute == nil then
-        attribute = user.SeleneEntity:CreateAttribute(attributeKey, 0)
+        local initialValue = 0
+        if attributeName == "skinColor" or attributeName == "hairColor" then
+            initialValue = colour(255, 255, 255)
+        end
+        attribute = user.SeleneEntity:CreateAttribute(attributeKey, initialValue)
         if attributeName == "hitpoints" then
             local max = 10000
             attribute:AddModifier("offset", Attributes.MathOpFilter(m.GetAttribute(user, "hitpointsOffset"), "+"))
