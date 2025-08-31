@@ -1,6 +1,5 @@
 local Inventory = require("moonlight-inventory.server.lua.inventory")
 local ManagedTableInventory = require("moonlight-inventory.server.lua.managed_table_inventory")
-local AttributeBasedInventory = require("moonlight-inventory.server.lua.attribute_based_inventory")
 
 local m = {}
 
@@ -17,7 +16,7 @@ local function DepotSlotIds(depotId)
 end
 
 function m.GetDepot(user, depotId)
-    return m.GetAttributeBasedInventory(user, "depot:" .. depotId, "illarion:depot:" .. depotId, DepotSlotIds(depotId), {
+    return m.GetCustomDataBasedInventory(user, "depot:" .. depotId, "illarion:depot:" .. depotId, DepotSlotIds(depotId), {
         isContainer = true
     })
 end
@@ -32,29 +31,36 @@ function m.GetBackpack(user)
 end
 
 function m.GetInventory(user)
-    return m.GetAttributeBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds, {
+    return m.GetCustomDataBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds, {
         owner = user
     })
 end
 
 function m.GetBelt(user)
-    return m.GetAttributeBasedInventory(user, "belt", "illarion:inventory", beltSlotIds, {
+    return m.GetCustomDataBasedInventory(user, "belt", "illarion:inventory", beltSlotIds, {
         owner = user
     })
 end
 
 function m.GetEquipment(user)
-    return m.GetAttributeBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds, {
+    return m.GetCustomDataBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds, {
         owner = user
     })
 end
 
-function m.GetAttributeBasedInventory(user, inventoryName, attributeName, slotIds)
+function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds)
     user.SeleneInventories = user.SeleneInventories or {}
     local inventory = user.SeleneInventories[inventoryName]
     if not inventory then
-        local attribute = user.SeleneEntity:GetOrCreateAttribute(attributeName, tablex.managed({}))
-        inventory = AttributeBasedInventory:new(attribute, slotIds)
+        local data = user.SeleneEntity.CustomData[dataKey]
+        if not data then
+            data = tablex.managed()
+            user.SeleneEntity.CustomData[dataKey] = data
+        end
+        inventory = ManagedTableInventory:new({
+            data = data,
+            slots = slotIds
+        })
         user.SeleneInventories[inventoryName] = inventory
     end
     return inventory
@@ -64,7 +70,7 @@ function m.GetChildContainer(item)
     if item.SeleneItem then
         local itemDef = item.SeleneItem.def
         local slotCount = itemDef:GetField("containerSlots")
-        if slotCount == nil then
+        if slotCount == nil or slotCount <= 0 then
             return nil
         end
         local content = item.SeleneItem.content or tablex.managed()

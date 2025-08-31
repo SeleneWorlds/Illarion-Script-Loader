@@ -51,18 +51,17 @@ function m.Spawn(player)
     local character = CharacterManager.AddEntity(entity)
 
     local inventory = InventoryManager.GetInventory(character)
-    local inventoryView = entity:CreateAttributeView("inventory", function(view, attributeKey, attribute)
-        local slotId = attribute.Value.dirtySlot
-        if slotId ~= nil then
+    inventory:subscribe(function(data)
+        local slotId = data.dirtySlot
+        if slotId then
             local item = inventory:getItem(slotId)
-            Network.SendToEntity(view.Owner, "illarion:update_slot", {
-                viewId = view.Name,
+            Network.SendToEntity(entity, "illarion:update_slot", {
+                viewId = "inventory",
                 slotId = slotId,
                 item = item and { id = item.id } or nil
             })
         end
     end)
-    inventory:addToView(inventoryView)
 
     character:setAttrib("hitpoints", 10000)
     character:setAttrib("foodlevel", 30000)
