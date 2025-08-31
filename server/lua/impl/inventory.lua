@@ -140,12 +140,12 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     local result = {}
     local filter = InventoryManager.ItemMatchesFilter(itemDef)
     local inventory = InventoryManager.GetInventory(user)
-    for _, inventoryItem in inventory:findInventoryItems(filter) do
+    for _, inventoryItem in ipairs(inventory:findInventoryItems(filter)) do
         table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
     end
     local backpack = InventoryManager.GetBackpack(user)
     if backpack then
-        for _, inventoryItem in backpack:findInventoryItems(filter) do
+        for _, inventoryItem in ipairs(backpack:findInventoryItems(filter)) do
             table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
         end
     end
