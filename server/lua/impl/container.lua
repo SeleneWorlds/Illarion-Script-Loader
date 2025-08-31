@@ -62,31 +62,65 @@ Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
     return false
 end
 
-Container.SeleneMethods.insertContainer = function(container, item, container, pos)
-    -- TODO insertContainer
-    return false
+Container.SeleneMethods.insertContainer = function(container, item, childContainer, slotId)
+    return container:insertItem(item, slotId)
 end
 
 Container.SeleneMethods.insertItem = function(container, item, mergeOrSlotId)
-    -- TODO insertItem
-    return false
+    local inventory = container.SeleneInventory
+    if type(mergeOrSlotId) == "number" then
+        local slotId = mergeOrSlotId
+        container:addItemAt(slotId)
+    else
+        local merge = mergeOrSlotId or true
+        if merge then
+            inventory:addItem(item:ToSeleneItem())
+        else
+            for _, slotId in ipairs(inventory:getSlots()) do
+                local slotItem = inventory:getItem(slotId)
+                if slotItem == nil then
+                    inventory:addItemAt(slotId, item:ToSeleneItem())
+                    break
+                end
+            end
+        end
+    end
+    return true
 end
 
-Container.SeleneMethods.eraseItem = function(container, item, amount, data)
-    -- TODO eraseItem
-    return 0
+Container.SeleneMethods.eraseItem = function(container, itemId, amount, data)
+    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    if not itemDef then
+        error("Tried to erase unknown item id " .. itemId)
+    end
+    local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
+    return container.SeleneInventory.removeItem(filter, amount)
 end
 
-Container.SeleneMethods.increaseAtPos = function(container, pos, amount)
-    return container.SeleneInventory:increaseItemAt(pos, amount)
+Container.SeleneMethods.increaseAtPos = function(container, slotId, amount)
+    return container.SeleneInventory:increaseCountAt(slotId, amount)
 end
 
-Container.SeleneMethods.swapAtPos = function(container, pos, newId, newQuality)
+Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQuality)
     local itemDef = Registries.FindByMetadata("illarion:items", "id", newId)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
     end
-    -- TODO swapAtPos
+    local inventory = container.SeleneInventory
+    local item = inventory:getItem(slotId)
+    if item ~= nil then
+        item.def = itemDef
+        if newQuality > 0 then
+            item.quality = newQuality
+        end
+    else
+        inventory:setItem(slotId, {
+            def = itemDef,
+            count = 1,
+            quality = newQuality
+        })
+    end
+    return true
 end
 
 function Container.fromMoonlightInventory(inventory)
