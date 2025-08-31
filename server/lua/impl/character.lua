@@ -181,6 +181,10 @@ Character.SeleneGetters.SeleneEntity = function(user)
     return user.SelenePlayer and user.SelenePlayer.ControlledEntity or rawget(user, "SeleneEntity")
 end
 
+Character.SeleneMethods.performAnimation = function(user, animId)
+    user.SeleneEntity:PlayAnimation(tostring(animId))
+end
+
 isValidChar = function(user)
     -- TODO This should actually check if the user is truly still valid
     return true
