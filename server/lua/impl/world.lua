@@ -356,3 +356,7 @@ world.SeleneMethods.getPlayerIdByName = function(world, name)
     end
     return false, nil
 end
+
+world.SeleneMethods.changeQuality = function(world, item, amount)
+    item.quality = amount + item.durability <= 99 and amount + item.quality or item.quality - item.durability + 99
+end

@@ -58,7 +58,7 @@ end
 Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
     local item = container.SeleneInventory:getItem(slotId)
     if item then
-        InventoryManager.SetItemQuality(item, amount)
+        world:changeQuality(item, amount)
         return true
     end
     return false

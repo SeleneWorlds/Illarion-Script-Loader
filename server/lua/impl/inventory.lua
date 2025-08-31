@@ -54,7 +54,7 @@ end
 Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
     local inventory = InventoryManager.GetInventory(user)
     local item = inventory:getItem(slotId)
-    InventoryManager.SetItemQuality(item, amount)
+    world:changeQuality(item, amount)
 end
 
 Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)

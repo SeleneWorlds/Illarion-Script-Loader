@@ -81,11 +81,6 @@ function m.GetChildContainer(item)
     return nil
 end
 
-function m.SetItemQuality(item, amount)
-    local tmpQuality = amount + item.durability <= 99 and amount + item.quality or item.quality - item.durability + 99
-    item.quality = amount
-end
-
 function m.ItemMatchesFilter(itemDef, data)
     return function(item)
         if item.def ~= itemDef then
