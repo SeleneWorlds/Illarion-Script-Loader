@@ -21,5 +21,6 @@ m.NPC = "illarion:npc"
 m.Monster = "illarion:monster"
 m.Dead = "illarion:dead"
 m.CombatTarget = "illarion:combatTarget"
+m.Weather = "illarion:weather"
 
 return m
