@@ -14,7 +14,10 @@ Character.SeleneMethods.countItem = function(user, itemId)
     local filter = InventoryManager.ItemMatchesFilter(itemDef)
     count = count + InventoryManager.GetBelt(user):countItem(filter)
     count = count + InventoryManager.GetEquipment(user):countItem(filter)
-    count = count + InventoryManager.GetBackpack(user):countItem(filter)
+    local backpack = InventoryManager.GetBackpack(user):countItem(filter)
+    if backpack then
+        count = count + backpack:countItem(filter)
+    end
     return count
 end
 
@@ -34,8 +37,10 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
         count = count + equipment:countItem(filter)
     end
     if where == "all" or where == "backpack" then
-        local inventory = InventoryManager.GetBackpack(user)
-        count = count + inventory:countItem(filter)
+        local backpack = InventoryManager.GetBackpack(user)
+        if backpack then
+            count = count + backpack:countItem(filter)
+        end
     end
     return count
 end
@@ -68,8 +73,13 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         quality = quality,
         data = data
     })
-    if rest > 0 then
-        rest = InventoryManager.GetBackpack(user):addItem({
+    if rest <= 0 then
+        return 0
+    end
+
+    local backpack = InventoryManager.GetBackpack(user)
+    if backpack then
+        rest = backpack:addItem({
             def = itemDef,
             count = count,
             quality = quality,
@@ -134,8 +144,10 @@ Character.SeleneMethods.getItemList = function(user, itemId)
         table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
     end
     local backpack = InventoryManager.GetBackpack(user)
-    for _, inventoryItem in backpack:findInventoryItems(filter) do
-        table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
+    if backpack then
+        for _, inventoryItem in backpack:findInventoryItems(filter) do
+            table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
+        end
     end
     return result
 end
