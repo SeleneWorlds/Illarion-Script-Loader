@@ -24,12 +24,18 @@ end
 Character.SeleneMethods.increaseSkill = function(user, skillId, amount)
     local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
     attribute.Value = attribute.Value + amount
+    return attribute.EffectiveValue
 end
 
 Character.SeleneMethods.increaseMinorSkill = function(user, skillId, amount)
     local attribute = SkillManager.GetMinorSkillAttribute(user, skillId)
-    attribute.Value = attribute.Value + amount
-    -- TODO level up major skill
+    local newValue = attribute.Value + amount
+    if newValue > 10000 then
+        user:increaseSkill(skillId, 1)
+        newValue = 0
+    end
+    attribute.Value = newValue
+    return user:getSkill(skillId)
 end
 
 Character.SeleneMethods.setSkill = function(user, skillId, major, minor)
