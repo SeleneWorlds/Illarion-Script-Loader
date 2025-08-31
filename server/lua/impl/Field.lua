@@ -1,3 +1,5 @@
+local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+
 Field.SeleneMethods.tile = function(field)
     local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
     if #tiles > 0 then

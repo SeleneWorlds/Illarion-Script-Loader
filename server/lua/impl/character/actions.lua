@@ -1,21 +1,8 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
-local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
-local function ClearAction(user)
-    local entity = user.SeleneEntity
-    local action = entity.CustomData:RawLookup(DataKeys.CurrentAction) or {}
-     if action.ActionHandle then
-         Schedules.ClearTimeout(action.ActionHandle)
-     end
-     if action.GfxHandle then
-         Schedules.ClearInterval(action.GfxHandle)
-     end
-     if action.SfxHandle then
-         Schedules.ClearInterval(action.SfxHandle)
-     end
-    entity.CustomData[DataKeys.CurrentAction] = nil
-end
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local ActionManager = require("illarion-script-loader.server.lua.lib.actionManager")
 
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
     local entity = user.SeleneEntity
@@ -37,7 +24,7 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
         if type(currentAction.Function) == "function" and currentAction.Args then
             pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
         end
-        ClearAction(user)
+        ActionManager.ClearAction(user)
     end)
     entity.CustomData[DataKeys.CurrentAction] = {
         Script = entity.CustomData[DataKeys.LastActionScript],
@@ -77,7 +64,7 @@ Character.SeleneMethods.successAction = function(user)
          pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
      end
 
-    ClearAction(user)
+    ActionManager.ClearAction(user)
 end
 
 Character.SeleneMethods.abortAction = function(user)
@@ -89,7 +76,7 @@ Character.SeleneMethods.abortAction = function(user)
         pcall(currentAction.Function, table.unpack(currentAction.Args), Action.abort)
     end
 
-    ClearAction(user)
+    ActionManager.ClearAction(user)
 end
 
 Character.SeleneMethods.isActionRunning = function(user)

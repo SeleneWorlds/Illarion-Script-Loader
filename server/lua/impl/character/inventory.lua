@@ -1,9 +1,14 @@
 local Registries = require("selene.registries")
 
-local Inventory = require("moonlight-inventory.server.lua.inventory")
-
-local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+
+Character.SeleneMethods.getDepot = function(user, depotId)
+    return Container.fromSeleneInventory(InventoryManager.GetDepot(user, depotId))
+end
+
+Character.SeleneMethods.getBackPack = function(user, itemId)
+    return Container.fromSeleneInventory(InventoryManager.GetBackpack(user))
+end
 
 Character.SeleneMethods.countItem = function(user, itemId)
     local count = 0
@@ -151,4 +156,3 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     end
     return result
 end
-

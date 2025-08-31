@@ -12,10 +12,6 @@ Character.SeleneMethods.getMagicFlags = function(user, magicType)
     return user.SeleneEntity.CustomData[DataKeys.MagicFlags .. magicType] or 0
 end
 
-local function SetMagicFlags(user, magicType, flags)
-    user.SeleneEntity.CustomData[DataKeys.MagicFlags .. magicType] = flags
-end
-
 Character.SeleneMethods.teachMagic = function(user, magicType, magicFlag)
     local anyFlags = false
     for i = 0, 4 do
@@ -31,5 +27,5 @@ Character.SeleneMethods.teachMagic = function(user, magicType, magicFlag)
 
     local flags = user:getMagicFlags(magicType)
     flags = flags | magicFlag
-    SetMagicFlags(user, magicType, flags)
+    user.SeleneEntity.CustomData[DataKeys.MagicFlags .. magicType] = flags
 end

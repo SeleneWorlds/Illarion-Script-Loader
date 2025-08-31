@@ -1,12 +1,10 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
-local
-DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local Players = require("selene.players")
+
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
-local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
-
-local illaPlayerDeath = require("server.playerdeath")
 
 Character.SeleneMethods.getType = function(user)
     return user.SeleneEntity.CustomData[DataKeys.CharacterType] or Character.player
@@ -32,38 +30,6 @@ Character.SeleneMethods.setRace = function(user, raceId)
         type = "visual",
         visual = "illarion:race_" .. raceId .. "_" .. sex
     })
-end
-
-Character.SeleneMethods.getSkinColour = function(user)
-    return AttributeManager.GetAttribute(user, "skinColor").EffectiveValue
-end
-
-Character.SeleneMethods.setSkinColour = function(user, skinColor)
-    AttributeManager.GetAttribute(user, "skinColor").Value = skinColor
-end
-
-Character.SeleneMethods.getHairColour = function(user)
-    return AttributeManager.GetAttribute(user, "hairColor").EffectiveValue
-end
-
-Character.SeleneMethods.setHairColour = function(user, hairColor)
-    AttributeManager.GetAttribute(user, "hairColor").Value = hairColor
-end
-
-Character.SeleneMethods.getHair = function(user)
-    return AttributeManager.GetAttribute(user, "hair").EffectiveValue
-end
-
-Character.SeleneMethods.setHair = function(user, hairId)
-    AttributeManager.GetAttribute(user, "hair").Value = hairId
-end
-
-Character.SeleneMethods.getBeard = function(user)
-    return AttributeManager.GetAttribute(user, "beard").EffectiveValue
-end
-
-Character.SeleneMethods.setBeard = function(user, beardId)
-    AttributeManager.GetAttribute(user, "beard").Value = beardId
 end
 
 Character.SeleneMethods.introduce = function(user, other)
@@ -167,16 +133,6 @@ Character.SeleneSetters.speed = function(user, value)
     AttributeManager.GetAttribute(user, "speed").Value = value
 end
 
-Character.SeleneMethods.sendCharDescription = function(user, id, description)
-    local target = CharacterManager.EntitiesById[id]
-    if target then
-        Network.SendToEntity(user.SeleneEntity, "illarion:char_description", {
-            networkId = target.NetworkId,
-            description = description
-        })
-    end
-end
-
 Character.SeleneGetters.SeleneEntity = function(user)
     return user.SelenePlayer and user.SelenePlayer.ControlledEntity or rawget(user, "SeleneEntity")
 end
@@ -185,17 +141,21 @@ Character.SeleneMethods.performAnimation = function(user, animId)
     user.SeleneEntity:PlayAnimation(tostring(animId))
 end
 
+Character.SeleneMethods.startMusic = function(user, id)
+    Network.SendToEntity(user.SeleneEntity, "illarion:music", {
+        musicId = id
+    })
+end
+
+Character.SeleneMethods.defaultMusic = function()
+    Network.SendToEntity(user.SeleneEntity, "illarion:music", {
+        musicId = 0
+    })
+end
+
 isValidChar = function(user)
     -- TODO This should actually check if the user is truly still valid
     return true
-end
-
-function Character.fromSelenePlayer(player)
-    if not player.ControlledEntity then
-        print(debug.traceback())
-        error("fromSelenePlayer called before the player had a controlled entity")
-    end
-    return setmetatable({SelenePlayer = player}, Character.SeleneMetatable)
 end
 
 function Character.fromSeleneEntity(entity)

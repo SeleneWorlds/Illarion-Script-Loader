@@ -1,12 +1,6 @@
-local Players = require("selene.players")
 local Registries = require("selene.registries")
-local Schedules = require("selene.schedules")
 
-local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
-local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
-
-local illaLearn = require("server.learn")
 
 Character.SeleneMethods.getSkillName = function(skillId)
     local skill = Registries.FindByMetadata("illarion:skills", "id", skillId)
@@ -44,7 +38,7 @@ Character.SeleneMethods.setSkill = function(user, skillId, major, minor)
 end
 
 Character.SeleneMethods.learn = function(user, skillId, actionPoints, learnLimit)
-    illaLearn.learn(user, skillId, actionPoints, learnLimit)
+    require("server.learn").learn(user, skillId, actionPoints, learnLimit)
 end
 
 Character.SeleneMethods.getSkillValue = function(user, skillId)
@@ -53,9 +47,3 @@ Character.SeleneMethods.getSkillValue = function(user, skillId)
          minor = user:getMinorSkill(skillId)
      }
 end
-
-Schedules.SetInterval(10000, function()
-    for _, character in pairs(CharacterManager.CharactersById) do
-        illaLearn.reduceMC(character)
-    end
-end)

@@ -1,3 +1,5 @@
+local Registries = require("selene.registries")
+
 Item.SeleneGetters.id = function(item)
     if item.SeleneTile then
         return tonumber(item.SeleneTile:GetMetadata("itemId"))

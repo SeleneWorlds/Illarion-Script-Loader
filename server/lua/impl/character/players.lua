@@ -1,9 +1,8 @@
-local Players = require("selene.players")
-local Dimensions = require("selene.dimensions")
 local Network = require("selene.network")
-local HTTP = require("selene.http")
 local Config = require("selene.config")
+
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
     if not user.SelenePlayer then
@@ -48,26 +47,20 @@ Character.SeleneMethods.logAdmin = function(user, message)
     print("[Admin]", playerTypePrefix, user.name, "(" .. user.id .. ")", "uses admin tool:", message)
 end
 
-world.SeleneMethods.getPlayersOnline = function(world)
-    local result = {}
-    local players = Players.GetOnlinePlayers()
-    for _, player in ipairs(players) do
-        if player.ControlledEntity then
-            table.insert(result, Character.fromSelenePlayer(player))
-        end
+Character.SeleneMethods.sendCharDescription = function(user, id, description)
+    local target = CharacterManager.EntitiesById[id]
+    if target then
+        Network.SendToEntity(user.SeleneEntity, "illarion:char_description", {
+            networkId = target.NetworkId,
+            description = description
+        })
     end
-    return result
 end
 
-world.SeleneMethods.getPlayersInRangeOf = function(world, pos, range)
-    local dimension = Dimensions.GetDefault()
-    local players = Players.GetOnlinePlayers()
-    local result = {}
-    for _, player in ipairs(players) do
-        local entity = player.ControlledEntity
-        if entity and entity.Coordinate:GetHorizontalDistanceTo(pos) <= range then
-            table.insert(result, Character.fromSelenePlayer(player))
-        end
+function Character.fromSelenePlayer(player)
+    if not player.ControlledEntity then
+        print(debug.traceback())
+        error("fromSelenePlayer called before the player had a controlled entity")
     end
-    return result
+    return setmetatable({SelenePlayer = player}, Character.SeleneMetatable)
 end

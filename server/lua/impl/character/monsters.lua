@@ -1,8 +1,6 @@
 local Registries = require("selene.registries")
-local Schedules = require("selene.schedules")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
-local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
@@ -43,16 +41,3 @@ Character.SeleneMethods.getLoot = function(user)
     end
     return {}
 end
-
-world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
-    local monsterDef = Registries.FindByMetadata("illarion:monsters", "id", monsterId)
-    if not monsterDef then
-         error("Unknown monster id " .. monsterId)
-    end
-
-    MonsterManager.Spawn(monsterDef, pos)
-end
-
-Schedules.SetInterval(100, function()
-    MonsterManager.Update()
-end)
