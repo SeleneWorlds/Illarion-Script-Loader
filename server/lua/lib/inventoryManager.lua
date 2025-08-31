@@ -77,9 +77,8 @@ function m.GetChildContainer(item)
             slots = slots,
             isContainer = true
         })
-    else
-        return nil
     end
+    return nil
 end
 
 function m.SetItemQuality(item, amount)
