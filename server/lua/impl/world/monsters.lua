@@ -10,7 +10,7 @@ world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
          error("Unknown monster id " .. monsterId)
     end
 
-    MonsterManager.Spawn(monsterDef, pos)
+    return MonsterManager.Spawn(monsterDef, pos)
 end
 
 world.SeleneMethods.getMonsterAttack = function(world, raceId)

@@ -24,6 +24,7 @@ function m.Spawn(monsterDef, pos)
     entity.CustomData[DataKeys.Script] = monsterDef:GetField("script")
     entity:SetCoordinate(pos)
     table.insert(m.NewMonsters, entity)
+    return Character.fromSeleneEntity(entity)
 end
 
 function m.Update()
