@@ -9,6 +9,7 @@ local CharacterManager = require("illarion-script-loader.server.lua.lib.characte
 local m = {}
 
 m.EntitiesByNpcId = {}
+m.PendingRemoval = {}
 
 function m.Spawn(npc)
     local race = Registries.FindByName("illarion:races", npc:GetField("race"))
@@ -30,7 +31,18 @@ function m.Spawn(npc)
     CharacterManager.AddEntity(entity)
 end
 
+function m.Despawn(entity)
+    table.insert(m.PendingRemoval, entity)
+end
+
 function m.Update()
+    for _, entity in ipairs(m.PendingRemoval) do
+        local npc = entity.CustomData[DataKeys.NPC]
+        m.EntitiesByNpcId[npc:GetMetadata("id")] = nil
+        CharacterManager.RemoveEntity(entity)
+        entity:Despawn()
+    end
+
     for _, entity in pairs(m.EntitiesByNpcId) do
         local npc = Character.fromSeleneEntity(entity)
         if not entity.CustomData[DataKeys.Dead] then

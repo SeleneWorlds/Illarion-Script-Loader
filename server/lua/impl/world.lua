@@ -299,10 +299,14 @@ end
 
 world.SeleneMethods.getNPCS = function(world)
     local npcs = {}
-    for _, npc in pairs(m.EntitiesByNpcId) do
-        table.insert(npcs, m.EntitiesByNpcId)
+    for _, npc in pairs(NPCManager.EntitiesByNpcId) do
+        table.insert(npcs, NPCManager.EntitiesByNpcId)
     end
     return npcs
+end
+
+world.SeleneMethods.deleteNPC = function(world, npcId)
+    NPCManager.Despawn(NPCManager.EntitiesByNpcId[npcId])
 end
 
 world.SeleneMethods.getArmorStruct = function(world, itemId)
