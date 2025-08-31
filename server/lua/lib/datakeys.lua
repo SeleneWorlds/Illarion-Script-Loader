@@ -23,5 +23,6 @@ m.Script = "illarion:script"
 m.Dead = "illarion:dead"
 m.CombatTarget = "illarion:combatTarget"
 m.Weather = "illarion:weather"
+m.MonsterSpawn = "illarion:monsterSpawn"
 
 return m
