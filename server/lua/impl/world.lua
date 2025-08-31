@@ -56,9 +56,9 @@ world.getItemName = function(world, itemId, language)
     local item = Registries.FindByMetadata("illarion:items", "id", itemId)
     if item then
         if language == Player.german then
-            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "de")
+            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "de") or item.Name
         else
-            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "en")
+            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "en") or item.Name
         end
     end
 
