@@ -51,24 +51,26 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
             end
         end
     end
-    for _, entity in ipairs(nonPlayerListeners) do
-        local characterType = entity.CustomData[DataKeys.CharacterType]
-        if characterType == Character.monster then
-            local scriptName = entity.CustomData[DataKeys.Script]
-            if scriptName then
-                local status, script = pcall(require, scriptName)
-                if status and type(script.receiveText) == "function" then
-                    local illaMonster = Character.fromSeleneEntity(entity)
-                    script.receiveText(illaMonster, mode, messageEnglish or message, user)
+    if user:getType() == Character.player then
+        for _, entity in ipairs(nonPlayerListeners) do
+            local characterType = entity.CustomData[DataKeys.CharacterType]
+            if characterType == Character.monster then
+                local scriptName = entity.CustomData[DataKeys.Script]
+                if scriptName then
+                    local status, script = pcall(require, scriptName)
+                    if status and type(script.receiveText) == "function" then
+                        local illaMonster = Character.fromSeleneEntity(entity)
+                        script.receiveText(illaMonster, mode, messageEnglish or message, user)
+                    end
                 end
-            end
-        elseif characterType == Character.npc then
-            local scriptName = entity.CustomData[DataKeys.Script]
-            if scriptName then
-                local status, script = pcall(require, scriptName)
-                if status and type(script.receiveText) == "function" then
-                    local illaNpc = Character.fromSeleneEntity(entity)
-                    script.receiveText(illaNpc, mode, messageEnglish or message, user)
+            elseif characterType == Character.npc then
+                local scriptName = entity.CustomData[DataKeys.Script]
+                if scriptName then
+                    local status, script = pcall(require, scriptName)
+                    if status and type(script.receiveText) == "function" then
+                        local illaNpc = Character.fromSeleneEntity(entity)
+                        script.receiveText(illaNpc, mode, messageEnglish or message, user)
+                    end
                 end
             end
         end
