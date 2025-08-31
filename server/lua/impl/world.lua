@@ -372,3 +372,15 @@ world.SeleneMethods.increase = function(world, item, count)
     end
     return false
 end
+
+world.SeleneMethods.getCharactersInRangeOf = function(world)
+    local dimension = Dimensions.GetDefault()
+    local entities = dimension:GetEntitiesInRange(pos, range)
+    local characters = {}
+    for _, entity in ipairs(entities) do
+        if entity.HasTag("illarion:character") then
+            table.insert(characters, Character.fromSeleneEntity(entity))
+        end
+    end
+    return characters
+end
