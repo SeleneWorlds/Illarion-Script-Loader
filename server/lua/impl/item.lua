@@ -72,21 +72,21 @@ Item.SeleneMethods.getData = function(item, key)
     if item.SeleneTile then
         local dimension = item.SeleneTile.Dimension
         local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name)
-        return data and data[key] or 0
+        return data and data[key] or ""
     elseif item.SeleneItem then
-        return item.SeleneItem.data[key] or 0
+        return item.SeleneItem.data[key] or ""
     end
-    return 0
+    return ""
 end
 
 Item.SeleneMethods.setData = function(item, key, value)
     if item.SeleneTile then
         local dimension = item.SeleneTile.Dimension
         local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name) or {}
-        data[key] = value
+        data[key] = tostring(value)
         dimension:AnnotateTile(item.SeleneTile.Coordinate, item.SeleneTile.Name, data)
     elseif item.SeleneItem then
-        item.SeleneItem.data[key] = value
+        item.SeleneItem.data[key] = tostring(value)
     end
 end
 
