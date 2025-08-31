@@ -360,3 +360,15 @@ end
 world.SeleneMethods.changeQuality = function(world, item, amount)
     item.quality = amount + item.durability <= 99 and amount + item.quality or item.quality - item.durability + 99
 end
+
+world.SeleneMethods.increase = function(world, item, count)
+    if item.SeleneInventoryItem then
+        item.SeleneInventoryItem:increase(count)
+        return true
+    end
+
+    if item.SeleneTile then
+        -- TODO we would have to transform the tile into an item entity at this point
+    end
+    return false
+end
