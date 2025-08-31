@@ -84,7 +84,7 @@ function m.Despawn(player)
 end
 
 function m.getPlayerByCharacterName(name)
-    for _, player in ipairs(Players.GetOnlinePlayers())
+    for _, player in ipairs(Players.GetOnlinePlayers()) do
         if player.ControlledEntity and player.ControlledEntity.Name == name then
             return player
         end

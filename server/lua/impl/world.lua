@@ -320,8 +320,8 @@ world.SeleneMethods.getArmorStruct = function(world, itemId)
             StrokeArmor = armor.stroke,
             ThrustArmor = armor.thrust,
             MagicDisturbance = armor.magicDisturbance,
-            Absorb = armor.absorb
-            Stiffness = armor.stiffness
+            Absorb = armor.absorb,
+            Stiffness = armor.stiffness,
             Type = armor.type
         }
     end
@@ -475,7 +475,7 @@ world.SeleneMethods.LoS = function(world, startPos, endPos)
     end
 
     for x = startX, endX do
-        if not (x == startX && y == startY) and not (x == endX && y == endY) then
+        if not (x == startX and y == startY) and not (x == endX and y == endY) then
             local pos = { x = x, y = y, z = startPos.z }
             if steep then
                 pos.x = y
