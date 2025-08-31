@@ -48,7 +48,7 @@ Character.SeleneMethods.logAdmin = function(user, message)
     print("[Admin]", playerTypePrefix, user.name, "(" .. user.id .. ")", "uses admin tool:", message)
 end
 
-world.getPlayersOnline = function(world)
+world.SeleneMethods.getPlayersOnline = function(world)
     local result = {}
     local players = Players.GetOnlinePlayers()
     for _, player in ipairs(players) do
@@ -59,7 +59,7 @@ world.getPlayersOnline = function(world)
     return result
 end
 
-world.getPlayersInRangeOf = function(world, pos, range)
+world.SeleneMethods.getPlayersInRangeOf = function(world, pos, range)
     local dimension = Dimensions.GetDefault()
     local players = Players.GetOnlinePlayers()
     local result = {}

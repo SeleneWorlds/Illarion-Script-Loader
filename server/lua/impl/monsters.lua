@@ -44,7 +44,7 @@ Character.SeleneMethods.getLoot = function(user)
     return {}
 end
 
-world.createMonster = function(world, monsterId, pos, movePoints)
+world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
     local monsterDef = Registries.FindByMetadata("illarion:monsters", "id", monsterId)
     if not monsterDef then
          error("Unknown monster id " .. monsterId)

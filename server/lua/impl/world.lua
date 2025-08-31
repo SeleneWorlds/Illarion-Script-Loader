@@ -6,7 +6,7 @@ local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
-world.gfx = function(world, gfxId, pos)
+world.SeleneMethods.gfx = function(world, gfxId, pos)
     local entityType = Registries.FindByMetadata("entities", "gfxId", gfxId)
     if entityType == nil then
         print("Unknown gfx id " .. gfxId)
@@ -18,19 +18,19 @@ world.gfx = function(world, gfxId, pos)
     entity:Spawn()
 end
 
-world.makeSound = function(world, soundId, pos)
+world.SeleneMethods.makeSound = function(world, soundId, pos)
     local sound = Registries.FindByMetadata("sounds", "soundId", soundId)
     if sound ~= nil then
         Sounds.PlaySoundAt(pos.x, pos.y, pos.z, sound)
     end
 end
 
-world.getField = function(world, pos)
+world.SeleneMethods.getField = function(world, pos)
     local dimension = Dimensions.GetDefault()
     return Field.fromSelenePosition(dimension, pos)
 end
 
-world.isCharacterOnField = function(world, pos)
+world.SeleneMethods.isCharacterOnField = function(world, pos)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesAt(pos)
     for _, entity in ipairs(entities) do
@@ -41,7 +41,7 @@ world.isCharacterOnField = function(world, pos)
     return false
 end
 
-world.getCharacterOnField = function(world, pos)
+world.SeleneMethods.getCharacterOnField = function(world, pos)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesAt(pos)
     for _, entity in ipairs(entities) do
@@ -52,7 +52,7 @@ world.getCharacterOnField = function(world, pos)
     return nil
 end
 
-world.getItemName = function(world, itemId, language)
+world.SeleneMethods.getItemName = function(world, itemId, language)
     local item = Registries.FindByMetadata("illarion:items", "id", itemId)
     if item then
         if language == Player.german then
@@ -65,7 +65,7 @@ world.getItemName = function(world, itemId, language)
     error("Unknown item id " .. itemId)
 end
 
-world.swap = function(world, item, newId, newQuality)
+world.SeleneMethods.swap = function(world, item, newId, newQuality)
     local NewTileDef = Registries.FindByMetadata("tiles", "itemId", newId)
     if NewTileDef == nil then
         error("Unknown tile id " .. newId)
@@ -84,7 +84,7 @@ world.swap = function(world, item, newId, newQuality)
     end
 end
 
-world.erase = function(world, item, amount)
+world.SeleneMethods.erase = function(world, item, amount)
     local TileDef = Registries.FindByMetadata("tiles", "itemId", item.id)
     if TileDef == nil then
         error("Missing tile for item " .. item.id)
@@ -112,13 +112,13 @@ world.erase = function(world, item, amount)
     end
 end
 
-world.changeItem = function(world, item)
+world.SeleneMethods.changeItem = function(world, item)
     if item.SeleneEntity ~= nil then
         item.SeleneEntity:UpdateVisuals()
     end
 end
 
-world.getItemOnField = function(world, position)
+world.SeleneMethods.getItemOnField = function(world, position)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesAt(position)
     for _, entity in ipairs(entities) do
@@ -137,7 +137,7 @@ world.getItemOnField = function(world, position)
     return Item.fromSeleneEmpty()
 end
 
-world.isItemOnField = function(world, position)
+world.SeleneMethods.isItemOnField = function(world, position)
     local dimension = Dimensions.GetDefault()
     local tiles = dimension:GetTilesAt(position)
     for _, tile in ipairs(tiles) do
@@ -154,7 +154,7 @@ world.isItemOnField = function(world, position)
     return false
 end
 
-world.getItemStatsFromId = function(world, itemId)
+world.SeleneMethods.getItemStatsFromId = function(world, itemId)
     local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
     if itemDef then
         return {
@@ -178,7 +178,7 @@ world.getItemStatsFromId = function(world, itemId)
     return ItemStruct()
 end
 
-world.getTime = function(world, timeType)
+world.SeleneMethods.getTime = function(world, timeType)
     local illarionBirthTime = 950742000
     local illarionTimeFactor = 3
 
@@ -257,7 +257,7 @@ world.getTime = function(world, timeType)
     return -1
 end
 
-world.createItemFromId = function(world, itemId, count, pos, always, quality, data)
+world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data)
     local dimension = Dimensions.GetDefault()
     local tileDef = Registries.FindByMetadata("tiles", "itemId", itemId)
     if not tileDef then
@@ -267,7 +267,7 @@ world.createItemFromId = function(world, itemId, count, pos, always, quality, da
     return Item.fromSeleneTile(tile)
 end
 
-world.getMonstersInRangeOf = function(world, pos, range)
+world.SeleneMethods.getMonstersInRangeOf = function(world, pos, range)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesInRange(pos, range)
     local monsters = {}
@@ -279,7 +279,7 @@ world.getMonstersInRangeOf = function(world, pos, range)
     return monsters
 end
 
-world.getNPCSInRangeOf = function(world, pos, range)
+world.SeleneMethods.getNPCSInRangeOf = function(world, pos, range)
     local dimension = Dimensions.GetDefault()
     local entities = dimension:GetEntitiesInRange(pos, range)
     local npcs = {}
