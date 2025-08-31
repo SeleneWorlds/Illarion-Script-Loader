@@ -68,7 +68,7 @@ end
 world.swap = function(world, item, newId, newQuality)
     local NewTileDef = Registries.FindByMetadata("tiles", "itemId", newId)
     if NewTileDef == nil then
-        print("No such tile " .. newId) -- TODO throw an error
+        error("Unknown tile id " .. newId)
         return
     end
 
