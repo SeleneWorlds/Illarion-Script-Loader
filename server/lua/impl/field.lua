@@ -55,7 +55,7 @@ Field.SeleneMethods.getContainer = function(field, index)
     -- Illarion has a separate index for containers and abuses the item count to reference it ???
     -- This function unsurprisingly isn't used, so we're going to diverge from the API here to make it sane
     local item = field:getStackItem(index)
-    local inventory = InventoryManager.GetChildContainer(item)
+    local inventory = InventoryManager.GetContentsContainer(item)
     return Container.fromSeleneInventory(inventory)
 end
 

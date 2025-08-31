@@ -41,7 +41,7 @@ Container.SeleneMethods.takeItemNr = function(container, slotId, amount)
     if inventoryItem then
         inventoryItem.item:decrease(amount)
         local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
-        return true, illaItem, Container.fromSeleneInventory(InventoryManager.GetChildContainer(illaItem))
+        return true, illaItem, Container.fromSeleneInventory(InventoryManager.GetContentsContainer(illaItem))
     end
     return false, nil, nil
 end
@@ -50,7 +50,7 @@ Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
     local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
     if inventoryItem then
         local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
-        return true, illaItem, Container.fromSeleneInventory(InventoryManager.GetChildContainer(illaItem))
+        return true, illaItem, Container.fromSeleneInventory(InventoryManager.GetContentsContainer(illaItem))
     end
     return false, nil
 end

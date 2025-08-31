@@ -27,7 +27,7 @@ function m.GetBackpack(user)
         return nil
     end
 
-    return m.GetChildContainer(item)
+    return m.GetContentsContainer(item)
 end
 
 function m.GetInventory(user)
@@ -66,7 +66,7 @@ function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds)
     return inventory
 end
 
-function m.GetChildContainer(item)
+function m.GetContentsContainer(item)
     if item.SeleneItem then
         local itemDef = item.SeleneItem.def
         local slotCount = itemDef:GetField("containerSlots")
