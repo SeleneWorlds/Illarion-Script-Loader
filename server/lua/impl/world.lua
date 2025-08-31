@@ -322,8 +322,20 @@ world.SeleneMethods.getWeaponStruct = function(world, item)
             AmmunitionType = weapon.ammunitionType,
             ActionPoints = weapon.actionPoints,
             MagicDisturbance = weapon.magicDisturbance,
-            PoisonStrength = weapon.posion
+            PoisonStrength = weapon.poison
         }
     end
     return false, nil
+end
+
+world.SeleneMethods.getNaturalArmor = function(world, raceId)
+     local race = Registries.FindByMetadata("illarion:races", "id", raceId)
+     if race ~= nil then
+         return true, {
+             "strokeArmor": race:GetField("strokeArmor"),
+             "punctureArmor": race:GetField("thrustArmor"),
+             "thrustArmor": race:GetField("punctureArmor")
+         }
+     end
+     return false, nil
 end
