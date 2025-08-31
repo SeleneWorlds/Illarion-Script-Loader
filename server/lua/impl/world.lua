@@ -335,14 +335,28 @@ end
 
 world.SeleneMethods.getNaturalArmor = function(world, raceId)
      local race = Registries.FindByMetadata("illarion:races", "id", raceId)
-     if race then
+     local naturalArmor = race and race:GetField("naturalArmor") or nil
+     if naturalArmor then
          return true, {
-             "strokeArmor": race:GetField("strokeArmor"),
-             "punctureArmor": race:GetField("thrustArmor"),
-             "thrustArmor": race:GetField("punctureArmor")
+             strokeArmor = naturalArmor.strokeArmor,
+             punctureArmor = naturalArmor.thrustArmor,
+             thrustArmor = naturalArmor.punctureArmor
          }
      end
      return false, nil
+end
+
+world.SeleneMethods.getMonsterAttack = function(world, raceId)
+    local race = Registries.FindByMetadata("illarion:races", "id", raceId)
+    local monsterAttack = race and race:GetField("monsterAttack") or nil
+    if monsterAttack then
+        return true, {
+            attackType = monsterAttack.attackType,
+            attackValue = monsterAttack.attackValue,
+            actionPointsLost = monsterAttack.actionPointsLost,
+        }
+    end
+    return false, nil
 end
 
 world.SeleneMethods.getItemStats = function(world, item)
