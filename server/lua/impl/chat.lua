@@ -36,11 +36,17 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                 if messageEnglish and user:getPlayerLanguage() == Player.english then
                     effectiveMessage = messageEnglish
                 end
+                local showInChat = true
+                if stringx.endsWith(effectiveMessage, "#npc") then
+                    effectiveMessage = stringx.removeSuffix(effectiveMessage, "#npc")
+                    showInChat = false
+                end
                 Network.SendToEntity(entity, "illarion:chat", {
                     author = userEntity.NetworkId,
                     authorName = user.name,
                     mode = mode,
-                    message = effectiveMessage
+                    message = effectiveMessage,
+                    showInChat = showInChat
                 })
             elseif characterType == Character.npc or characterType == Character.monster then
                 table.insert(nonPlayerListeners, entity)
