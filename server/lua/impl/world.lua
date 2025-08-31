@@ -5,6 +5,7 @@ local Sounds = require("selene.sounds")
 local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
 world.SeleneMethods.gfx = function(world, gfxId, pos)
     local entityType = Registries.FindByMetadata("entities", "gfxId", gfxId)
@@ -294,7 +295,7 @@ end
 world.SeleneMethods.getArmorStruct = function(world, itemId)
     local item = Registries.FindByMetadata("illarion:items", "id", itemId)
     local armor = item and item:GetField("armor") or nil
-    if armor ~= nil then
+    if armor then
         return true, {
             BodyParts = armor.bodyParts,
             PunctureArmor = armor.puncture,
@@ -312,7 +313,7 @@ end
 world.SeleneMethods.getWeaponStruct = function(world, item)
     local item = Registries.FindByMetadata("illarion:items", "id", itemId)
     local weapon = item and item:GetField("weapon") or nil
-    if weapon ~= nil then
+    if weapon then
         return true, {
             Attack = weapon.attack,
             Defence = weapon.defense,
@@ -330,7 +331,7 @@ end
 
 world.SeleneMethods.getNaturalArmor = function(world, raceId)
      local race = Registries.FindByMetadata("illarion:races", "id", raceId)
-     if race ~= nil then
+     if race then
          return true, {
              "strokeArmor": race:GetField("strokeArmor"),
              "punctureArmor": race:GetField("thrustArmor"),
@@ -342,4 +343,12 @@ end
 
 world.SeleneMethods.getItemStats = function(world, item)
     return world:getItemStatsFromId(itemOrItemId.id)
+end
+
+world.SeleneMethods.getPlayerIdByName = function(world, name)
+    local player = PlayerManager.getPlayerByCharacterName(name)
+    if player and player.ControlledEntity then
+        return true, player.ControlledEntity.CustomData[DataKeys.ID]
+    end
+    return false, nil
 end

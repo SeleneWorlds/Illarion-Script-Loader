@@ -1,3 +1,4 @@
+local Players = require("selene.players")
 local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
@@ -80,6 +81,15 @@ function m.Despawn(player)
     local sessionOnlineTime = logoutTimestamp - loginTimestamp
     local totalOnlineTime = player.CustomData[DataKeys.TotalOnlineTime] or 0
     player.CustomData[DataKeys.TotalOnlineTime] = totalOnlineTime + sessionOnlineTime
+end
+
+function m.getPlayerByCharacterName(name)
+    for _, player in ipairs(Players.GetOnlinePlayers())
+        if player.ControlledEntity and player.ControlledEntity.Name == name then
+            return player
+        end
+    end
+    return nil
 end
 
 return m
