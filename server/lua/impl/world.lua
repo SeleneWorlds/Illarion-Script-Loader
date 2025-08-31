@@ -384,3 +384,12 @@ world.SeleneMethods.getCharactersInRangeOf = function(world)
     end
     return characters
 end
+
+world.SeleneMethods.changeTile = function(world, tileId, pos)
+    local tileDef = Registries.FindByMetadata("illarion:tiles", "tileId", tileId)
+    if not tileDef then
+        error("Unknown tile id " .. tileId)
+    end
+    local dimension = Dimensions.GetDefault()
+    dimension:PlaceTile(pos, tileDef)
+end
