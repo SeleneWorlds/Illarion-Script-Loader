@@ -18,9 +18,9 @@ end
 
 Field.SeleneMethods.setWarp = function(field, position)
     field.SeleneDimension:AnnotateTile(field.SelenePosition, "illarion:warp", {
-        ToX = position.x,
-        ToY = position.y,
-        ToLevel = position.z
+        x = position.x,
+        y = position.y,
+        z = position.z
     })
 end
 

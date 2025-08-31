@@ -14,7 +14,11 @@ Entities.SteppedOnTile:Connect(function(entity, coordinate)
     local dimension = entity.Dimension
     local warpAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:warp")
     if warpAnnotation then
-        entity:SetCoordinate(warpAnnotation.ToX, warpAnnotation.ToY, warpAnnotation.ToLevel)
+        if type(warpAnnotation.x) == "number" and type(warpAnnotation.y) == "number" and type(warpAnnotation.z) == "number" then
+            entity:SetCoordinate(warpAnnotation.x, warpAnnotation.y, warpAnnotation.z)
+        else
+            error("Invalid warp annotation at " .. coordinate)
+        end
         return
     end
 
