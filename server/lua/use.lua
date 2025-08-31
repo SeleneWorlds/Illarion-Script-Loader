@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Network.HandlePayload("illarion:use_at", function(player, payload)
     local entity = player.ControlledEntity
@@ -73,6 +74,26 @@ Network.HandlePayload("illarion:use_at", function(player, payload)
                         script.UseItem(illaUser, illaItem)
                     end
                 end
+            end
+        end
+    end
+end)
+
+Network.HandlePayload("illarion:use_slot", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    local inventory = nil
+    if payload.viewId == "inventory" then
+        inventory = InventoryManager.GetInventory(character)
+    end
+
+    local inventoryItem = inventory:getInventoryItem(payload.slotId)
+    if inventoryItem then
+        print("use", payload.viewId, payload.slotId, tablex.tostring(inventoryItem))
+        local scriptName = inventoryItem.item.def:GetField("script")
+        if scriptName then
+            local status, script = pcall(require, scriptName)
+            if status and type(script.UseItem) == "function" then
+                script.UseItem(character, Item.fromSeleneInventoryItem(inventoryItem))
             end
         end
     end
