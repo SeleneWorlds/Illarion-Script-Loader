@@ -92,13 +92,13 @@ Character.SeleneGetters.lastSpokenText = function(user)
     return user.SeleneEntity.CustomData[DataKeys.LastSpokenText] or ""
 end
 
-world.broadcast = function(world, messageDe, messageEn)
+world.SeleneMethods.broadcast = function(world, messageDe, messageEn)
     local players = Players.GetOnlinePlayers()
-    for _,player in ipairs(players) do
-        if user.SelenePlayer.Language == "de" then
-            Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = messageDe })
+    for _, player in ipairs(players) do
+        if player.Language == "de" then
+            Network.SendToPlayer(player, "illarion:inform", { Message = messageDe })
         else
-            Network.SendToPlayer(user.SelenePlayer, "illarion:inform", { Message = messageEn })
+            Network.SendToPlayer(player, "illarion:inform", { Message = messageEn })
         end
     end
 end
