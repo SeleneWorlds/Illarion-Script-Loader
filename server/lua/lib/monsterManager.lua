@@ -21,15 +21,6 @@ function m.Spawn(monsterDef, pos)
     entity.CustomData[DataKeys.CharacterType] = Character.monster
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Monster] = monsterDef
-    local scriptName = monsterDef:GetField("script")
-    if scriptName then
-        local status, script = pcall(require, scriptName)
-        if status then
-            entity.CustomData[DataKeys.MonsterScript] = script
-        else
-            error("Failed to load script " .. scriptName .. " for monster " .. monsterDef.Name)
-        end
-    end
     entity:SetCoordinate(pos)
     table.insert(m.NewMonsters, entity)
 end
@@ -40,8 +31,8 @@ function m.Update()
         CharacterManager.AddEntity(entity)
         entity:Spawn()
 
-        local script = entity.CustomData[DataKeys.MonsterScript]
-        if script and type(script.onSpawn) == "function" then
+        local status, script = pcall(require, entity.CustomData[DataKeys.Monster]:GetField("script"))
+        if status and type(script.onSpawn) == "function" then
             script.onSpawn(Character.fromSeleneEntity(entity))
         end
     end

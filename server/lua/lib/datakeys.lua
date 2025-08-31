@@ -18,9 +18,7 @@ m.LastActionFunction = "illarion:lastActionFunction"
 m.LastActionArgs = "illarion:lastActionArgs"
 m.Introduction = function(id) return "illarion:introduction:" .. id end
 m.NPC = "illarion:npc"
-m.NPCScript = "illarion:npcScript"
 m.Monster = "illarion:monster"
-m.MonsterScript = "illarion:monsterScript"
 m.Dead = "illarion:dead"
 m.CombatTarget = "illarion:combatTarget"
 

@@ -23,15 +23,6 @@ function m.Spawn(npc)
     entity.CustomData[DataKeys.ID] = id
     entity.CustomData[DataKeys.CharacterType] = Character.npc
     entity.CustomData[DataKeys.NPC] = npc
-    local scriptName = npc:GetField("script")
-    if scriptName then
-        local status, script = pcall(require, scriptName)
-        if status then
-            entity.CustomData[DataKeys.NPCScript] = script
-        else
-            error("Failed to load script " .. scriptName .. " for NPC " .. npc.Name)
-        end
-    end
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Sex] = npc:GetField("sex") == 1 and "female" or "male"
     entity:Spawn()
@@ -45,8 +36,8 @@ function m.Update()
         if not entity.CustomData[DataKeys.Dead] then
             -- TODO run LTE
             -- TODO skip if no player nearby and not on route
-            local script = entity.CustomData[DataKeys.NPCScript]
-            if script and type(script.nextCycle) == "function" then
+            local status, script = pcall(require, entity.CustomData[DataKeys.NPC]:GetField("script"))
+            if status and type(script.nextCycle) == "function" then
                 script.nextCycle(npc)
             end
 
