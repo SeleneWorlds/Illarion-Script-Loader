@@ -14,7 +14,7 @@ Character.SeleneMethods.countItem = function(user, itemId)
     local filter = InventoryManager.ItemMatchesFilter(itemDef)
     count = count + InventoryManager.GetBelt(user):countItem(filter)
     count = count + InventoryManager.GetEquipment(user):countItem(filter)
-    local backpack = InventoryManager.GetBackpack(user):countItem(filter)
+    local backpack = InventoryManager.GetBackpack(user)
     if backpack then
         count = count + backpack:countItem(filter)
     end

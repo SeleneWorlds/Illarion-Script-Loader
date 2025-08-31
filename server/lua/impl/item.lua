@@ -96,7 +96,7 @@ function Item.fromSeleneInventoryItem(inventoryItem)
     end
     return setmetatable({
         SeleneItem = inventoryItem.item,
-        SeleneInventory = inventoryItem.inventory
+        SeleneInventory = inventoryItem.inventory,
         SeleneInventoryItem = inventoryItem
     }, Item.SeleneMetatable)
 end
