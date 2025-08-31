@@ -52,7 +52,9 @@ world.getPlayersOnline = function(world)
     local result = {}
     local players = Players.GetOnlinePlayers()
     for _, player in ipairs(players) do
-        table.insert(result, Character.fromSelenePlayer(player))
+        if player.ControlledEntity then
+            table.insert(result, Character.fromSelenePlayer(player))
+        end
     end
     return result
 end
