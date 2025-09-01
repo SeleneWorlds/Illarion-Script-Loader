@@ -24,5 +24,6 @@ m.Dead = "illarion:dead"
 m.CombatTarget = "illarion:combatTarget"
 m.Weather = "illarion:weather"
 m.MonsterSpawn = "illarion:monsterSpawn"
+m.Dialog = function(id) return "illarion:dialog:" .. id end
 
 return m

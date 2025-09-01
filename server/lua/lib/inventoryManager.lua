@@ -30,6 +30,13 @@ function m.GetBackpack(user)
     return m.GetContentsContainer(item)
 end
 
+function m.GetInventoryAtView(user, viewId)
+    if viewId == "inventory" then
+        return m.GetInventory(user)
+    end
+    return nil
+end
+
 function m.GetInventory(user)
     return m.GetCustomDataBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds, {
         owner = user
