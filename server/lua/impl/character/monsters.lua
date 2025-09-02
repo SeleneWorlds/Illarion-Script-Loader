@@ -4,7 +4,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
-    local monsterDef = user.CustomData[DataKeys.Monster]
+    local monsterDef = entity.CustomData[DataKeys.Monster]
     if monsterDef then
         return monsterDef:GetMetadata("id")
     end
