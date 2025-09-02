@@ -37,8 +37,12 @@ function m.Spawn(player)
         return {
             type = "visual",
             visual = "illarion:labels/character",
-            properties = {
-                label = effectiveName
+            position = {
+                origin = "top",
+                offsetY = -20
+            },
+            overrides = {
+                text = effectiveName
             }
         }
     end)
