@@ -62,7 +62,7 @@ function m.Spawn(player)
             Network.SendToEntity(entity, "illarion:update_slot", {
                 viewId = "inventory",
                 slotId = slotId,
-                item = item and { id = item.id } or nil
+                item = item and { visual = item.def:GetField("visual") } or nil
             })
         end
     end)
