@@ -12,7 +12,7 @@ end
 
 Entities.SteppedOnTile:Connect(function(entity, coordinate)
     local dimension = entity.Dimension
-    local warpAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:warp")
+    local warpAnnotation = dimension:GetAnnotationAt(coordinate, "illarion:warp", entity.Collision)
     if warpAnnotation then
         if type(warpAnnotation.x) == "number" and type(warpAnnotation.y) == "number" and type(warpAnnotation.z) == "number" then
             entity:SetCoordinate(warpAnnotation.x, warpAnnotation.y, warpAnnotation.z)
@@ -39,7 +39,7 @@ Entities.SteppedOnTile:Connect(function(entity, coordinate)
         end
     end
 
-    local triggerfieldAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:triggerfield")
+    local triggerfieldAnnotation = dimension:GetAnnotationAt(coordinate, "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName then
@@ -55,7 +55,8 @@ Entities.SteppedOnTile:Connect(function(entity, coordinate)
 end)
 
 Entities.SteppedOffTile:Connect(function(entity, coordinate)
-    local triggerfieldAnnotation = entity:CollisionMap(coordinate):GetAnnotation(coordinate, "illarion:triggerfield")
+    local dimension = entity.Dimension
+    local triggerfieldAnnotation = dimension:GetAnnotationAt(coordinate, "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName then
