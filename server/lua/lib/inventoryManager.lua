@@ -1,5 +1,5 @@
 local Inventory = require("moonlight-inventory.server.lua.inventory")
-local ManagedTableInventory = require("moonlight-inventory.server.lua.managed_table_inventory")
+local ObservableMapInventory = require("moonlight-inventory.server.lua.observable_map_inventory")
 
 local m = {}
 
@@ -61,10 +61,10 @@ function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds)
     if not inventory then
         local data = user.SeleneEntity.CustomData[dataKey]
         if not data then
-            data = tablex.managed()
+            data = tablex.observable()
             user.SeleneEntity.CustomData[dataKey] = data
         end
-        inventory = ManagedTableInventory:new({
+        inventory = ObservableMapInventory:new({
             data = data,
             slots = slotIds
         })
@@ -80,12 +80,12 @@ function m.GetContentsContainer(item)
         if slotCount == nil or slotCount <= 0 then
             return nil
         end
-        local content = item.SeleneItem.content or tablex.managed()
+        local content = item.SeleneItem.content or tablex.observable()
         local slots = {}
         for i = 1, slotCount do
             table.insert(slots, i)
         end
-        return ManagedTableInventory:new({
+        return ObservableMapInventory:new({
             data = content,
             slots = slots,
             isContainer = true

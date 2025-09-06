@@ -11,7 +11,7 @@ end
 function m.EnsureSeleneEffectData(effect)
     local data = effect.SeleneEffectData
     if not data then
-        data = tablex.managed({})
+        data = tablex.observable({})
         effect.SeleneEffectData = data
     end
     return data
@@ -32,7 +32,7 @@ function m.AddEffect(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.managed({})
+        local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.observable({})
         effects[effect.SeleneEffectDefinition.Name] = data
         user.SeleneEntity.CustomData[DataKeys.Effects] = effects
     end
@@ -53,7 +53,7 @@ function m.FindEffect(user, idOrName)
 end
 
 function m.RemoveEffect(user, effect)
-   local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.managed({})
+   local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.observable({})
    local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
        local effectScriptName = effectDef:GetField("script")

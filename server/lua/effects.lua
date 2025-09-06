@@ -9,7 +9,7 @@ Schedules.EverySecond:Connect(function()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity
         if entity then
-            local effects = entity.CustomData[DataKeys.Effects] or tablex.managed({})
+            local effects = entity.CustomData[DataKeys.Effects] or tablex.observable({})
             local removedEffects = {}
             for effectName, effectData in effects:Pairs() do
                 effectData.nextCalled = (effectData.nextCalled or 0) - 1

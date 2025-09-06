@@ -36,7 +36,7 @@ end
 LongTimeEffect.SeleneMethods.addValue = function(effect, key, value)
     local data = EffectManager.EnsureSeleneEffectData(effect)
     if not data.values then
-        data.values = tablex.managed({})
+        data.values = tablex.observable({})
     end
     data.values[key] = value
 end
