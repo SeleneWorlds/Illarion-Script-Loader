@@ -22,7 +22,9 @@ Players.PlayerJoined:Connect(function(player)
 end)
 
 Players.PlayerLeft:Connect(function(player)
-    illaLogout.onLogout(Character.fromSelenePlayer(player))
+    if player.ControlledEntity then
+        illaLogout.onLogout(Character.fromSelenePlayer(player))
+    end
     PlayerManager.Despawn(player)
 end)
 
