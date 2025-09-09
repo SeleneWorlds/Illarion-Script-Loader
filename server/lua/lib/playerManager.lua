@@ -77,7 +77,9 @@ function m.Spawn(player)
 end
 
 function m.Despawn(player)
-    player.ControlledEntity:Remove()
+    if player.ControlledEntity then
+        player.ControlledEntity:Remove()
+    end
 
     local loginTimestamp = player.CustomData[DataKeys.CurrentLoginTimestamp] or 0
     local logoutTimestamp = os.time()
