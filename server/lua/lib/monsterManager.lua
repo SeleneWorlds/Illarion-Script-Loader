@@ -18,7 +18,7 @@ function m.Spawn(monsterDef, pos)
         error("Unknown monster race " .. raceName)
     end
 
-    local entity = Entities.Create(race.Name .. "_0")
+    local entity = Entities.Create(race.Identifier:WithPrefix("races/"):WithSuffix("_0"))
     m.IdCounter = m.IdCounter + 1
     entity.CustomData[DataKeys.ID] = (m.IdCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
     entity.CustomData[DataKeys.CharacterType] = Character.monster

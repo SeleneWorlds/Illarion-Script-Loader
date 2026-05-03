@@ -13,7 +13,7 @@ local m = {}
 m.EntitiesById = {}
 
 function m.Spawn(player)
-    local entity = Entities.Create("illarion:race_0_1")
+    local entity = Entities.Create("illarion:races/race_0_1")
     local id = 8147
     entity.CustomData[DataKeys.ID] = id
     entity.CustomData[DataKeys.CharacterType] = Character.player
