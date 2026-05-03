@@ -1,4 +1,6 @@
 local Network = require("selene.network")
+local Entities = require("selene.entities")
+local Registries = require("selene.registries")
 
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
@@ -11,4 +13,29 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
     end
 
     fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId)
+end)
+
+Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
+    if not fromInventory then
+        return
+    end
+
+    local item = fromInventory:getItem(payload.fromSlotId)
+    if not item then
+        return
+    end
+
+    local itemId = item.def:GetMetadata("id")
+    local entityType = Registries.FindByMetadata("entities", "itemId", itemId)
+    if not entityType then
+        error("Unknown item entity for item id " .. tostring(itemId))
+    end
+
+    fromInventory:setItem(payload.fromSlotId, nil)
+
+    local entity = Entities.CreateTransient(entityType)
+    entity:SetCoordinate(payload.x, payload.y, payload.z)
+    entity:Spawn(character.SeleneEntity.Dimension)
 end)
