@@ -1,5 +1,7 @@
 local Network = require("selene.network")
 
+local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+
 Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
