@@ -19,8 +19,8 @@ Item.SeleneGetters.pos = function(item)
 end
 
 Item.SeleneGetters.owner = function(item)
-    if item.SeleneInventoryItem then
-        return item.SeleneInventoryItem.owner
+    if item.SeleneInventory then
+        return item.SeleneInventory.owner
     end
     return nil
 end
