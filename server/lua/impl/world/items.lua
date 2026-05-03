@@ -63,12 +63,12 @@ world.SeleneMethods.isItemOnField = function(world, position)
 end
 
 world.SeleneMethods.erase = function(world, item, amount)
-    local TileDef = Registries.FindByMetadata("tiles", "itemId", item.id)
-    if TileDef == nil then
-        error("Missing tile for item " .. item.id)
-    end
-
     if item:getType() == scriptItem.field then
+        local TileDef = Registries.FindByMetadata("tiles", "itemId", item.id)
+        if TileDef == nil then
+            error("Missing tile for item " .. item.id)
+        end
+
         local dimension = Dimensions.GetDefault()
         -- TODO erase from entity items if found
         if dimension:HasTile(item.pos, TileDef) then
