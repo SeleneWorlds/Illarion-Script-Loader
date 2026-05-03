@@ -33,6 +33,17 @@ end
 function m.GetInventoryAtView(user, viewId)
     if viewId == "inventory" then
         return m.GetInventory(user)
+    elseif viewId == "belt" then
+        return m.GetBelt(user)
+    elseif viewId == "equipment" then
+        return m.GetEquipment(user)
+    elseif viewId == "backpack" then
+        return m.GetBackpack(user)
+    elseif stringx.startsWith(viewId, "depot:") then
+        local depotId = tonumber(stringx.removePrefix(viewId, "depot:"))
+        if depotId then
+            return m.GetDepot(user, depotId)
+        end
     end
     return nil
 end
