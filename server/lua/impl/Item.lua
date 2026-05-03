@@ -4,7 +4,7 @@ Item.SeleneGetters.id = function(item)
     if item.SeleneTile then
         return tonumber(item.SeleneTile:GetMetadata("itemId"))
     elseif item.SeleneItem then
-        return item.SeleneItem.def:GetMetadata("itemId")
+        return item.SeleneItem.def:GetMetadata("id")
     end
     return 0
 end
