@@ -52,6 +52,7 @@
     "server/lua/skills.lua",
     "server/lua/triggerfields.lua",
     "server/lua/use.lua",
+    "server/lua/transfers.lua",
     "server/lua/lifecycle.lua"
   ]
 }
