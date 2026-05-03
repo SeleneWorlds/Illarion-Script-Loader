@@ -49,24 +49,18 @@ function m.GetInventoryAtView(user, viewId)
 end
 
 function m.GetInventory(user)
-    return m.GetCustomDataBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds, {
-        owner = user
-    })
+    return m.GetCustomDataBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds)
 end
 
 function m.GetBelt(user)
-    return m.GetCustomDataBasedInventory(user, "belt", "illarion:inventory", beltSlotIds, {
-        owner = user
-    })
+    return m.GetCustomDataBasedInventory(user, "belt", "illarion:inventory", beltSlotIds)
 end
 
 function m.GetEquipment(user)
-    return m.GetCustomDataBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds, {
-        owner = user
-    })
+    return m.GetCustomDataBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds)
 end
 
-function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds)
+function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds, options)
     user.SeleneInventories = user.SeleneInventories or {}
     local inventory = user.SeleneInventories[inventoryName]
     if not inventory then
@@ -77,8 +71,14 @@ function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds)
         end
         inventory = ObservableMapInventory:new({
             data = data,
-            slots = slotIds
+            slots = slotIds,
+            owner = user
         })
+        if options then
+            for k, v in pairs(options) do
+                inventory[k] = v
+            end
+        end
         user.SeleneInventories[inventoryName] = inventory
     end
     return inventory
@@ -97,9 +97,10 @@ function m.GetContentsContainer(item)
             table.insert(slots, i)
         end
         return ObservableMapInventory:new({
-            data = content,
+            data = item.SeleneItem.content,
             slots = slots,
-            isContainer = true
+            isContainer = true,
+            owner = item.owner
         })
     end
     return nil
