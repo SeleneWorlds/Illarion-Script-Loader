@@ -91,7 +91,7 @@ function m.GetContentsContainer(item)
         if slotCount == nil or slotCount <= 0 then
             return nil
         end
-        local content = item.SeleneItem.content or tablex.observable()
+        item.SeleneItem.content = item.SeleneItem.content or tablex.observable()
         local slots = {}
         for i = 1, slotCount do
             table.insert(slots, i)
