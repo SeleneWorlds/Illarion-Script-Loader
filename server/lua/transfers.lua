@@ -35,7 +35,7 @@ Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, paylo
 
     fromInventory:setItem(payload.fromSlotId, nil)
 
-    local entity = Entities.CreateTransient(entityType)
+    local entity = Entities.Create(entityType)
     entity:SetCoordinate(payload.x, payload.y, payload.z)
     entity:Spawn(character.SeleneEntity.Dimension)
 end)
