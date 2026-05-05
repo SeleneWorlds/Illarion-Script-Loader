@@ -38,4 +38,15 @@ Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     local entity = Entities.Create(entityType)
     entity:SetCoordinate(payload.x, payload.y, payload.z)
     entity:Spawn(character.SeleneEntity.Dimension)
+
+    local triggerfieldAnnotation = entity.Dimension:GetAnnotationAt(entity.Coordinate, "illarion:triggerfield", entity.Collision)
+    if triggerfieldAnnotation then
+        local scriptName = triggerfieldAnnotation.script
+        if scriptName then
+            local status, script = pcall(require, scriptName)
+            if status and type(script.PutItemOnField) == "function" then
+                script.PutItemOnField(Item.fromSeleneEntity(entity), Character.fromSeleneEntity(entity))
+            end
+        end
+    end
 end)
