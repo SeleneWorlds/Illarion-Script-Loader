@@ -25,6 +25,8 @@ m.CombatTarget = "illarion:combatTarget"
 m.Route = "illarion:route"
 m.Weather = "illarion:weather"
 m.MonsterSpawn = "illarion:monsterSpawn"
+m.Count = "illarion:count"
+m.ItemData = "illarion:itemData"
 m.Dialog = function(id) return "illarion:dialog:" .. id end
 
 return m

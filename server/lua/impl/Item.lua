@@ -1,8 +1,11 @@
 local Registries = require("selene.registries")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Item.SeleneGetters.id = function(item)
     if item.SeleneTile then
         return tonumber(item.SeleneTile:GetMetadata("itemId"))
+    elseif item.SeleneEntity then
+        return tonumber(item.SeleneEntity.EntityDefinition:GetMetadata("itemId"))
     elseif item.SeleneItem then
         return item.SeleneItem.def:GetMetadata("id")
     end
@@ -12,6 +15,8 @@ end
 Item.SeleneGetters.pos = function(item)
     if item.SeleneTile then
         return position.FromSeleneCoordinate(item.SeleneTile.Coordinate)
+    elseif item.SeleneEntity then
+        return position.FromSeleneCoordinate(item.SeleneEntity.Coordinate)
     elseif item.owner then
         return item.owner.pos
     end
@@ -42,6 +47,8 @@ end
 Item.SeleneGetters.number = function(item)
     if item.SeleneTile then
         return 1
+    elseif item.SeleneEntity then
+        return item.SeleneEntity.CustomData[DataKeys.Count]
     elseif item.SeleneItem then
         return item.SeleneItem.count
     end
@@ -52,6 +59,9 @@ Item.SeleneGetters.isLarge = function(item)
     if item.SeleneTile then
         local itemDef = Registries.FindByMetadata("illarion:items", "id", item.SeleneTile:GetMetadata("itemId"))
         return itemDef and itemDef:GetField("volume") >= 5000 or false
+    elseif item.SeleneTile then
+        local itemDef = Registries.FindByMetadata("illarion:items", "id", item.SeleneEntity.EntityDefinition:GetMetadata("itemId"))
+        return itemDef and itemDef:GetField("volume") >= 5000 or false
     elseif item.SeleneItem then
         return item.SeleneItem.def:GetField("volume") >= 5000 or false
     end
@@ -59,7 +69,7 @@ Item.SeleneGetters.isLarge = function(item)
 end
 
 Item.SeleneMethods.getType = function(item)
-    if item.SeleneTile then
+    if item.SeleneTile or item.SeleneEntity then
         return scriptItem.field
     elseif item.SeleneInventory and item.SeleneInventory.isContainer then
         return scriptItem.container
@@ -75,6 +85,9 @@ Item.SeleneMethods.getData = function(item, key)
         local dimension = item.SeleneTile.Dimension
         local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name)
         return data and data[key] or ""
+    elseif item.SeleneEntity then
+        local data = item.SeleneEntity.CustomData[DataKeys.ItemData]
+        return data and data[key] or ""
     elseif item.SeleneItem then
         return item.SeleneItem.data[key] or ""
     end
@@ -87,6 +100,9 @@ Item.SeleneMethods.setData = function(item, key, value)
         local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name) or {}
         data[key] = tostring(value)
         dimension:AnnotateTile(item.SeleneTile.Coordinate, item.SeleneTile.Name, data)
+    elseif item.SeleneEntity then
+        local data = item.SeleneEntity.CustomData[DataKeys.ItemData]
+        data[key] = tostring(value)
     elseif item.SeleneItem then
         item.SeleneItem.data[key] = tostring(value)
     end
@@ -108,6 +124,13 @@ function Item.fromSeleneTile(tile)
         return Item.fromSeleneEmpty()
     end
    return setmetatable({SeleneTile = tile}, Item.SeleneMetatable)
+end
+
+function Item.fromSeleneEntity(entity)
+    if entity == nil then
+        return Item.fromSeleneEmpty()
+    end
+   return setmetatable({SeleneEntity = entity}, Item.SeleneMetatable)
 end
 
 function Item.fromSeleneEmpty()
