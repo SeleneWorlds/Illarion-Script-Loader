@@ -61,6 +61,7 @@ function m.Update()
         CharacterManager.RemoveEntity(entity)
         entity:Despawn()
     end
+    m.PendingRemoval = {}
 
     for _, entity in pairs(m.EntitiesByNpcId) do
         local npc = Character.fromSeleneEntity(entity)
