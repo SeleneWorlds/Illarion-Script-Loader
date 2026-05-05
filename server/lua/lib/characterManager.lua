@@ -17,7 +17,9 @@ function m.AddEntity(entity)
 end
 
 function m.RemoveEntity(entity)
-    m.EntitiesById[entity.CustomData[DataKeys.ID]] = nil
+    local id = entity.CustomData[DataKeys.ID]
+    m.EntitiesById[id] = nil
+    m.CharactersById[id] = nil
 end
 
 function m.IsDead(character)
