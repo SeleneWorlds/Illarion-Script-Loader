@@ -5,6 +5,7 @@ local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 local m = {}
 
@@ -79,8 +80,13 @@ function m.Update()
                 script.nextCycle(npc)
             end
 
-            -- TODO make a move if on route
-            -- TODO abortRoute if route ended
+            local routeStatus = RouteManager.Advance(npc)
+            if routeStatus == "complete" or routeStatus == "blocked" then
+                npc:setOnRoute(false)
+                if status and type(script.abortRoute) == "function" then
+                    script.abortRoute()
+                end
+            end
         else
             npc:increaseAttrib("hitpoints", 10000)
         end

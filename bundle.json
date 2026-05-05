@@ -39,6 +39,7 @@
     "server/lua/impl/MessageDialog.lua",
     "server/lua/impl/ScriptVars.lua",
     "server/lua/impl/SelectionDialog.lua",
+    "server/lua/impl/WaypointList.lua",
     "server/lua/chat.lua",
     "server/lua/combat.lua",
     "server/lua/containers.lua",

@@ -5,6 +5,7 @@ local Players = require("selene.players")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
+local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 Character.SeleneMethods.getType = function(user)
     return user.SeleneEntity.CustomData[DataKeys.CharacterType] or Character.player
@@ -48,6 +49,15 @@ end
 
 Character.SeleneGetters.pos = function(user)
     return position.FromSeleneCoordinate(user.SeleneEntity.Coordinate)
+end
+
+Character.SeleneGetters.waypoints = function(user)
+    local waypointList = rawget(user, "SeleneWaypointList")
+    if waypointList == nil then
+        waypointList = WaypointList.fromCharacter(user)
+        rawset(user, "SeleneWaypointList", waypointList)
+    end
+    return waypointList
 end
 
 Character.SeleneGetters.isinvisible = function(user)
@@ -116,6 +126,14 @@ Character.SeleneMethods.distanceMetricToPosition = function(user, position)
     local dy = math.abs(user.pos.y - position.y)
     local dz = math.abs(user.pos.z - position.z)
     return math.max(dx, dy, dz)
+end
+
+Character.SeleneMethods.getOnRoute = function(user)
+    return RouteManager.GetOnRoute(user)
+end
+
+Character.SeleneMethods.setOnRoute = function(user, onRoute)
+    RouteManager.SetOnRoute(user, onRoute)
 end
 
 Character.SeleneGetters.movepoints = function(user)

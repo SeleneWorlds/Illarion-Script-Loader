@@ -4,6 +4,7 @@ local Entities = require("selene.entities")
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 local m = {}
 
@@ -42,6 +43,20 @@ function m.Update()
         end
     end
     m.NewMonsters = {}
+
+    for _, entity in pairs(m.EntitiesById) do
+        if not entity.CustomData[DataKeys.Dead] then
+            local monster = Character.fromSeleneEntity(entity)
+            local routeStatus = RouteManager.Advance(monster)
+            if routeStatus == "complete" or routeStatus == "blocked" then
+                monster:setOnRoute(false)
+                local status, script = pcall(require, entity.CustomData[DataKeys.Script])
+                if status and type(script.abortRoute) == "function" then
+                    script.abortRoute(monster)
+                end
+            end
+        end
+    end
 end
 
 return m
