@@ -85,7 +85,8 @@ end
 
 Character.SeleneMethods.move = function(user, direction, activeMove)
     -- TODO activeMove = false means it should be a "push" (no walk animation)
-    user.SeleneEntity:Move(direction)
+    local seleneDirection = DirectionUtils.IllaToSelene(direction) or direction
+    return user.SeleneEntity:Move(seleneDirection)
 end
 
 Character.SeleneMethods.turn = function(user, direction)
