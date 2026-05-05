@@ -9,6 +9,7 @@ local CharacterManager = require("illarion-script-loader.server.lua.lib.characte
 local m = {}
 
 m.IdCounter = 0
+m.EntitiesById = {}
 m.EntitiesByNpcId = {}
 m.PendingRemoval = {}
 
@@ -29,6 +30,7 @@ function m.Spawn(npc)
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Sex] = npc:GetField("sex") == 1 and "female" or "male"
     entity:Spawn()
+    m.EntitiesById[id] = entity
     m.EntitiesByNpcId[npc:GetMetadata("id")] = entity
     CharacterManager.AddEntity(entity)
 end
@@ -47,6 +49,7 @@ function m.SpawnDynamic(name, race, sex, pos, scriptName)
     entity.CustomData[DataKeys.Race] = race
     entity.CustomData[DataKeys.Sex] = sex
     entity:Spawn()
+    m.EntitiesById[entity.CustomData[DataKeys.ID]] = entity
     CharacterManager.AddEntity(entity)
 end
 
@@ -57,13 +60,16 @@ end
 function m.Update()
     for _, entity in ipairs(m.PendingRemoval) do
         local npc = entity.CustomData[DataKeys.NPC]
-        m.EntitiesByNpcId[npc:GetMetadata("id")] = nil
+        if npc then
+            m.EntitiesByNpcId[npc:GetMetadata("id")] = nil
+        end
+        m.EntitiesById[entity.CustomData[DataKeys.ID]] = nil
         CharacterManager.RemoveEntity(entity)
         entity:Despawn()
     end
     m.PendingRemoval = {}
 
-    for _, entity in pairs(m.EntitiesByNpcId) do
+    for _, entity in pairs(m.EntitiesById) do
         local npc = Character.fromSeleneEntity(entity)
         if not entity.CustomData[DataKeys.Dead] then
             -- TODO run LTE
