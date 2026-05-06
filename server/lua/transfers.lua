@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 
+local InventoryItem = require("moonlight-inventory.server.lua.inventory_item")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
@@ -12,7 +13,31 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
         return
     end
 
-    fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId)
+    fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId, {
+        character = character,
+        beforeMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
+            local scriptName = fromItem.def:GetField("script")
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.MoveItemBeforeMove) == "function" then
+                    local sourceItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, fromItem))
+                    local targetItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(toInventory, toSlotId, toItem))
+                    return script.MoveItemBeforeMove(context.character, sourceItem, targetItem)
+                end
+            end
+        end,
+        afterMove = function(context, fromInventory, fromSlotId, sourceItem, toInventory, toSlotId, targetItem)
+            local scriptName = fromItem.def:GetField("script")
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.MoveItemAfterMove) == "function" then
+                    local sourceItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, fromItem))
+                    local targetItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(toInventory, toSlotId, toItem))
+                    script.MoveItemAfterMove(context.character, sourceItem, targetItem)
+                end
+            end
+        end
+    })
 end)
 
 Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, payload)
