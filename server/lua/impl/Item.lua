@@ -59,7 +59,7 @@ Item.SeleneGetters.isLarge = function(item)
     if item.SeleneTile then
         local itemDef = Registries.FindByMetadata("illarion:items", "id", item.SeleneTile:GetMetadata("itemId"))
         return itemDef and itemDef:GetField("volume") >= 5000 or false
-    elseif item.SeleneTile then
+    elseif item.SeleneEntity then
         local itemDef = Registries.FindByMetadata("illarion:items", "id", item.SeleneEntity.EntityDefinition:GetMetadata("itemId"))
         return itemDef and itemDef:GetField("volume") >= 5000 or false
     elseif item.SeleneItem then
