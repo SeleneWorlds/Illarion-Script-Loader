@@ -1,18 +1,54 @@
 local Server = require("selene.server")
+local Saves = require("selene.saves")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+
+local SCRIPT_VARS_SAVE_PATH = "scriptvars.json"
+local scriptVarsLoaded = false
+
+local function getScriptVars()
+    local scriptVars = Server.CustomData[DataKeys.ScriptVars]
+    if not scriptVars then
+        scriptVars = tablex.observable({})
+        Server.CustomData[DataKeys.ScriptVars] = scriptVars
+    end
+    return scriptVars
+end
+
+local function loadScriptVars()
+    if scriptVarsLoaded then
+        return
+    end
+
+    scriptVarsLoaded = true
+    if not Saves.Has(SCRIPT_VARS_SAVE_PATH) then
+        return
+    end
+
+    local loaded = Saves.Load(SCRIPT_VARS_SAVE_PATH)
+    if not loaded then
+        return
+    end
+
+    Server.CustomData[DataKeys.ScriptVars] = loaded
+end
 
 ScriptVars.find = function(self, key)
-    local value = Server.CustomData[key]
+    loadScriptVars()
+    local value = getScriptVars()[key]
     return value ~= nil, value
 end
 
 ScriptVars.set = function(self, key, value)
-    Server.CustomData[key] = value
+    loadScriptVars()
+    getScriptVars()[key] = value
 end
 
 ScriptVars.remove = function(self, key)
-    Server.CustomData[key] = nil
+    loadScriptVars()
+    getScriptVars()[key] = nil
 end
 
 ScriptVars.save = function(self)
-    -- TODO ScriptVars.save
+    loadScriptVars()
+    Saves.Save(getScriptVars(), SCRIPT_VARS_SAVE_PATH)
 end
