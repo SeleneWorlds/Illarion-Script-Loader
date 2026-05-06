@@ -4,6 +4,25 @@ local Registries = require("selene.registries")
 
 local InventoryItem = require("moonlight-inventory.server.lua.inventory_item")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+
+local function CreateItemFromEntity(entity)
+    local itemId = entity.EntityDefinition:GetMetadata("itemId")
+    if itemId == nil then
+        return nil
+    end
+
+    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    if not itemDef then
+        return nil
+    end
+
+    return {
+        def = itemDef,
+        count = entity.CustomData[DataKeys.Count] or 1,
+        data = entity.CustomData[DataKeys.ItemData] or {}
+    }
+end
 
 Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
@@ -25,6 +44,7 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
                     return script.MoveItemBeforeMove(context.character, sourceItem, targetItem)
                 end
             end
+            return true
         end,
         afterMove = function(context, fromInventory, fromSlotId, sourceItem, toInventory, toSlotId, targetItem)
             local scriptName = fromItem.def:GetField("script")
@@ -38,6 +58,36 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
             end
         end
     })
+end)
+
+Network.HandlePayload("illarion:move_coordinate_to_slot", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    local targetInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
+    if not targetInventory or not targetInventory:hasSlot(payload.toSlotId) then
+        return
+    end
+
+    local sourceEntity = nil
+    local sourceEntities = character.SeleneEntity.Dimension:GetEntitiesAt(payload.fromX, payload.fromY, payload.fromZ, character.SeleneEntity.Collision)
+    for i = #sourceEntities, 1, -1 do
+        local entity = sourceEntities[i]
+        if entity:HasTag("illarion:item") then
+            sourceEntity = entity
+            break
+        end
+    end
+
+    if not sourceEntity then
+        return
+    end
+
+    local item = CreateItemFromEntity(sourceEntity)
+    local rest = targetInventory:addItemAt(payload.toSlotId, item)
+    if rest > 0 then
+        sourceEntity.CustomData[DataKeys.Count] = rest
+    else
+        sourceEntity:Despawn()
+    end
 end)
 
 Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, payload)
