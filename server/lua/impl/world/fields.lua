@@ -2,15 +2,15 @@ local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 
 world.SeleneMethods.getField = function(world, pos)
-    local dimension = Dimensions.GetDefault()
+    local dimension = Dimensions.getDefault()
     return Field.fromSelenePosition(dimension, pos)
 end
 
 world.SeleneMethods.changeTile = function(world, tileId, pos)
-    local tileDef = Registries.FindByMetadata("illarion:tiles", "tileId", tileId)
+    local tileDef = Registries.findByMetadata("illarion:tiles", "tileId", tileId)
     if not tileDef then
         error("Unknown tile id " .. tileId)
     end
-    local dimension = Dimensions.GetDefault()
-    dimension:PlaceTile(pos, tileDef)
+    local dimension = Dimensions.getDefault()
+    dimension:placeTile(pos, tileDef)
 end

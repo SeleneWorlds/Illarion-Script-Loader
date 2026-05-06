@@ -7,24 +7,24 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local function CreateItemFromEntity(entity)
-    local itemId = entity.EntityDefinition:GetMetadata("itemId")
+    local itemId = entity:getEntityDefinition():getMetadata("itemId")
     if itemId == nil then
         return nil
     end
 
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         return nil
     end
 
     return {
         def = itemDef,
-        count = entity.CustomData[DataKeys.Count] or 1,
-        data = entity.CustomData[DataKeys.ItemData] or {}
+        count = entity:getCustomData(DataKeys.Count) or 1,
+        data = entity:getCustomData(DataKeys.ItemData) or {}
     }
 end
 
-Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
+Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
     local toInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
@@ -35,7 +35,7 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
     fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId, {
         character = character,
         beforeMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
-            local scriptName = fromItem.def:GetField("script")
+            local scriptName = fromItem.def:getField("script")
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.MoveItemBeforeMove) == "function" then
@@ -46,8 +46,8 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
             end
             return true
         end,
-        afterMove = function(context, fromInventory, fromSlotId, sourceItem, toInventory, toSlotId, targetItem)
-            local scriptName = fromItem.def:GetField("script")
+        afterMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
+            local scriptName = fromItem.def:getField("script")
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.MoveItemAfterMove) == "function" then
@@ -60,7 +60,7 @@ Network.HandlePayload("illarion:move_slot_to_slot", function(player, payload)
     })
 end)
 
-Network.HandlePayload("illarion:move_coordinate_to_slot", function(player, payload)
+Network.handlePayload("illarion:move_coordinate_to_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local targetInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
     if not targetInventory or not targetInventory:hasSlot(payload.toSlotId) then
@@ -68,10 +68,10 @@ Network.HandlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     end
 
     local sourceEntity = nil
-    local sourceEntities = character.SeleneEntity.Dimension:GetEntitiesAt(payload.fromX, payload.fromY, payload.fromZ, character.SeleneEntity.Collision)
+    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(payload.fromX, payload.fromY, payload.fromZ, character.SeleneEntity.Collision)
     for i = #sourceEntities, 1, -1 do
         local entity = sourceEntities[i]
-        if entity:HasTag("illarion:item") then
+        if entity:hasTag("illarion:item") then
             sourceEntity = entity
             break
         end
@@ -84,9 +84,9 @@ Network.HandlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     local item = CreateItemFromEntity(sourceEntity)
     local rest = targetInventory:addItemAt(payload.toSlotId, item)
     if rest > 0 then
-        sourceEntity.CustomData[DataKeys.Count] = rest
+        sourceEntity:setCustomData(DataKeys.Count, rest)
     else
-        local triggerfieldAnnotation = sourceEntity.Dimension:GetAnnotationAt(sourceEntity.Coordinate, "illarion:triggerfield", sourceEntity.Collision)
+        local triggerfieldAnnotation = sourceEntity:getDimension():getAnnotationAt(sourceEntity:getCoordinate(), "illarion:triggerfield", sourceEntity.Collision)
         if triggerfieldAnnotation then
             local scriptName = triggerfieldAnnotation.script
             if scriptName then
@@ -96,11 +96,11 @@ Network.HandlePayload("illarion:move_coordinate_to_slot", function(player, paylo
                 end
             end
         end
-        sourceEntity:Despawn()
+        sourceEntity:despawn()
     end
 end)
 
-Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, payload)
+Network.handlePayload("illarion:move_slot_to_coordinate", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
     if not fromInventory then
@@ -112,19 +112,19 @@ Network.HandlePayload("illarion:move_slot_to_coordinate", function(player, paylo
         return
     end
 
-    local itemId = item.def:GetMetadata("id")
-    local entityType = Registries.FindByMetadata("entities", "itemId", itemId)
+    local itemId = item.def:getMetadata("id")
+    local entityType = Registries.findByMetadata("entities", "itemId", itemId)
     if not entityType then
         error("Unknown item entity for item id " .. tostring(itemId))
     end
 
     fromInventory:setItem(payload.fromSlotId, nil)
 
-    local entity = Entities.Create(entityType)
-    entity:SetCoordinate(payload.x, payload.y, payload.z)
-    entity:Spawn(character.SeleneEntity.Dimension)
+    local entity = Entities.create(entityType)
+    entity:setCoordinate(payload.x, payload.y, payload.z)
+    entity:spawn(character.SeleneEntity:getDimension())
 
-    local triggerfieldAnnotation = entity.Dimension:GetAnnotationAt(entity.Coordinate, "illarion:triggerfield", entity.Collision)
+    local triggerfieldAnnotation = entity:getDimension():getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName then

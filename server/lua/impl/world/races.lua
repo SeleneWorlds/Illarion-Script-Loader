@@ -1,8 +1,8 @@
 local Registries = require("selene.registries")
 
 world.SeleneMethods.getNaturalArmor = function(world, raceId)
-     local race = Registries.FindByMetadata("illarion:races", "id", raceId)
-     local naturalArmor = race and race:GetField("naturalArmor") or nil
+     local race = Registries.findByMetadata("illarion:races", "id", raceId)
+     local naturalArmor = race and race:getField("naturalArmor") or nil
      if naturalArmor then
          return true, {
              strokeArmor = naturalArmor.strokeArmor,

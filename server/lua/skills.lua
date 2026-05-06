@@ -4,7 +4,9 @@ local CharacterManager = require("illarion-script-loader.server.lua.lib.characte
 
 local illaLearn = require("server.learn")
 
-Schedules.SetInterval(10000, function()
+Schedules.setInterval(10000, function()
+    -- TODO I don't like that this holds a Lua-mem list of characters, it's brittle.
+    --      Maybe we can have tag-based entity lookups?
     for _, character in pairs(CharacterManager.CharactersById) do
         illaLearn.reduceMC(character)
     end

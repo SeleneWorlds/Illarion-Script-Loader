@@ -12,7 +12,7 @@ end
 
 Character.SeleneMethods.countItem = function(user, itemId)
     local count = 0
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
@@ -28,7 +28,7 @@ end
 
 Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
     local count = 0
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
@@ -68,7 +68,7 @@ Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
 end
 
 Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to create unknown item id " .. itemId)
     end
@@ -95,7 +95,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
 end
 
 Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to create unknown item id " .. itemId)
     end
@@ -107,7 +107,7 @@ Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
 end
 
 Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to erase unknown item id " .. itemId)
     end
@@ -117,7 +117,7 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
 end
 
 Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", newId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
     end
@@ -138,7 +138,7 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
 end
 
 Character.SeleneMethods.getItemList = function(user, itemId)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to list unknown item id " .. itemId)
     end

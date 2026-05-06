@@ -1,23 +1,23 @@
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Field.SeleneMethods.tile = function(field)
-    local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
+    local tiles = field.SeleneDimension:getTilesAt(field.SelenePosition)
     if #tiles > 0 then
-        return tiles[1]:GetMetadata("tileId")
+        return tiles[1]:getMetadata("tileId")
     end
     return 0
 end
 
 Field.SeleneMethods.isPassable = function(field)
-    return not field.SeleneDimension:HasCollisionAt(field.SelenePosition)
+    return not field.SeleneDimension:hasCollisionAt(field.SelenePosition)
 end
 
 Field.SeleneMethods.isWarp = function(field)
-    return field.SeleneDimension:GetAnnotationAt(field.SelenePosition, "illarion:warp") ~= nil
+    return field.SeleneDimension:getAnnotationAt(field.SelenePosition, "illarion:warp") ~= nil
 end
 
 Field.SeleneMethods.setWarp = function(field, position)
-    field.SeleneDimension:AnnotateTile(field.SelenePosition, "illarion:warp", {
+    field.SeleneDimension:annotateTile(field.SelenePosition, "illarion:warp", {
         x = position.x,
         y = position.y,
         z = position.z
@@ -25,14 +25,14 @@ Field.SeleneMethods.setWarp = function(field, position)
 end
 
 Field.SeleneMethods.removeWarp = function(field)
-    field.SeleneDimension:AnnotateTile(field.SelenePosition, "illarion:warp", nil)
+    field.SeleneDimension:annotateTile(field.SelenePosition, "illarion:warp", nil)
 end
 
 Field.SeleneMethods.countItems = function(field)
-    local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
+    local tiles = field.SeleneDimension:getTilesAt(field.SelenePosition)
     local count = 0
     for _, tile in ipairs(tiles) do
-        if tile:GetMetadata("itemId") ~= nil then
+        if tile:getMetadata("itemId") ~= nil then
             count = count + 1
         end
     end
@@ -40,10 +40,10 @@ Field.SeleneMethods.countItems = function(field)
 end
 
 Field.SeleneMethods.getStackItem = function(field, index)
-    local tiles = field.SeleneDimension:GetTilesAt(field.SelenePosition)
+    local tiles = field.SeleneDimension:getTilesAt(field.SelenePosition)
     local i = -1
     for _, tile in ipairs(tiles) do
-        if tile:GetMetadata("itemId") ~= nil then
+        if tile:getMetadata("itemId") ~= nil then
             i = i + 1
             if i == index then
                 return Item.fromSeleneTile(tile)

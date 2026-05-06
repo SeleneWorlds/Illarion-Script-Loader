@@ -7,29 +7,29 @@ local AttributeManager = require("illarion-script-loader.server.lua.lib.attribut
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
 Character.SeleneMethods.stopAttack = function(user)
-    user.SeleneEntity.CustomData[DataKeys.CombatTarget] = nil
-    Network.SendToEntity(user.SeleneEntity, "illarion:set_combat_target", {
+    user.SeleneEntity:removeCustomData(DataKeys.CombatTarget)
+    Network.sendToEntity(user.SeleneEntity, "illarion:set_combat_target", {
         networkId = -1
     })
 end
 
 Character.SeleneMethods.getAttackTarget = function(user)
-    local networkId = user.SeleneEntity.CustomData[DataKeys.CombatTarget]
+    local networkId = user.SeleneEntity:getCustomData(DataKeys.CombatTarget)
     if networkId then
-        return Entities.GetEntityById(networkId)
+        return Entities.getEntityById(networkId)
     end
     return nil
 end
 
 Character.SeleneGetters.attackmode = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.CombatTarget] ~= nil
+    return user.SeleneEntity:hasCustomData(DataKeys.CombatTarget)
 end
 
 Character.SeleneMethods.callAttackScript = function(attacker, defender)
-    local weaponId = attacker:GetItemAt(Character.right_tool).id
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", weaponId)
+    local weaponId = attacker:getItemAt(Character.right_tool).id
+    local itemDef = Registries.findByMetadata("illarion:items", "id", weaponId)
     if itemDef then
-        local weapon = itemDef:GetField("weapon")
+        local weapon = itemDef:getField("weapon")
         if weapon and weapon.fightingScript then
             local status, script = pcall(require, weapon.fightingScript)
             if status and type(script.onAttack) == "function" then
@@ -42,9 +42,9 @@ Character.SeleneMethods.callAttackScript = function(attacker, defender)
 end
 
 Character.SeleneGetters.fightpoints = function(user)
-    return AttributeManager.GetAttribute(user, "fightpoints").EffectiveValue
+    return AttributeManager.GetAttribute(user, "fightpoints"):getEffectiveValue()
 end
 
 Character.SeleneSetters.fightpoints = function(user, value)
-    AttributeManager.GetAttribute(user, "fightpoints").Value = value
+    AttributeManager.GetAttribute(user, "fightpoints"):setValue(value)
 end

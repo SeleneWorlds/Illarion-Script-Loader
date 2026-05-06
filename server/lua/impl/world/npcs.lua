@@ -5,11 +5,11 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local NPCManager = require("illarion-script-loader.server.lua.lib.npcManager")
 
 world.SeleneMethods.getNPCSInRangeOf = function(world, pos, range)
-    local dimension = Dimensions.GetDefault()
-    local entities = dimension:GetEntitiesInRange(pos, range)
+    local dimension = Dimensions.getDefault()
+    local entities = dimension:getEntitiesInRange(pos, range)
     local npcs = {}
     for _, entity in ipairs(entities) do
-        if entity.CustomData[DataKeys.CharacterType] == Character.npc then
+        if entity:getCustomData(DataKeys.CharacterType) == Character.npc then
             table.insert(npcs, Character.fromSeleneEntity(entity))
         end
     end
@@ -29,7 +29,7 @@ world.SeleneMethods.deleteNPC = function(world, npcId)
 end
 
 world.SeleneMethods.createDynamicNPC = function(world, name, raceId, pos, sex, scriptName)
-    local race = Registries.FindByMetadata("illarion:races", "id", raceId)
+    local race = Registries.findByMetadata("illarion:races", "id", raceId)
     if race == nil then
         error("Unknown race id " .. raceId)
     end

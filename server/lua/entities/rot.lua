@@ -5,25 +5,25 @@ local m = {}
 
 function m.TickEntity(Entity, Data, Delta)
     Data.RotTimePassed = (Data.RotTimePassed or 0) + Delta
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", Entity.EntityDefinition:GetMetadata("itemId"))
-    local RotTicks = itemDef:GetField("agingSpeed")
+    local itemDef = Registries.findByMetadata("illarion:items", "id", Entity:getEntityDefinition():getMetadata("itemId"))
+    local RotTicks = itemDef:getField("agingSpeed")
     if Data.RotTimePassed >= RotTicks then
-        local itemNameAfterRot = itemDef:GetField("objectAfterRot")
-        local itemDefAfterRot = itemNameAfterRot and Registries.FindByName("illarion:items", itemDef:GetField("objectAfterRot")) or nil
+        local itemNameAfterRot = itemDef:getField("objectAfterRot")
+        local itemDefAfterRot = itemNameAfterRot and Registries.findByName("illarion:items", itemDef:getField("objectAfterRot")) or nil
         local EntityAfterRot = nil
         if itemDefAfterRot then
-            local itemId = itemDefAfterRot:GetMetadata("id")
-            local entityType = Registries.FindByMetadata("entities", "itemId", itemId)
+            local itemId = itemDefAfterRot:getMetadata("id")
+            local entityType = Registries.findByMetadata("entities", "itemId", itemId)
             if not entityType then
                 error("Unknown item entity for item id " .. tostring(itemId))
             end
 
-            EntityAfterRot = Entities.Create(entityType)
-            EntityAfterRot:SetCoordinate(Entity.Coordinate)
-            EntityAfterRot:Spawn(Entity.Dimension)
+            EntityAfterRot = Entities.create(entityType)
+            EntityAfterRot:setCoordinate(Entity:getCoordinate())
+            EntityAfterRot:spawn(Entity:getDimension())
         end
 
-        local triggerfieldAnnotation = Entity.Dimension:GetAnnotationAt(Entity.Coordinate, "illarion:triggerfield", Entity.Collision)
+        local triggerfieldAnnotation = Entity:getDimension():getAnnotationAt(Entity:getCoordinate(), "illarion:triggerfield", Entity:getCollisionViewer())
         if triggerfieldAnnotation then
             local scriptName = triggerfieldAnnotation.script
             if scriptName then
@@ -34,7 +34,7 @@ function m.TickEntity(Entity, Data, Delta)
             end
         end
 
-        Entity:Despawn()
+        Entity:despawn()
     end
 end
 

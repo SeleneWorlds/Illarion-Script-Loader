@@ -5,7 +5,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 
 world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
-    local monsterDef = Registries.FindByMetadata("illarion:monsters", "id", monsterId)
+    local monsterDef = Registries.findByMetadata("illarion:monsters", "id", monsterId)
     if not monsterDef then
          error("Unknown monster id " .. monsterId)
     end
@@ -14,8 +14,8 @@ world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
 end
 
 world.SeleneMethods.getMonsterAttack = function(world, raceId)
-    local race = Registries.FindByMetadata("illarion:races", "id", raceId)
-    local monsterAttack = race and race:GetField("monsterAttack") or nil
+    local race = Registries.findByMetadata("illarion:races", "id", raceId)
+    local monsterAttack = race and race:getField("monsterAttack") or nil
     if monsterAttack then
         return true, {
             attackType = monsterAttack.attackType,
@@ -27,11 +27,11 @@ world.SeleneMethods.getMonsterAttack = function(world, raceId)
 end
 
 world.SeleneMethods.getMonstersInRangeOf = function(world, pos, range)
-    local dimension = Dimensions.GetDefault()
-    local entities = dimension:GetEntitiesInRange(pos, range)
+    local dimension = Dimensions.getDefault()
+    local entities = dimension:getEntitiesInRange(pos, range)
     local monsters = {}
     for _, entity in ipairs(entities) do
-        if entity.CustomData[DataKeys.CharacterType] == Character.monster then
+        if entity:getCustomData(DataKeys.CharacterType) == Character.monster then
             table.insert(monsters, Character.fromSeleneEntity(entity))
         end
     end

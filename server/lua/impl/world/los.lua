@@ -2,7 +2,7 @@ local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 
 world.SeleneMethods.LoS = function(world, startPos, endPos)
-    local dimension = Dimensions.GetDefault()
+    local dimension = Dimensions.getDefault()
     local result = {}
 
     local steep = math.abs(startPos.y - endPos.y) > math.abs(startPos.x - endPos.x)
@@ -48,9 +48,9 @@ world.SeleneMethods.LoS = function(world, startPos, endPos)
             end
 
             local hasCharacter = false
-            local entities = dimension:GetEntitiesAt(pos)
+            local entities = dimension:getEntitiesAt(pos)
             for _, entity in ipairs(entities) do
-                if entity:HasTag("illarion:character") then
+                if entity:hasTag("illarion:character") then
                     local blockingObject = {
                         TYPE = "CHARACTER",
                         OBJECT = Character.fromSeleneEntity(characterEntity)
@@ -67,12 +67,12 @@ world.SeleneMethods.LoS = function(world, startPos, endPos)
             if not hasCharacter then
                 local highestVolumeTile = nil
                 local highestVolume = 0
-                local tiles = dimension:GetTilesAt(pos)
+                local tiles = dimension:getTilesAt(pos)
                 for _, tile in ipairs(tiles) do
-                    local itemId = tile:GetMetadata("itemId")
+                    local itemId = tile:getMetadata("itemId")
                     if itemId then
-                        local itemDef = Registries.FindByMetadata("illarion:items", "itemId", itemId)
-                        local volume = itemDef:GetField("volume")
+                        local itemDef = Registries.findByMetadata("illarion:items", "itemId", itemId)
+                        local volume = itemDef:getField("volume")
                         if volume > highestVolume then
                             highestVolume = volume
                             highestVolumeTile = tile

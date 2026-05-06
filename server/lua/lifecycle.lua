@@ -7,7 +7,7 @@ local illaReload = require("server.reload")
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
-Players.PlayerJoined:Connect(function(player)
+Players.playerJoined:connect(function(player)
     local character = PlayerManager.Spawn(player)
     illaLogin.onLogin(character)
 
@@ -21,13 +21,13 @@ Players.PlayerJoined:Connect(function(player)
     character:createAtPos(Character.feet, 1500, 1)
 end)
 
-Players.PlayerLeft:Connect(function(player)
-    if player.ControlledEntity then
+Players.playerLeft:connect(function(player)
+    if player:getControlledEntity() then
         illaLogout.onLogout(Character.fromSelenePlayer(player))
     end
     PlayerManager.Despawn(player)
 end)
 
-Server.ServerReloaded:Connect(function()
+Server.serverReloaded:connect(function()
     illaReload.onReload()
 end)

@@ -3,20 +3,20 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Item.SeleneGetters.id = function(item)
     if item.SeleneTile then
-        return tonumber(item.SeleneTile:GetMetadata("itemId"))
+        return tonumber(item.SeleneTile:getMetadata("itemId"))
     elseif item.SeleneEntity then
-        return tonumber(item.SeleneEntity.EntityDefinition:GetMetadata("itemId"))
+        return tonumber(item.SeleneEntity:getEntityDefinition():getMetadata("itemId"))
     elseif item.SeleneItem then
-        return item.SeleneItem.def:GetMetadata("id")
+        return item.SeleneItem.def:getMetadata("id")
     end
     return 0
 end
 
 Item.SeleneGetters.pos = function(item)
     if item.SeleneTile then
-        return position.FromSeleneCoordinate(item.SeleneTile.Coordinate)
+        return position.FromSeleneCoordinate(item.SeleneTile:getCoordinate())
     elseif item.SeleneEntity then
-        return position.FromSeleneCoordinate(item.SeleneEntity.Coordinate)
+        return position.FromSeleneCoordinate(item.SeleneEntity:getCoordinate())
     elseif item.owner then
         return item.owner.pos
     end
@@ -48,7 +48,7 @@ Item.SeleneGetters.number = function(item)
     if item.SeleneTile then
         return 1
     elseif item.SeleneEntity then
-        return item.SeleneEntity.CustomData[DataKeys.Count]
+        return item.SeleneEntity:getCustomData(DataKeys.Count)
     elseif item.SeleneItem then
         return item.SeleneItem.count
     end
@@ -57,13 +57,13 @@ end
 
 Item.SeleneGetters.isLarge = function(item)
     if item.SeleneTile then
-        local itemDef = Registries.FindByMetadata("illarion:items", "id", item.SeleneTile:GetMetadata("itemId"))
-        return itemDef and itemDef:GetField("volume") >= 5000 or false
+        local itemDef = Registries.findByMetadata("illarion:items", "id", item.SeleneTile:getMetadata("itemId"))
+        return itemDef and itemDef:getField("volume") >= 5000 or false
     elseif item.SeleneEntity then
-        local itemDef = Registries.FindByMetadata("illarion:items", "id", item.SeleneEntity.EntityDefinition:GetMetadata("itemId"))
-        return itemDef and itemDef:GetField("volume") >= 5000 or false
+        local itemDef = Registries.findByMetadata("illarion:items", "id", item.SeleneEntity:getEntityDefinition():getMetadata("itemId"))
+        return itemDef and itemDef:getField("volume") >= 5000 or false
     elseif item.SeleneItem then
-        return item.SeleneItem.def:GetField("volume") >= 5000 or false
+        return item.SeleneItem.def:getField("volume") >= 5000 or false
     end
     return false
 end
@@ -82,26 +82,26 @@ end
 
 Item.SeleneMethods.getData = function(item, key)
     if item.SeleneTile then
-        local dimension = item.SeleneTile.Dimension
-        local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name)
+        local dimension = item.SeleneTile:getDimension()
+        local data = dimension:getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
         return data and data[key] or ""
     elseif item.SeleneEntity then
-        local data = item.SeleneEntity.CustomData[DataKeys.ItemData]
+        local data = item.SeleneEntity:getCustomData(DataKeys.ItemData)
         return data and data[key] or ""
     elseif item.SeleneItem then
-        return item.SeleneItem.data[key] or ""
+        return item.SeleneItem.data and item.SeleneItem.data[key] or ""
     end
     return ""
 end
 
 Item.SeleneMethods.setData = function(item, key, value)
     if item.SeleneTile then
-        local dimension = item.SeleneTile.Dimension
-        local data = dimension:GetAnnotationAt(item.SeleneTile.Coordinate, item.SeleneTile.Name) or {}
+        local dimension = item.SeleneTile:getDimension()
+        local data = dimension:getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName()) or {}
         data[key] = tostring(value)
-        dimension:AnnotateTile(item.SeleneTile.Coordinate, item.SeleneTile.Name, data)
+        dimension:annotateTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getName(), data)
     elseif item.SeleneEntity then
-        local data = item.SeleneEntity.CustomData[DataKeys.ItemData]
+        local data = item.SeleneEntity:getCustomData(DataKeys.ItemData)
         data[key] = tostring(value)
     elseif item.SeleneItem then
         item.SeleneItem.data[key] = tostring(value)

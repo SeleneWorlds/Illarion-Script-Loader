@@ -13,31 +13,31 @@ m.EntitiesById = {}
 m.NewMonsters = {}
 
 function m.Spawn(monsterDef, pos)
-    local raceName = monsterDef:GetField("race")
-    local race = Registries.FindByName("illarion:races", raceName)
+    local raceName = monsterDef:getField("race")
+    local race = Registries.findByName("illarion:races", raceName)
     if not race then
         error("Unknown monster race " .. raceName)
     end
 
-    local entity = Entities.Create(race.Identifier:WithPrefix("races/"):WithSuffix("_0"))
+    local entity = Entities.create(race:getIdentifier():withPrefix("races/"):withSuffix("_0"))
     m.IdCounter = m.IdCounter + 1
-    entity.CustomData[DataKeys.ID] = (m.IdCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
-    entity.CustomData[DataKeys.CharacterType] = Character.monster
-    entity.CustomData[DataKeys.Race] = race
-    entity.CustomData[DataKeys.Monster] = monsterDef
-    entity.CustomData[DataKeys.Script] = monsterDef:GetField("script")
-    entity:SetCoordinate(pos)
+    entity:setCustomData(DataKeys.ID, (m.IdCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID))
+    entity:setCustomData(DataKeys.CharacterType, Character.monster)
+    entity:setCustomData(DataKeys.Race, race)
+    entity:setCustomData(DataKeys.Monster, monsterDef)
+    entity:setCustomData(DataKeys.Script, monsterDef:getField("script"))
+    entity:setCoordinate(pos)
     table.insert(m.NewMonsters, entity)
     return Character.fromSeleneEntity(entity)
 end
 
 function m.Update()
     for _, entity in pairs(m.NewMonsters) do
-        m.EntitiesById[entity.CustomData[DataKeys.ID]] = entity
+        m.EntitiesById[entity:getCustomData(DataKeys.ID)] = entity
         CharacterManager.AddEntity(entity)
-        entity:Spawn()
+        entity:spawn()
 
-        local status, script = pcall(require, entity.CustomData[DataKeys.Script])
+        local status, script = pcall(require, entity:getCustomData(DataKeys.Script))
         if status and type(script.onSpawn) == "function" then
             script.onSpawn(Character.fromSeleneEntity(entity))
         end
@@ -45,12 +45,12 @@ function m.Update()
     m.NewMonsters = {}
 
     for _, entity in pairs(m.EntitiesById) do
-        if not entity.CustomData[DataKeys.Dead] then
+        if not entity:getCustomData(DataKeys.Dead) then
             local monster = Character.fromSeleneEntity(entity)
             local routeStatus = RouteManager.Advance(monster)
             if routeStatus == "complete" or routeStatus == "blocked" then
                 monster:setOnRoute(false)
-                local status, script = pcall(require, entity.CustomData[DataKeys.Script])
+                local status, script = pcall(require, entity:getCustomData(DataKeys.Script))
                 if status and type(script.abortRoute) == "function" then
                     script.abortRoute(monster)
                 end

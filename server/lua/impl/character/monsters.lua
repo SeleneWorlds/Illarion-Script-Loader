@@ -4,28 +4,28 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
-    local monsterDef = entity.CustomData[DataKeys.Monster]
+    local monsterDef = entity:getCustomData(DataKeys.Monster)
     if monsterDef then
-        return monsterDef:GetMetadata("id")
+        return monsterDef:getMetadata("id")
     end
     return 0
 end
 
 Character.SeleneMethods.getLoot = function(user)
-    local monsterDef = user.CustomData[DataKeys.Monster]
+    local monsterDef = user:getCustomData(DataKeys.Monster)
     if monsterDef then
-        local drops = monsterDef:GetField("drops")
+        local drops = monsterDef:getField("drops")
         local loot = {}
         for categoryId, items in pairs(drops) do
             local category = {}
             for lootId, item in pairs(items) do
-                local itemDef = Registries.FindByName("illarion:items", item.item)
+                local itemDef = Registries.findByName("illarion:items", item.item)
                 if not itemDef then
-                    error("Unknown item " .. item.item .. " in loot of " .. monsterDef.Name)
+                    error("Unknown item " .. item.item .. " in loot of " .. monsterDef:getName())
                 end
                 local itemTable = {}
                 itemTable.probability = item.chance
-                itemTable.itemId = itemDef:GetMetadata("id")
+                itemTable.itemId = itemDef:getMetadata("id")
                 itemTable.minAmount = item.minCount
                 itemTable.maxAmount = item.maxCount
                 itemTable.minQuality = item.minQuality

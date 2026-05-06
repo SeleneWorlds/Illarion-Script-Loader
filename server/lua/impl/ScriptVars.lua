@@ -6,10 +6,10 @@ local SCRIPT_VARS_SAVE_PATH = "scriptvars.json"
 local scriptVarsLoaded = false
 
 local function getScriptVars()
-    local scriptVars = Server.CustomData[DataKeys.ScriptVars]
+    local scriptVars = Server.getCustomData(DataKeys.ScriptVars)
     if not scriptVars then
         scriptVars = tablex.observable({})
-        Server.CustomData[DataKeys.ScriptVars] = scriptVars
+        Server.setCustomData(DataKeys.ScriptVars, scriptVars)
     end
     return scriptVars
 end
@@ -20,16 +20,16 @@ local function loadScriptVars()
     end
 
     scriptVarsLoaded = true
-    if not Saves.Has(SCRIPT_VARS_SAVE_PATH) then
+    if not Saves.has(SCRIPT_VARS_SAVE_PATH) then
         return
     end
 
-    local loaded = Saves.Load(SCRIPT_VARS_SAVE_PATH)
+    local loaded = Saves.load(SCRIPT_VARS_SAVE_PATH)
     if not loaded then
         return
     end
 
-    Server.CustomData[DataKeys.ScriptVars] = loaded
+    Server.setCustomData(DataKeys.ScriptVars, loaded)
 end
 
 ScriptVars.find = function(self, key)

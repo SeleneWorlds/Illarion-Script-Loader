@@ -1,10 +1,10 @@
 local Dimensions = require("selene.dimensions")
 
 world.SeleneMethods.isCharacterOnField = function(world, pos)
-    local dimension = Dimensions.GetDefault()
-    local entities = dimension:GetEntitiesAt(pos)
+    local dimension = Dimensions.getDefault()
+    local entities = dimension:getEntitiesAt(pos)
     for _, entity in ipairs(entities) do
-        if entity:HasTag("illarion:character") then
+        if entity:hasTag("illarion:character") then
             return true
         end
     end
@@ -12,10 +12,10 @@ world.SeleneMethods.isCharacterOnField = function(world, pos)
 end
 
 world.SeleneMethods.getCharacterOnField = function(world, pos)
-    local dimension = Dimensions.GetDefault()
-    local entities = dimension:GetEntitiesAt(pos)
+    local dimension = Dimensions.getDefault()
+    local entities = dimension:getEntitiesAt(pos)
     for _, entity in ipairs(entities) do
-        if entity:HasTag("illarion:character") then
+        if entity:hasTag("illarion:character") then
             return Character.fromSeleneEntity(entity)
         end
     end
@@ -23,11 +23,11 @@ world.SeleneMethods.getCharacterOnField = function(world, pos)
 end
 
 world.SeleneMethods.getCharactersInRangeOf = function(world)
-    local dimension = Dimensions.GetDefault()
-    local entities = dimension:GetEntitiesInRange(pos, range)
+    local dimension = Dimensions.getDefault()
+    local entities = dimension:getEntitiesInRange(pos, range)
     local characters = {}
     for _, entity in ipairs(entities) do
-        if entity.HasTag("illarion:character") then
+        if entity.hasTag("illarion:character") then
             table.insert(characters, Character.fromSeleneEntity(entity))
         end
     end

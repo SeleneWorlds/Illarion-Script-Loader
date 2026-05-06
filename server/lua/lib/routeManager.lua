@@ -34,7 +34,7 @@ end
 
 local function getState(character)
     local entity = character.SeleneEntity
-    local state = entity.CustomData[DataKeys.Route]
+    local state = entity:getCustomData(DataKeys.Route)
     if not state then
         state = {
             onRoute = false,
@@ -42,7 +42,7 @@ local function getState(character)
             currentPath = nil,
             currentGoal = nil
         }
-        entity.CustomData[DataKeys.Route] = state
+        entity:setCustomData(DataKeys.Route, state)
     end
     return state
 end
@@ -85,11 +85,11 @@ local function canVisit(character, candidate, goal)
     if samePosition(candidate, goal) then
         return true
     end
-    local dimension = character.SeleneEntity.Dimension
+    local dimension = character.SeleneEntity:getDimension()
     if dimension == nil then
         return false
     end
-    return not dimension:HasCollisionAt(candidate, character.SeleneEntity.Collision)
+    return not dimension:hasCollisionAt(candidate, character.SeleneEntity.Collision)
 end
 
 local function findPath(character, goal)
@@ -239,7 +239,7 @@ function m.Advance(character)
     end
 
     local step = table.remove(state.currentPath, 1)
-    local moved = character.SeleneEntity:Move(DirectionUtils.IllaToSelene(step))
+    local moved = character.SeleneEntity:move(DirectionUtils.IllaToSelene(step))
     if not moved then
         invalidatePath(state)
         local retryReady, retryStatus = ensurePath(character, state)
@@ -247,7 +247,7 @@ function m.Advance(character)
             return retryStatus or "blocked"
         end
         step = table.remove(state.currentPath, 1)
-        moved = character.SeleneEntity:Move(DirectionUtils.IllaToSelene(step))
+        moved = character.SeleneEntity:move(DirectionUtils.IllaToSelene(step))
         if not moved then
             invalidatePath(state)
             return "blocked"

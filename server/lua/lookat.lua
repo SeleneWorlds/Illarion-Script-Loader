@@ -8,7 +8,7 @@ local illaItemLookAt = require("server.itemlookat")
 
 local function LookAtItem(character, itemDef, item)
     local result = nil
-    local scriptName = itemDef:GetField("script")
+    local scriptName = itemDef:getField("script")
     if scriptName then
         local status, script = pcall(require, scriptName)
         if status and type(script.LookAtItem) == "function" then
@@ -21,28 +21,28 @@ local function LookAtItem(character, itemDef, item)
     return result
 end
 
-Network.HandlePayload("illarion:look_at", function(player, payload)
-    local entity = player.ControlledEntity
-    local dimension = entity.Dimension
-    local tiles = dimension:GetTilesAt(payload.x, payload.y, payload.z, entity.Vision)
+Network.handlePayload("illarion:look_at", function(player, payload)
+    local entity = player:getControlledEntity()
+    local dimension = entity:getDimension()
+    local tiles = dimension:getTilesAt(payload.x, payload.y, payload.z, entity:getVisionViewer())
     for i = #tiles, 1, -1 do
         local tile = tiles[i]
-        local itemId = tile:GetMetadata("itemId")
+        local itemId = tile:getMetadata("itemId")
         if itemId then
-            local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+            local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
             if not itemDef then
-                error("Unknown item id " .. itemId .. " at " .. tile.Coordinate)
+                error("Unknown item id " .. itemId .. " at " .. tile:getCoordinate())
             end
             local result = LookAtItem(Character.fromSelenePlayer(player), itemDef, Item.fromSeleneTile(tile))
-            Network.SendToPlayer(player, "illarion:look_at", {
+            Network.sendToPlayer(player, "illarion:look_at", {
                 x = payload.x,
                 y = payload.y,
                 z = payload.z,
                 tooltip = result
             })
-        elseif tile:HasTag("illarion:tile") then
-            local name = I18n.Get("tiles." .. stringx.substringAfter("illarion:", tile.Name), player.Locale) or tile.Name
-            Network.SendToPlayer(player, "illarion:look_at", {
+        elseif tile:hasTag("illarion:tile") then
+            local name = I18n.get("tiles." .. stringx.substringAfter("illarion:", tile:getName()), player:getLocale()) or tile:getName()
+            Network.sendToPlayer(player, "illarion:look_at", {
                 x = payload.x,
                 y = payload.y,
                 z = payload.z,
@@ -55,29 +55,29 @@ Network.HandlePayload("illarion:look_at", function(player, payload)
     end
 end)
 
-Network.HandlePayload("illarion:look_at_entity", function(player, payload)
-    local entity = Entities.GetByNetworkId(payload.networkId)
+Network.handlePayload("illarion:look_at_entity", function(player, payload)
+    local entity = Entities.getByNetworkId(payload.networkId)
     if entity then
         local mode = payload.mode
         local character = Character.fromSelenePlayer(player)
         local target = Character.fromSeleneEntity(entity)
-        local characterType = entity.CustomData[DataKeys.CharacterType]
+        local characterType = entity:getCustomData(DataKeys.CharacterType)
         if characterType == Character.player then
             illaPlayerLookAt.lookAtPlayer(character, target, mode)
         elseif characterType == Character.npc then
-            local status, script = pcall(require, entity.CustomData[DataKeys.Script])
+            local status, script = pcall(require, entity:getCustomData(DataKeys.Script))
             if status and type(script.lookAtNpc) == "function" then
                 script.lookAtNpc(target, character, mode)
             else
-                entity:SendToPlayer(player, "illarion:look_at_entity", {
+                entity:sendToPlayer(player, "illarion:look_at_entity", {
                     networkId = entity.NetworkId,
                     tooltip = {
-                        name = entity.Name
+                        name = entity:getName()
                     }
                 })
             end
         elseif characterType == Character.monster then
-            local status, script = pcall(require, entity.CustomData[DataKeys.Script])
+            local status, script = pcall(require, entity:getCustomData(DataKeys.Script))
             if status and type(script.lookAtMonster) == "function" then
                 script.lookAtMonster(character, target, mode)
             end

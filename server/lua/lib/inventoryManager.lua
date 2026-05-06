@@ -64,10 +64,10 @@ function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds, op
     user.SeleneInventories = user.SeleneInventories or {}
     local inventory = user.SeleneInventories[inventoryName]
     if not inventory then
-        local data = user.SeleneEntity.CustomData[dataKey]
+        local data = user.SeleneEntity:getCustomData(dataKey)
         if not data then
             data = tablex.observable()
-            user.SeleneEntity.CustomData[dataKey] = data
+            user.SeleneEntity:setCustomData(dataKey, data)
         end
         inventory = ObservableMapInventory:new({
             data = data,
@@ -87,7 +87,7 @@ end
 function m.GetContentsContainer(item)
     if item.SeleneItem then
         local itemDef = item.SeleneItem.def
-        local slotCount = itemDef:GetField("containerSlots")
+        local slotCount = itemDef:getField("containerSlots")
         if slotCount == nil or slotCount <= 0 then
             return nil
         end

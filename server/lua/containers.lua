@@ -4,27 +4,27 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 
 local illaDepot = require("server.depot")
 
-Network.HandlePayload("illarion:open_container_at", function(player, payload)
-    local playerEntity = player.ControlledEntity
-    local dimension = playerEntity.Dimension
-    local entities = dimension:GetEntitiesAt(payload.x, payload.y, payload.z, playerEntity.Collision)
+Network.handlePayload("illarion:open_container_at", function(player, payload)
+    local playerEntity = player:getControlledEntity()
+    local dimension = playerEntity:getDimension()
+    local entities = dimension:getEntitiesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
     for i = #entities, 1, -1 do
         local entity = entities[i]
-        if entity:HasTag("illarion:item") then
+        if entity:hasTag("illarion:item") then
             -- TODO entity items
         end
     end
-    local tiles = dimension:GetTilesAt(payload.x, payload.y, payload.z, playerEntity.Collision)
+    local tiles = dimension:getTilesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
     for i = #tiles, 1, -1 do
         local tile = tiles[i]
-        local itemId = tile:GetMetadata("itemId")
+        local itemId = tile:getMetadata("itemId")
         if itemId then
             local isDepot = itemId == 321 or itemId == 4817
             local item = Item.fromSeleneTile(tile)
             if isDepot then
                 local character = Character.fromSelenePlayer(player)
                 if illaDepot.onOpenDepot(character, item) then
-                    local inventory = InventoryManager.GetDepot(tonumber(item:getData("depot")))
+                    local inventory = InventoryManager.getDepot(tonumber(item:getData("depot")))
                     print("opening depot " .. tablex.tostring(inventory))
                     -- TODO
                 end
@@ -37,7 +37,7 @@ Network.HandlePayload("illarion:open_container_at", function(player, payload)
     end
 end)
 
-Network.HandlePayload("illarion:open_container_slot", function(player, payload)
+Network.handlePayload("illarion:open_container_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local inventory = nil
     if payload.viewId == "inventory" then

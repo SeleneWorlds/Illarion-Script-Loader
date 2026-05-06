@@ -8,47 +8,47 @@ local AttributeManager = require("illarion-script-loader.server.lua.lib.attribut
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 Character.SeleneMethods.getType = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.CharacterType] or Character.player
+    return user.SeleneEntity:getCustomData(DataKeys.CharacterType) or Character.player
 end
 
 Character.SeleneMethods.getRace = function(user)
-    local race = user.SeleneEntity.CustomData[DataKeys.Race]
+    local race = user.SeleneEntity:getCustomData(DataKeys.Race)
     if not race then
-        error("Unknown race " .. tostring(user.SeleneEntity.CustomData:RawLookup(DataKeys.Race)))
+        error("Unknown race " .. tostring(user.SeleneEntity:getCustomData(DataKeys.Race)))
     end
-    return race:GetMetadata("id")
+    return race:getMetadata("id")
 end
 
 Character.SeleneMethods.setRace = function(user, raceId)
-    local race = Registries.FindByMetadata("illarion:races", "id", raceId)
+    local race = Registries.findByMetadata("illarion:races", "id", raceId)
     if race == nil then
         error("Invalid race id: " .. raceId)
     end
     local entity = user.SeleneEntity
-    entity.CustomData[DataKeys.Race] = race
+    entity:setCustomData(DataKeys.Race, race)
     local sex = user:increaseAttrib("sex", 0)
-    entity:AddComponent("illarion:body", {
+    entity:addComponent("illarion:body", {
         type = "visual",
         visual = "illarion:race_" .. raceId .. "_" .. sex
     })
 end
 
 Character.SeleneMethods.introduce = function(user, other)
-    user.SeleneEntity.CustomData[DataKeys.Introduction(other.id)] = true
+    user.SeleneEntity:setCustomData(DataKeys.Introduction(other.id), true)
     -- TODO sync name component
     error("introduce is not fully implemented - does not sync new nameplate yet")
 end
 
 Character.SeleneGetters.id = function(user)
-    return user.SeleneEntity.CustomData[DataKeys.ID] or 0
+    return user.SeleneEntity:getCustomData(DataKeys.ID) or 0
 end
 
 Character.SeleneGetters.name = function(user)
-    return user.SeleneEntity.Name
+    return user.SeleneEntity:getName()
 end
 
 Character.SeleneGetters.pos = function(user)
-    return position.FromSeleneCoordinate(user.SeleneEntity.Coordinate)
+    return position.FromSeleneCoordinate(user.SeleneEntity:getCoordinate())
 end
 
 Character.SeleneGetters.waypoints = function(user)
@@ -61,48 +61,48 @@ Character.SeleneGetters.waypoints = function(user)
 end
 
 Character.SeleneGetters.isinvisible = function(user)
-    return user.SeleneEntity:IsInvisible()
+    return user.SeleneEntity:isInvisible()
 end
 
 Character.SeleneSetters.isinvisible = function(user)
-    user.SeleneEntity:MakeInvisible()
+    user.SeleneEntity:makeInvisible()
 end
 
 Character.SeleneMethods.updateAppearance = function(user)
-    user.SeleneEntity:UpdateVisual()
+    user.SeleneEntity:updateVisual()
 end
 
 Character.SeleneMethods.setClippingActive = function(user, status)
-    user.SeleneEntity:SetNoClip(status)
+    user.SeleneEntity:setNoClip(status)
 end
 
 Character.SeleneMethods.getClippingActive = function(user)
-    return user.SeleneEntity:IsNoClip()
+    return user.SeleneEntity:isNoClip()
 end
 
 Character.SeleneMethods.getFaceTo = function(user)
-   return DirectionUtils.SeleneToIlla(user.SeleneEntity.Facing) or Character.north
+   return DirectionUtils.SeleneToIlla(user.SeleneEntity:getFacing()) or Character.north
 end
 
 Character.SeleneMethods.warp = function(user, pos)
     -- TODO illa fails this if occupied
-    user.SeleneEntity:SetCoordinate(pos)
+    user.SeleneEntity:setCoordinate(pos)
 end
 
 Character.SeleneMethods.forceWarp = function(user, pos)
-    user.SeleneEntity:SetCoordinate(pos)
+    user.SeleneEntity:setCoordinate(pos)
 end
 
 Character.SeleneMethods.move = function(user, direction, activeMove)
     -- TODO activeMove = false means it should be a "push" (no walk animation)
     local seleneDirection = DirectionUtils.IllaToSelene(direction) or direction
-    return user.SeleneEntity:Move(seleneDirection)
+    return user.SeleneEntity:move(seleneDirection)
 end
 
 Character.SeleneMethods.turn = function(user, direction)
     local seleneDirection = DirectionUtils.IllaToSelene(direction)
     if seleneDirection then
-        user.SeleneEntity:SetFacing(seleneDirection)
+        user.SeleneEntity:setFacing(seleneDirection)
     end
 end
 
@@ -137,37 +137,37 @@ Character.SeleneMethods.setOnRoute = function(user, onRoute)
 end
 
 Character.SeleneGetters.movepoints = function(user)
-    return AttributeManager.GetAttribute(user, "actionpoints").EffectiveValue
+    return AttributeManager.GetAttribute(user, "actionpoints"):getEffectiveValue()
 end
 
 Character.SeleneSetters.movepoints = function(user, value)
-    AttributeManager.GetAttribute(user, "actionpoints").Value = value
+    AttributeManager.GetAttribute(user, "actionpoints"):setValue(value)
 end
 
 Character.SeleneGetters.speed = function(user)
-    return AttributeManager.GetAttribute(user, "speed").EffectiveValue
+    return AttributeManager.GetAttribute(user, "speed"):getEffectiveValue()
 end
 
 Character.SeleneSetters.speed = function(user, value)
-    AttributeManager.GetAttribute(user, "speed").Value = value
+    AttributeManager.GetAttribute(user, "speed"):setValue(value)
 end
 
 Character.SeleneGetters.SeleneEntity = function(user)
-    return user.SelenePlayer and user.SelenePlayer.ControlledEntity or rawget(user, "SeleneEntity")
+    return user.SelenePlayer and user.SelenePlayer:getControlledEntity() or rawget(user, "SeleneEntity")
 end
 
 Character.SeleneMethods.performAnimation = function(user, animId)
-    user.SeleneEntity:PlayAnimation(tostring(animId))
+    user.SeleneEntity:playAnimation(tostring(animId))
 end
 
 Character.SeleneMethods.startMusic = function(user, id)
-    Network.SendToEntity(user.SeleneEntity, "illarion:music", {
+    Network.sendToEntity(user.SeleneEntity, "illarion:music", {
         musicId = id
     })
 end
 
 Character.SeleneMethods.defaultMusic = function()
-    Network.SendToEntity(user.SeleneEntity, "illarion:music", {
+    Network.sendToEntity(user.SeleneEntity, "illarion:music", {
         musicId = 0
     })
 end
@@ -178,7 +178,7 @@ isValidChar = function(user)
 end
 
 function Character.fromSeleneEntity(entity)
-    local players = entity:GetControllingPlayers()
+    local players = entity:getControllingPlayers()
     local player = #players > 0 and players[1] or nil
     return setmetatable({SeleneEntity = entity, SelenePlayer = player}, Character.SeleneMetatable)
 end

@@ -3,41 +3,41 @@ local Registries = require("selene.registries")
 local I18n = require("selene.i18n")
 
 world.SeleneMethods.getItemStatsFromId = function(world, itemId)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if itemDef then
         return {
-          AgeingSpeed = tonumber(itemDef:GetField("agingSpeed") or 0),
-          Brightness = tonumber(itemDef:GetField("brightness") or 0),
-          BuyStack = tonumber(itemDef:GetField("buyStack") or 0),
-          English = itemDef:GetField("nameEnglish"),
-          EnglishDescription = itemDef:GetField("descriptionEnglish"),
-          German = itemDef:GetField("nameGerman"),
-          GermanDescription = itemDef:GetField("descriptionGerman"),
-          id = tonumber(itemDef:GetField("itemId") or 0),
-          Level = tonumber(itemDef:GetField("level") or 0),
-          MaxStack = tonumber(itemDef:GetField("maxStack") or 0),
-          ObjectAfterRot = tonumber(itemDef:GetField("objectAfterRot") or 0),
-          Rareness = tonumber(itemDef:GetField("rareness") or 0),
-          rotsInInventory = itemDef:GetField("rotsInInventory"),
-          Weight = tonumber(itemDef:GetField("weight") or 0),
-          Worth = tonumber(itemDef:GetField("worth") or 0)
+          AgeingSpeed = tonumber(itemDef:getField("agingSpeed") or 0),
+          Brightness = tonumber(itemDef:getField("brightness") or 0),
+          BuyStack = tonumber(itemDef:getField("buyStack") or 0),
+          English = itemDef:getField("nameEnglish"),
+          EnglishDescription = itemDef:getField("descriptionEnglish"),
+          German = itemDef:getField("nameGerman"),
+          GermanDescription = itemDef:getField("descriptionGerman"),
+          id = tonumber(itemDef:getField("itemId") or 0),
+          Level = tonumber(itemDef:getField("level") or 0),
+          MaxStack = tonumber(itemDef:getField("maxStack") or 0),
+          ObjectAfterRot = tonumber(itemDef:getField("objectAfterRot") or 0),
+          Rareness = tonumber(itemDef:getField("rareness") or 0),
+          rotsInInventory = itemDef:getField("rotsInInventory"),
+          Weight = tonumber(itemDef:getField("weight") or 0),
+          Worth = tonumber(itemDef:getField("worth") or 0)
         }
     end
     return ItemStruct()
 end
 
 world.SeleneMethods.getItemOnField = function(world, position)
-    local dimension = Dimensions.GetDefault()
-    local entities = dimension:GetEntitiesAt(position)
+    local dimension = Dimensions.getDefault()
+    local entities = dimension:getEntitiesAt(position)
     for _, entity in ipairs(entities) do
-        if entity:HasTag("illarion:item") then
+        if entity:hasTag("illarion:item") then
             return Item.fromSeleneEntity(entity)
         end
     end
 
-    local tiles = dimension:GetTilesAt(position)
+    local tiles = dimension:getTilesAt(position)
     for _, tile in ipairs(tiles) do
-        if tile:HasTag("illarion:item") then
+        if tile:hasTag("illarion:item") then
             return Item.fromSeleneTile(tile)
         end
     end
@@ -46,16 +46,16 @@ world.SeleneMethods.getItemOnField = function(world, position)
 end
 
 world.SeleneMethods.isItemOnField = function(world, position)
-    local dimension = Dimensions.GetDefault()
-    local tiles = dimension:GetTilesAt(position)
+    local dimension = Dimensions.getDefault()
+    local tiles = dimension:getTilesAt(position)
     for _, tile in ipairs(tiles) do
-        if tile:HasTag("illarion:item") then
+        if tile:hasTag("illarion:item") then
             return true
         end
     end
-    local entities = dimension:GetEntitiesAt(position)
+    local entities = dimension:getEntitiesAt(position)
     for _, entity in ipairs(entities) do
-        if entity:HasTag("illarion:item") then
+        if entity:hasTag("illarion:item") then
             return true
         end
     end
@@ -64,22 +64,22 @@ end
 
 world.SeleneMethods.erase = function(world, item, amount)
     if item:getType() == scriptItem.field then
-        local TileDef = Registries.FindByMetadata("tiles", "itemId", item.id)
+        local TileDef = Registries.findByMetadata("tiles", "itemId", item.id)
         if TileDef == nil then
             error("Missing tile for item " .. item.id)
         end
 
-        local dimension = Dimensions.GetDefault()
+        local dimension = Dimensions.getDefault()
         -- TODO erase from entity items if found
-        if dimension:HasTile(item.pos, TileDef) then
-            dimension.Map:RemoveTile(item.pos, TileDef)
+        if dimension:hasTile(item.pos, TileDef) then
+            dimension:getMap():removeTile(item.pos, TileDef)
             return true
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
         local blockedItemId = 228
-        if item.itempos == Character.right_tool and (item.owner:GetItemAt(Character.left_tool)).id == blockedItemId then
+        if item.itempos == Character.right_tool and (item.owner:getItemAt(Character.left_tool)).id == blockedItemId then
             item.owner:increaseAtPos(Character.left_tool, -250);
-        elseif item.itempos == Character.left_tool and (item.owner:GetItemAt(Character.right_tool)).id == blockedItemId then
+        elseif item.itempos == Character.left_tool and (item.owner:getItemAt(Character.right_tool)).id == blockedItemId then
             item.owner:increaseAtPos(Character.right_tool, -250);
         end
 
@@ -92,17 +92,17 @@ end
 
 world.SeleneMethods.changeItem = function(world, item)
     if item.SeleneEntity ~= nil then
-        item.SeleneEntity:UpdateVisuals()
+        item.SeleneEntity:updateVisuals()
     end
 end
 
 world.SeleneMethods.getItemName = function(world, itemId, language)
-    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local item = Registries.findByMetadata("illarion:items", "id", itemId)
     if item then
         if language == Player.german then
-            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "de") or item.Name
+            return I18n.Get("item." .. stringx.substringAfter(item:getName(), "illarion:"), "de") or item:getName()
         else
-            return I18n.Get("item." .. stringx.substringAfter(item.Name, "illarion:"), "en") or item.Name
+            return I18n.Get("item." .. stringx.substringAfter(item:getName(), "illarion:"), "en") or item:getName()
         end
     end
 
@@ -110,7 +110,7 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
 end
 
 world.SeleneMethods.swap = function(world, item, newId, newQuality)
-    local NewTileDef = Registries.FindByMetadata("tiles", "itemId", newId)
+    local NewTileDef = Registries.findByMetadata("tiles", "itemId", newId)
     if NewTileDef == nil then
         error("Unknown tile id " .. newId)
         return
@@ -118,8 +118,8 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
 
     if item:getType() == scriptItem.field then
         if item.SeleneTile ~= nil then
-            local map = item.SeleneTile.Dimension.Map
-            map:SwapTile(item.SeleneTile.Coordinate, item.SeleneTile.Definition, NewTileDef)
+            local map = item.SeleneTile:getDimension():getMap()
+            map:swapTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getDefinition(), NewTileDef)
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
         item.owner:swapAtPos(item.itempos, newId, newQuality)
@@ -129,12 +129,12 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
 end
 
 world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data)
-    local dimension = Dimensions.GetDefault()
-    local tileDef = Registries.FindByMetadata("tiles", "itemId", itemId)
+    local dimension = Dimensions.getDefault()
+    local tileDef = Registries.findByMetadata("tiles", "itemId", itemId)
     if not tileDef then
         error("Unknown tile for item id " .. itemId)
     end
-    local tile = dimension:PlaceTile(pos, tileDef)
+    local tile = dimension:placeTile(pos, tileDef)
     return Item.fromSeleneTile(tile)
 end
 
@@ -143,8 +143,8 @@ world.SeleneMethods.createItemFromItem = function(world, item, pos, always)
 end
 
 world.SeleneMethods.getArmorStruct = function(world, itemId)
-    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
-    local armor = item and item:GetField("armor") or nil
+    local item = Registries.findByMetadata("illarion:items", "id", itemId)
+    local armor = item and item:getField("armor") or nil
     if armor then
         return true, {
             BodyParts = armor.bodyParts,
@@ -161,8 +161,8 @@ world.SeleneMethods.getArmorStruct = function(world, itemId)
 end
 
 world.SeleneMethods.getWeaponStruct = function(world, item)
-    local item = Registries.FindByMetadata("illarion:items", "id", itemId)
-    local weapon = item and item:GetField("weapon") or nil
+    local item = Registries.findByMetadata("illarion:items", "id", itemId)
+    local weapon = item and item:getField("weapon") or nil
     if weapon then
         return true, {
             Attack = weapon.attack,

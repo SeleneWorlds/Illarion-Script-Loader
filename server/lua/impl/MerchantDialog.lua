@@ -12,7 +12,7 @@ MerchantDialog.SeleneConstructor = function(title, callback)
 end
 
 MerchantDialog.SeleneMethods.addOffer = function(self, itemId, name, price, buyStack)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
     end
@@ -20,12 +20,12 @@ MerchantDialog.SeleneMethods.addOffer = function(self, itemId, name, price, buyS
         itemDef = itemDef,
         name = name,
         price = price,
-        buyStack = itemDef:GetField("buyStack")
+        buyStack = itemDef:getField("buyStack")
     })
 end
 
 MerchantDialog.SeleneMethods.addPrimaryRequest = function(self, itemId, name, price)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
     end
@@ -37,7 +37,7 @@ MerchantDialog.SeleneMethods.addPrimaryRequest = function(self, itemId, name, pr
 end
 
 MerchantDialog.SeleneMethods.addSecondaryRequest = function(self, itemId, name, price)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
     end

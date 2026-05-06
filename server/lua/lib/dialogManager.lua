@@ -9,15 +9,15 @@ m.IdCounter = 0
 function m.RequestDialog(user, dialog)
     m.IdCounter = m.IdCounter + 1
     local id = m.IdCounter
-    user.SeleneEntity.CustomData[DataKeys.Dialog(id)] = dialog
+    user.SeleneEntity:setCustomData(DataKeys.Dialog(id), dialog)
     if dialog.type == "MessageDialog" then
-        Network.SendToEntity(user.SeleneEntity, "illarion:message_dialog", {
+        Network.sendToEntity(user.SeleneEntity, "illarion:message_dialog", {
             id = id,
             title = dialog.title,
             message = dialog.message
         })
     elseif dialog.type == "InputDialog" then
-        Network.SendToEntity(user.SeleneEntity, "illarion:input_dialog", {
+        Network.sendToEntity(user.SeleneEntity, "illarion:input_dialog", {
             id = id,
             title = dialog.title,
             description = dialog.description,
@@ -25,18 +25,18 @@ function m.RequestDialog(user, dialog)
             maxChars = dialog.maxChars
         })
     elseif dialog.type == "MerchantDialog" then
-        Network.SendToEntity(user.SeleneEntity, "illarion:merchant_dialog", {
+        Network.sendToEntity(user.SeleneEntity, "illarion:merchant_dialog", {
             id = id,
             title = title
         })
     elseif dialog.type == "SelectionDialog" then
-        Network.SendToEntity(user.SeleneEntity, "illarion:selection_dialog", {
+        Network.sendToEntity(user.SeleneEntity, "illarion:selection_dialog", {
             id = id,
             title = title,
             message = message
         })
     elseif dialog.type == "CraftingDialog" then
-        Network.SendToEntity(user.SeleneEntity, "illarion:crafting_dialog", {
+        Network.sendToEntity(user.SeleneEntity, "illarion:crafting_dialog", {
             id = id,
             title = title
         })
@@ -44,7 +44,7 @@ function m.RequestDialog(user, dialog)
 end
 
 function m.GetDialog(character, id)
-    local dialog = character.SeleneEntity.CustomData:RawLookup(DataKeys.Dialog(id))
+    local dialog = character.SeleneEntity:getCustomData(DataKeys.Dialog(id))
     if dialog then
         if dialog.type == "MessageDialog" then
             setmetatable(dialog, MessageDialog.SeleneMetatable)
@@ -62,7 +62,7 @@ function m.GetDialog(character, id)
 end
 
 function m.ClearDialog(character, id)
-    character.SeleneEntity.CustomData[DataKeys.Dialog(id)] = nil
+    character.SeleneEntity:setCustomData(DataKeys.Dialog(id), nil)
 end
 
 return m

@@ -25,45 +25,45 @@ function m.AddEffect(user, effect)
             effectScript.doubleEffect(existing, user)
         end
     else
-        local effectScriptName = effect.SeleneEffectDefinition:GetField("script")
+        local effectScriptName = effect.SeleneEffectDefinition:getField("script")
         local status, effectScript = pcall(require, effectScriptName)
         local data = m.EnsureSeleneEffectData(effect)
         if status and effectScript and type(effectScript.addEffect) == "function" and not data.addEffectCalled then
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.observable({})
-        effects[effect.SeleneEffectDefinition.Name] = data
-        user.SeleneEntity.CustomData[DataKeys.Effects] = effects
+        local effects = user.SeleneEntity:getCustomData(DataKeys.Effects) or tablex.observable({})
+        effects[effect.SeleneEffectDefinition:getName()] = data
+        user.SeleneEntity:setCustomData(DataKeys.Effects, effects)
     end
 end
 
 function m.FindEffect(user, idOrName)
-    local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or {}
+    local effects = user.SeleneEntity:getCustomData(DataKeys.Effects) or {}
     local effectDef = nil
     if type(idOrName) == "number" then
-        effectDef = Registries.FindByMetadata("illarion:effects", "id", idOrName)
+        effectDef = Registries.findByMetadata("illarion:effects", "id", idOrName)
     elseif type(idOrName) == "string" then
-        effectDef = Registries.FindByMetadata("illarion:effects", "name", idOrName)
+        effectDef = Registries.findByMetadata("illarion:effects", "name", idOrName)
     end
-    if effectDef and effects[effectDef.Name] then
-        return true, m.WrapLongTimeEffect(effectDef, user.SeleneEntity, effects[effectDef.Name])
+    if effectDef and effects[effectDef:getName()] then
+        return true, m.WrapLongTimeEffect(effectDef, user.SeleneEntity, effects[effectDef:getName()])
     end
     return false, nil
 end
 
 function m.RemoveEffect(user, effect)
-   local effects = user.SeleneEntity.CustomData[DataKeys.Effects] or tablex.observable({})
-   local effectDef = Registries.FindByMetadata("illarion:effects", "id", effect.id)
+   local effects = user.SeleneEntity:getCustomData(DataKeys.Effects) or tablex.observable({})
+   local effectDef = Registries.findByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
-       local effectScriptName = effectDef:GetField("script")
+       local effectScriptName = effectDef:getField("script")
        local status, effectScript = pcall(require, effectScriptName)
        if status and effectScript and type(effectScript.removeEffect) == "function" then
            effectScript.removeEffect(effect, user)
        end
    end
-   effects[effectDef.Name] = nil
-   user.SeleneEntity.CustomData[DataKeys.Effects] = effects
+   effects[effectDef:getName()] = nil
+   user.SeleneEntity:setCustomData(DataKeys.Effects, effects)
    return true
 end
 

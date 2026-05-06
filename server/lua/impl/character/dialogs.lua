@@ -23,5 +23,5 @@ Character.SeleneMethods.requestCraftingDialog = function(user, dialog)
 end
 
 Character.SeleneMethods.sendBook = function(user, bookId)
-    Network.SendToEntity(user.SeleneEntity, "illarion:book", {id = bookId})
+    Network.sendToEntity(user.SeleneEntity, "illarion:book", {id = bookId})
 end

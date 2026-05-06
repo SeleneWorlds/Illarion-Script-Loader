@@ -4,7 +4,7 @@ local Network = require("selene.network")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Container.SeleneMethods.countItem = function(container, itemId, data)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
     end
@@ -21,7 +21,7 @@ Container.SeleneMethods.weight = function(container)
     local items = container.SeleneInventory:findInventoryItems()
     for _, item in ipairs(items) do
         if item.def then
-            weight = weight + item.def:GetField("weight")
+            weight = weight + item.def:getField("weight")
         end
     end
     return weight
@@ -67,12 +67,12 @@ Container.SeleneMethods.insertItem = function(container, item, mergeOrSlotId)
     else
         local merge = mergeOrSlotId or true
         if merge then
-            inventory:addItem(item:ToSeleneItem())
+            inventory:addItem(item:toSeleneItem())
         else
             for _, slotId in ipairs(inventory:getSlots()) do
                 local slotItem = inventory:getItem(slotId)
                 if slotItem == nil then
-                    inventory:addItemAt(slotId, item:ToSeleneItem())
+                    inventory:addItemAt(slotId, item:toSeleneItem())
                     break
                 end
             end
@@ -82,7 +82,7 @@ Container.SeleneMethods.insertItem = function(container, item, mergeOrSlotId)
 end
 
 Container.SeleneMethods.eraseItem = function(container, itemId, amount, data)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to erase unknown item id " .. itemId)
     end
@@ -95,7 +95,7 @@ Container.SeleneMethods.increaseAtPos = function(container, slotId, amount)
 end
 
 Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQuality)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", newId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
     end

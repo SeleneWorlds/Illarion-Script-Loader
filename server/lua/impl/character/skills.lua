@@ -3,38 +3,38 @@ local Registries = require("selene.registries")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
 
 Character.SeleneMethods.getSkillName = function(skillId)
-    local skill = Registries.FindByMetadata("illarion:skills", "id", skillId)
-    return skill:GetMetadata("name")
+    local skill = Registries.findByMetadata("illarion:skills", "id", skillId)
+    return skill:getMetadata("name")
 end
 
 Character.SeleneMethods.getSkill = function(user, skillId)
-    return SkillManager.GetMajorSkillAttribute(user, skillId).EffectiveValue
+    return SkillManager.GetMajorSkillAttribute(user, skillId):getEffectiveValue()
 end
 
 Character.SeleneMethods.getMinorSkill = function(user, skillId)
-    return SkillManager.GetMinorSkillAttribute(user, skillId).EffectiveValue
+    return SkillManager.GetMinorSkillAttribute(user, skillId):getEffectiveValue()
 end
 
 Character.SeleneMethods.increaseSkill = function(user, skillId, amount)
     local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
-    attribute.Value = attribute.Value + amount
-    return attribute.EffectiveValue
+    attribute:setValue(attribute:getValue() + amount)
+    return attribute:getEffectiveValue()
 end
 
 Character.SeleneMethods.increaseMinorSkill = function(user, skillId, amount)
     local attribute = SkillManager.GetMinorSkillAttribute(user, skillId)
-    local newValue = attribute.Value + amount
+    local newValue = attribute:getValue() + amount
     if newValue > 10000 then
         user:increaseSkill(skillId, 1)
         newValue = 0
     end
-    attribute.Value = newValue
+    attribute:setValue(newValue)
     return user:getSkill(skillId)
 end
 
 Character.SeleneMethods.setSkill = function(user, skillId, major, minor)
-    SkillManager.GetMajorSkillAttribute(user, skillId).Value = major
-    SkillManager.GetMinorSkillAttribute(user, skillId).Value = minor
+    SkillManager.GetMajorSkillAttribute(user, skillId):setValue(major)
+    SkillManager.GetMinorSkillAttribute(user, skillId):setValue(minor)
 end
 
 Character.SeleneMethods.learn = function(user, skillId, actionPoints, learnLimit)

@@ -22,7 +22,7 @@ CraftingDialog.SeleneMethods.addGroup = function(name)
 end
 
 CraftingDialog.SeleneMethods.addCraftable = function(id, groupId, itemId, name, decisecondsToCraft, craftedStackSize)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
     end
@@ -40,7 +40,7 @@ CraftingDialog.SeleneMethods.addCraftable = function(id, groupId, itemId, name, 
 end
 
 CraftingDialog.SeleneMethods.addCraftableIngredient = function(itemId, number)
-    local itemDef = Registries.FindByMetadata("illarion:items", "id", itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
     end

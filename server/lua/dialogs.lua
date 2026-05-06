@@ -3,7 +3,7 @@ local Network = require("selene.network")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DialogManager = require("illarion-script-loader.server.lua.lib.dialogManager")
 
-Network.HandlePayload("illarion:message_dialog", function(player, payload)
+Network.handlePayload("illarion:message_dialog", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "MessageDialog" then
@@ -14,7 +14,7 @@ Network.HandlePayload("illarion:message_dialog", function(player, payload)
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:input_dialog", function(player, payload)
+Network.handlePayload("illarion:input_dialog", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "InputDialog" then
@@ -28,7 +28,7 @@ Network.HandlePayload("illarion:input_dialog", function(player, payload)
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:selection_dialog", function(player, payload)
+Network.handlePayload("illarion:selection_dialog", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "SelectionDialog" then
@@ -42,7 +42,7 @@ Network.HandlePayload("illarion:selection_dialog", function(player, payload)
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:merchant_dialog:abort", function(player, payload)
+Network.handlePayload("illarion:merchant_dialog:abort", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "MerchantDialog" then
@@ -58,7 +58,7 @@ Network.HandlePayload("illarion:merchant_dialog:abort", function(player, payload
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:merchant_dialog:buy", function(player, payload)
+Network.handlePayload("illarion:merchant_dialog:buy", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "MerchantDialog" then
@@ -74,7 +74,7 @@ Network.HandlePayload("illarion:merchant_dialog:buy", function(player, payload)
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:merchant_dialog:sell", function(player, payload)
+Network.handlePayload("illarion:merchant_dialog:sell", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "MerchantDialog" then
@@ -90,7 +90,7 @@ Network.HandlePayload("illarion:merchant_dialog:sell", function(player, payload)
     dialog.purchaseIndex = 0
     dialog.purchaseAmount = 0
 
-    local item = inventory:GetItem(payload.slotId):DeepCopy()
+    local item = inventory:getItem(payload.slotId):deepCopy()
     if payload.amount < item.count then
         item.count = payload.amount
     end
@@ -100,7 +100,7 @@ Network.HandlePayload("illarion:merchant_dialog:sell", function(player, payload)
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:merchant_dialog:look_at", function(player, payload)
+Network.handlePayload("illarion:merchant_dialog:look_at", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "MerchantDialog" then
@@ -115,7 +115,7 @@ Network.HandlePayload("illarion:merchant_dialog:look_at", function(player, paylo
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:crafting_dialog:abort", function(player, payload)
+Network.handlePayload("illarion:crafting_dialog:abort", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "CraftingDialog" then
@@ -128,7 +128,7 @@ Network.HandlePayload("illarion:crafting_dialog:abort", function(player, payload
     DialogManager.ClearDialog(character, payload.id)
 end)
 
-Network.HandlePayload("illarion:crafting_dialog:craft", function(player, payload)
+Network.handlePayload("illarion:crafting_dialog:craft", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
     if not dialog or dialog.type ~= "CraftingDialog" then

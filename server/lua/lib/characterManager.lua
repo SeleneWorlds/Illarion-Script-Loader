@@ -6,7 +6,7 @@ m.EntitiesById = {}
 m.CharactersById = {}
 
 function m.AddEntity(entity)
-    local id = entity.CustomData[DataKeys.ID]
+    local id = entity:getCustomData(DataKeys.ID)
     if id == nil then
         error("Tried to add an entity without an ID to character manager")
     end
@@ -17,25 +17,25 @@ function m.AddEntity(entity)
 end
 
 function m.RemoveEntity(entity)
-    local id = entity.CustomData[DataKeys.ID]
+    local id = entity:getCustomData(DataKeys.ID)
     m.EntitiesById[id] = nil
     m.CharactersById[id] = nil
 end
 
 function m.IsDead(character)
-    return character.SeleneEntity.CustomData[DataKeys.Dead]
+    return character.SeleneEntity:getCustomData(DataKeys.Dead)
 end
 
 function m.SetDead(character, dead)
     local wasDead = m.IsDead(character)
-    character.SeleneEntity.CustomData[DataKeys.Dead] = dead
+    character.SeleneEntity:setCustomData(DataKeys.Dead, dead)
     if not wasDead and dead then
-        local characterType = character.SeleneEntity.CustomData[DataKeys.CharacterType]
+        local characterType = character.SeleneEntity:getCustomData(DataKeys.CharacterType)
         if characterType == Character.player then
             character:abortAction()
             illaPlayerDeath.playerDeath(character)
         elseif characterType == Character.monster then
-            local scriptName = character.SeleneEntity.CustomData[DataKeys.Script]
+            local scriptName = character.SeleneEntity:getCustomData(DataKeys.Script)
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.onDeath) == "function" then

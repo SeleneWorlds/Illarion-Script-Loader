@@ -13,25 +13,25 @@ local m = {}
 m.EntitiesById = {}
 
 function m.Spawn(player)
-    local entity = Entities.Create("illarion:races/race_0_1")
+    local entity = Entities.create("illarion:races/race_0_1")
     local id = 8147
-    entity.CustomData[DataKeys.ID] = id
-    entity.CustomData[DataKeys.CharacterType] = Character.player
-    entity.CustomData[DataKeys.Race] = Registries.FindByName("illarion:races", "illarion:race_0")
-    entity.CustomData[DataKeys.Sex] = "female"
-    entity:SetCoordinate(702, 283, 0)
-    entity:AddDynamicComponent("illarion:name", function(entity, forPlayer)
-        local isControlled = forPlayer.ControlledEntity == entity
-        local isIntroduced = forPlayer.ControlledEntity and forPlayer.ControlledEntity.CustomData[DataKeys.Introduction(entity.CustomData[DataKeys.ID])]
-        local effectiveName = entity.Name
+    entity:setCustomData(DataKeys.ID, id)
+    entity:setCustomData(DataKeys.CharacterType, Character.player)
+    entity:setCustomData(DataKeys.Race, Registries.findByName("illarion:races", "illarion:race_0"))
+    entity:setCustomData(DataKeys.Sex, "female")
+    entity:setCoordinate(702, 283, 0)
+    entity:addDynamicComponent("illarion:name", function(entity, forPlayer)
+        local isControlled = forPlayer:getControlledEntity() == entity
+        local isIntroduced = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getCustomData(DataKeys.Introduction(entity:getCustomData(DataKeys.ID)))
+        local effectiveName = entity:getName()
         if not isIntroduced and not isControlled then
-            local race = entity.CustomData[DataKeys.Race]
+            local race = entity:getCustomData(DataKeys.Race)
             if race then
-                local sex = entity.CustomData[DataKeys.Sex] or "male"
-                local key = "nameTag." .. stringx.substringAfter(race.Name, "illarion:") .. "." .. sex
+                local sex = entity:getCustomData(DataKeys.Sex) or "male"
+                local key = "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
                 effectiveName = I18n.Get(key, player.Locale) or key
             else
-                effectiveName = tostring(entity.CustomData:RawLookup(DataKeys.Race))
+                effectiveName = tostring(entity:getCustomData(DataKeys.Race))
             end
         end
         return {
@@ -46,10 +46,10 @@ function m.Spawn(player)
             }
         }
     end)
-    entity:Spawn()
-    player.ControlledEntity = entity
-    player.CameraEntity = entity
-    player:SetCameraToFollowTarget()
+    entity:spawn()
+    player:setControlledEntity(entity)
+    player:setCameraEntity(entity)
+    player:setCameraToFollowTarget()
 
     m.EntitiesById[id] = entity
     local character = CharacterManager.AddEntity(entity)
@@ -59,10 +59,10 @@ function m.Spawn(player)
         local slotId = data.dirtySlot
         if slotId then
             local item = inventory:getItem(slotId)
-            Network.SendToEntity(entity, "illarion:update_slot", {
+            Network.sendToEntity(entity, "illarion:update_slot", {
                 viewId = "inventory",
                 slotId = slotId,
-                item = item and { visual = item.def:GetField("visual") } or nil
+                item = item and { visual = item.def:getField("visual") } or nil
             })
         end
     end)
@@ -71,26 +71,26 @@ function m.Spawn(player)
     character:setAttrib("foodlevel", 30000)
     character:setMentalCapacity(10000)
 
-    player.CustomData[DataKeys.CurrentLoginTimestamp] = os.time()
+    player:setCustomData(DataKeys.CurrentLoginTimestamp, os.time())
 
     return character
 end
 
 function m.Despawn(player)
-    if player.ControlledEntity then
-        player.ControlledEntity:Remove()
+    if player:getControlledEntity() then
+        player:getControlledEntity():remove()
     end
 
-    local loginTimestamp = player.CustomData[DataKeys.CurrentLoginTimestamp] or 0
+    local loginTimestamp = player:getCustomData(DataKeys.CurrentLoginTimestamp) or 0
     local logoutTimestamp = os.time()
     local sessionOnlineTime = logoutTimestamp - loginTimestamp
-    local totalOnlineTime = player.CustomData[DataKeys.TotalOnlineTime] or 0
-    player.CustomData[DataKeys.TotalOnlineTime] = totalOnlineTime + sessionOnlineTime
+    local totalOnlineTime = player:getCustomData(DataKeys.TotalOnlineTime) or 0
+    player:setCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
 end
 
 function m.getPlayerByCharacterName(name)
-    for _, player in ipairs(Players.GetOnlinePlayers()) do
-        if player.ControlledEntity and player.ControlledEntity.Name == name then
+    for _, player in ipairs(Players.getOnlinePlayers()) do
+        if player:getControlledEntity() and player:getControlledEntity():getName() == name then
             return player
         end
     end

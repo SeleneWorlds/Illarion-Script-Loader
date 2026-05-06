@@ -3,7 +3,7 @@ local Registries = require("selene.registries")
 local EffectManager = require("illarion-script-loader.server.lua.lib.effectManager")
 
 LongTimeEffect.SeleneConstructor = function(id, nextCalled)
-    local effectDef = Registries.FindByMetadata("illarion:effects", "id", id)
+    local effectDef = Registries.findByMetadata("illarion:effects", "id", id)
     if effectDef == nil then
         error("No such effect " .. id)
     end
@@ -18,11 +18,11 @@ LongTimeEffect.SeleneSetters.nextCalled = function(effect, value)
 end
 
 LongTimeEffect.SeleneGetters.effectId = function(effect)
-    return tonumber(effect.SeleneEffectDefinition:GetMetadata("id"))
+    return tonumber(effect.SeleneEffectDefinition:getMetadata("id"))
 end
 
 LongTimeEffect.SeleneGetters.effectName = function(effect)
-    return effect.SeleneEffectDefinition:GetMetadata("name")
+    return effect.SeleneEffectDefinition:getMetadata("name")
 end
 
 LongTimeEffect.SeleneGetters.nextCalled = function(effect)

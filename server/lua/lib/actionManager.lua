@@ -6,17 +6,17 @@ local m = {}
 
 function m.ClearAction(character)
     local entity = character.SeleneEntity
-    local action = entity.CustomData:RawLookup(DataKeys.CurrentAction) or {}
+    local action = entity:getCustomData(DataKeys.CurrentAction) or {}
      if action.ActionHandle then
-         Schedules.ClearTimeout(action.ActionHandle)
+         Schedules.clearTimeout(action.ActionHandle)
      end
      if action.GfxHandle then
-         Schedules.ClearInterval(action.GfxHandle)
+         Schedules.clearInterval(action.GfxHandle)
      end
      if action.SfxHandle then
-         Schedules.ClearInterval(action.SfxHandle)
+         Schedules.clearInterval(action.SfxHandle)
      end
-    entity.CustomData[DataKeys.CurrentAction] = nil
+    entity:setCustomData(DataKeys.CurrentAction, nil)
 end
 
 return m
