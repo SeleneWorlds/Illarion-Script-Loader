@@ -86,6 +86,16 @@ Network.HandlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     if rest > 0 then
         sourceEntity.CustomData[DataKeys.Count] = rest
     else
+        local triggerfieldAnnotation = sourceEntity.Dimension:GetAnnotationAt(sourceEntity.Coordinate, "illarion:triggerfield", sourceEntity.Collision)
+        if triggerfieldAnnotation then
+            local scriptName = triggerfieldAnnotation.script
+            if scriptName then
+                local status, script = pcall(require, scriptName)
+                if status and type(script.TakeItemFromField) == "function" then
+                    script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character)
+                end
+            end
+        end
         sourceEntity:Despawn()
     end
 end)
