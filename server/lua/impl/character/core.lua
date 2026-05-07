@@ -3,44 +3,41 @@ local Registries = require("selene.registries")
 local Players = require("selene.players")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 Character.SeleneMethods.getType = function(user)
-    return user.SeleneEntity:getCustomData(DataKeys.CharacterType) or Character.player
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    return charData[DataFields.CharacterType] or Character.player
 end
 
 Character.SeleneMethods.getRace = function(user)
-    local race = user.SeleneEntity:getCustomData(DataKeys.Race)
-    if not race then
-        error("Unknown race " .. tostring(user.SeleneEntity:getCustomData(DataKeys.Race)))
-    end
-    return race:getMetadata("id")
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    return charData[DataFields.Race]
 end
 
 Character.SeleneMethods.setRace = function(user, raceId)
-    local race = Registries.findByMetadata("illarion:races", "id", raceId)
-    if race == nil then
-        error("Invalid race id: " .. raceId)
-    end
-    local entity = user.SeleneEntity
-    entity:setCustomData(DataKeys.Race, race)
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    charData[DataFields.Race] = raceId
     local sex = user:increaseAttrib("sex", 0)
-    entity:addComponent("illarion:body", {
+    user.SeleneEntity:addComponent("illarion:body", {
         type = "visual",
         visual = "illarion:race_" .. raceId .. "_" .. sex
     })
 end
 
 Character.SeleneMethods.introduce = function(user, other)
-    user.SeleneEntity:setCustomData(DataKeys.Introduction(other.id), true)
+    local introductionData = user.SeleneEntity:getRuntimeData(DataKeys.Introductions)
+    introductionData[other.id] = true
     -- TODO sync name component
     error("introduce is not fully implemented - does not sync new nameplate yet")
 end
 
 Character.SeleneGetters.id = function(user)
-    return user.SeleneEntity:getCustomData(DataKeys.ID) or 0
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    return charData[DataFields.ID] or 0
 end
 
 Character.SeleneGetters.name = function(user)

@@ -2,6 +2,7 @@ local Attributes = require("selene.attributes")
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
@@ -59,7 +60,8 @@ end
 
 Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
     if attributeName == "sex" then
-        local sex = user.SeleneEntity:getCustomData(DataKeys.Sex)
+        local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+        local sex = charData[DataFields.Sex]
         if sex == "female" then
             return Character.female
         else
@@ -89,7 +91,8 @@ end
 
 Character.SeleneMethods.setAttrib = function(user, attributeName, value)
     if attributeName == "sex" then
-        user.SeleneEntity:setCustomData(DataKeys.Sex, value == Character.female and "female" or "male")
+        local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+        charData[DataFields.Sex] = value == Character.female and "female" or "male"
         return
     elseif attributeName == "poisonvalue" or attributeName == "attitude" or attributeName == "luck" or attributeName == "age" or attributeName == "body_height" then
         AttributeManager.GetAttribute(user, attributeName):setValue(value)

@@ -1,13 +1,14 @@
 local m = {}
 
 function m.SetAttackTarget(user, target)
-    local currentTargetId = user.SeleneEntity:getCustomData(DataKeys.CombatTarget)
+    local combatData = user.SeleneEntity:getRuntimeData(DataKeys.Combat)
+    local currentTargetId = combatData[DataFields.TargetId]
     local newTargetId = target.SeleneEntity.NetworkId
     if currentTargetId == newTargetId then
         return
     end
 
-    user.SeleneEntity:setCustomData(DataKeys.CombatTarget, newTargetId)
+    combatData[DataFields.TargetId] = newTargetId
 end
 
 return m

@@ -2,6 +2,7 @@ local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local MonsterSpawn = {}
 
@@ -57,7 +58,8 @@ function MonsterSpawn:spawn()
                 -- TODO find nearby passable location
                 local pos = position(x, y, z)
                 local monster = world:createMonster(monsterType.def:getMetadata("id"), pos, 0)
-                monster.SeleneEntity:setCustomData(DataKeys.MonsterSpawn, self.def:getName())
+                local charData = monster.SeleneEntity:getRuntimeData(DataKeys.Character)
+                charData[DataFields.MonsterSpawn] = self.def:getName()
                 monsterType.count = monsterType.count + 1
             end
         end

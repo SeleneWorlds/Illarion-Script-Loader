@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
@@ -35,7 +36,8 @@ Character.SeleneMethods.getPlayerLanguage = function(user)
 end
 
 Character.SeleneMethods.isNewPlayer = function(user)
-    return user.SelenePlayer and (user.SelenePlayer:getCustomData(DataKeys.TotalOnlineTime) or 0) < 10 * 60 * 60 or false
+    local playerData = user.SelenePlayer and user.SelenePlayer:getRuntimeData(DataKeys.Player) or nil
+    return playerData and (playerData[DataFields.TotalOnlineTime] or 0) < 10 * 60 * 60 or false
 end
 
 Character.SeleneMethods.idleTime = function(user)

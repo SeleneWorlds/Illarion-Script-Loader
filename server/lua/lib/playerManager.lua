@@ -5,6 +5,7 @@ local Network = require("selene.network")
 local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
@@ -15,23 +16,28 @@ m.EntitiesById = {}
 function m.Spawn(player)
     local entity = Entities.create("illarion:races/race_0_1")
     local id = 8147
-    entity:setCustomData(DataKeys.ID, id)
-    entity:setCustomData(DataKeys.CharacterType, Character.player)
-    entity:setCustomData(DataKeys.Race, Registries.findByName("illarion:races", "illarion:race_0"))
-    entity:setCustomData(DataKeys.Sex, "female")
+    local charData = entity:getRuntimeData(DataKeys.Character)
+    charData[DataFields.ID] = id
+    charData[DataFields.CharacterType] = Character.player
+    local race = Registries.findByName("illarion:races", "illarion:race_0")
+    charData[DataFields.Race] = race:getMetadata("id")
+    charData[DataFields.Sex] = "female"
     entity:setCoordinate(702, 283, 0)
     entity:addDynamicComponent("illarion:name", function(entity, forPlayer)
+        local targetCharData = entity:getRuntimeData(DataKeys.Character)
         local isControlled = forPlayer:getControlledEntity() == entity
-        local isIntroduced = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getCustomData(DataKeys.Introduction(entity:getCustomData(DataKeys.ID)))
+        local introductionData = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getRuntimeData(DataKeys.Introductions) or nil
+        local isIntroduced = introductionData and introductionData[targetCharData[DataFields.ID]]
         local effectiveName = entity:getName()
         if not isIntroduced and not isControlled then
-            local race = entity:getCustomData(DataKeys.Race)
+            local raceId = targetCharData[DataFields.Race]
+            local race = Registries.findByMetadata("illarion:races", "id", raceId)
             if race then
-                local sex = entity:getCustomData(DataKeys.Sex) or "male"
+                local sex = targetCharData[DataFields.Sex] or "male"
                 local key = "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
                 effectiveName = I18n.Get(key, player.Locale) or key
             else
-                effectiveName = tostring(entity:getCustomData(DataKeys.Race))
+                effectiveName = tostring(targetCharData[DataFields.Race])
             end
         end
         return {
@@ -71,7 +77,8 @@ function m.Spawn(player)
     character:setAttrib("foodlevel", 30000)
     character:setMentalCapacity(10000)
 
-    player:setCustomData(DataKeys.CurrentLoginTimestamp, os.time())
+    local playerData = player:getRuntimeData(DataKeys.Player)
+    playerData[DataFields.CurrentLoginTimestamp] = os.time()
 
     return character
 end
@@ -81,11 +88,12 @@ function m.Despawn(player)
         player:getControlledEntity():remove()
     end
 
-    local loginTimestamp = player:getCustomData(DataKeys.CurrentLoginTimestamp) or 0
+    local playerData = player:getRuntimeData(DataKeys.Player)
+    local loginTimestamp = playerData[DataFields.CurrentLoginTimestamp] or 0
     local logoutTimestamp = os.time()
     local sessionOnlineTime = logoutTimestamp - loginTimestamp
-    local totalOnlineTime = player:getCustomData(DataKeys.TotalOnlineTime) or 0
-    player:setCustomData(DataKeys.TotalOnlineTime, totalOnlineTime + sessionOnlineTime)
+    local totalOnlineTime = playerData[DataFields.TotalOnlineTime] or 0
+    playerData[DataFields.TotalOnlineTime] = totalOnlineTime + sessionOnlineTime
 end
 
 function m.getPlayerByCharacterName(name)

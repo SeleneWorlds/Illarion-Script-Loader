@@ -32,14 +32,13 @@ function m.AddEffect(user, effect)
             effectScript.addEffect(effect, user)
         end
         data.addEffectCalled = true
-        local effects = user.SeleneEntity:getCustomData(DataKeys.Effects) or tablex.observable({})
+        local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
         effects[effect.SeleneEffectDefinition:getName()] = data
-        user.SeleneEntity:setCustomData(DataKeys.Effects, effects)
     end
 end
 
 function m.FindEffect(user, idOrName)
-    local effects = user.SeleneEntity:getCustomData(DataKeys.Effects) or {}
+    local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
     local effectDef = nil
     if type(idOrName) == "number" then
         effectDef = Registries.findByMetadata("illarion:effects", "id", idOrName)
@@ -53,7 +52,7 @@ function m.FindEffect(user, idOrName)
 end
 
 function m.RemoveEffect(user, effect)
-   local effects = user.SeleneEntity:getCustomData(DataKeys.Effects) or tablex.observable({})
+   local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
    local effectDef = Registries.findByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
        local effectScriptName = effectDef:getField("script")
@@ -63,7 +62,6 @@ function m.RemoveEffect(user, effect)
        end
    end
    effects[effectDef:getName()] = nil
-   user.SeleneEntity:setCustomData(DataKeys.Effects, effects)
    return true
 end
 

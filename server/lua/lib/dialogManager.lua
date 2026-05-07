@@ -9,7 +9,8 @@ m.IdCounter = 0
 function m.RequestDialog(user, dialog)
     m.IdCounter = m.IdCounter + 1
     local id = m.IdCounter
-    user.SeleneEntity:setCustomData(DataKeys.Dialog(id), dialog)
+    local dialogs = user.SeleneEntity:getRuntimeData(DataKeys.Dialogs)
+    dialogs[id] = dialog
     if dialog.type == "MessageDialog" then
         Network.sendToEntity(user.SeleneEntity, "illarion:message_dialog", {
             id = id,
@@ -44,7 +45,8 @@ function m.RequestDialog(user, dialog)
 end
 
 function m.GetDialog(character, id)
-    local dialog = character.SeleneEntity:getCustomData(DataKeys.Dialog(id))
+    local dialogs = character.SeleneEntity:getRuntimeData(DataKeys.Dialogs)
+    local dialog = dialogs[id]
     if dialog then
         if dialog.type == "MessageDialog" then
             setmetatable(dialog, MessageDialog.SeleneMetatable)
@@ -62,7 +64,8 @@ function m.GetDialog(character, id)
 end
 
 function m.ClearDialog(character, id)
-    character.SeleneEntity:setCustomData(DataKeys.Dialog(id), nil)
+    local dialogs = character.SeleneEntity:getRuntimeData(DataKeys.Dialogs)
+    dialogs[id] = nil
 end
 
 return m

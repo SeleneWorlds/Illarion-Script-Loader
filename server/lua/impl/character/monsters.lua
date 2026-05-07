@@ -1,10 +1,12 @@
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 Character.SeleneMethods.getMonsterType = function(user)
     local entity = user.SeleneEntity
-    local monsterDef = entity:getCustomData(DataKeys.Monster)
+    local charData = entity:getRuntimeData(DataKeys.Character)
+    local monsterDef = charData[DataFields.Monster]
     if monsterDef then
         return monsterDef:getMetadata("id")
     end
@@ -12,7 +14,8 @@ Character.SeleneMethods.getMonsterType = function(user)
 end
 
 Character.SeleneMethods.getLoot = function(user)
-    local monsterDef = user:getCustomData(DataKeys.Monster)
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local monsterDef = charData[DataFields.Monster]
     if monsterDef then
         local drops = monsterDef:getField("drops")
         local loot = {}

@@ -1,5 +1,6 @@
 local Registries = require("selene.registries")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 Item.SeleneGetters.id = function(item)
     if item.SeleneTile then
@@ -48,7 +49,8 @@ Item.SeleneGetters.number = function(item)
     if item.SeleneTile then
         return 1
     elseif item.SeleneEntity then
-        return item.SeleneEntity:getCustomData(DataKeys.Count)
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        return itemData and itemData[DataFields.Count] or 0
     elseif item.SeleneItem then
         return item.SeleneItem.count
     end
@@ -86,8 +88,12 @@ Item.SeleneMethods.getData = function(item, key)
         local data = dimension:getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
         return data and data[key] or ""
     elseif item.SeleneEntity then
-        local data = item.SeleneEntity:getCustomData(DataKeys.ItemData)
-        return data and data[key] or ""
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        local itemDataMap = itemData and itemData[DataFields.Data]
+        if itemDataMap then
+            return itemDataMap[key]
+        end
+        return ""
     elseif item.SeleneItem then
         return item.SeleneItem.data and item.SeleneItem.data[key] or ""
     end
@@ -101,8 +107,13 @@ Item.SeleneMethods.setData = function(item, key, value)
         data[key] = tostring(value)
         dimension:annotateTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getName(), data)
     elseif item.SeleneEntity then
-        local data = item.SeleneEntity:getCustomData(DataKeys.ItemData)
-        data[key] = tostring(value)
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        local itemDataMap = itemData[DataFields.Data]
+        if type(itemDataMap) ~= "table" then
+            itemDataMap = {}
+        end
+        itemDataMap[key] = tostring(value)
+        itemData[DataFields.Data] = itemDataMap
     elseif item.SeleneItem then
         item.SeleneItem.data[key] = tostring(value)
     end

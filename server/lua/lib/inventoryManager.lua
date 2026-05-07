@@ -1,5 +1,6 @@
 local Inventory = require("moonlight-inventory.server.lua.inventory")
 local ObservableMapInventory = require("moonlight-inventory.server.lua.observable_map_inventory")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local m = {}
 
@@ -16,7 +17,7 @@ local function DepotSlotIds(depotId)
 end
 
 function m.GetDepot(user, depotId)
-    return m.GetCustomDataBasedInventory(user, "depot:" .. depotId, "illarion:depot:" .. depotId, DepotSlotIds(depotId), {
+    return m.GetRuntimeDataBasedInventory(user, "depot:" .. depotId, DepotSlotIds(depotId), {
         isContainer = true
     })
 end
@@ -49,28 +50,23 @@ function m.GetInventoryAtView(user, viewId)
 end
 
 function m.GetInventory(user)
-    return m.GetCustomDataBasedInventory(user, "inventory", "illarion:inventory", inventorySlotIds)
+    return m.GetRuntimeDataBasedInventory(user, "inventory", inventorySlotIds)
 end
 
 function m.GetBelt(user)
-    return m.GetCustomDataBasedInventory(user, "belt", "illarion:inventory", beltSlotIds)
+    return m.GetRuntimeDataBasedInventory(user, "belt", beltSlotIds)
 end
 
 function m.GetEquipment(user)
-    return m.GetCustomDataBasedInventory(user, "equipment", "illarion:inventory", equipmentSlotIds)
+    return m.GetRuntimeDataBasedInventory(user, "equipment", equipmentSlotIds)
 end
 
-function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds, options)
-    user.SeleneInventories = user.SeleneInventories or {}
-    local inventory = user.SeleneInventories[inventoryName]
+function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)
+    local inventories = user.SeleneEntity:getRuntimeData(DataKeys.Inventories)
+    local inventory = inventories[inventoryName]
     if not inventory then
-        local data = user.SeleneEntity:getCustomData(dataKey)
-        if not data then
-            data = tablex.observable()
-            user.SeleneEntity:setCustomData(dataKey, data)
-        end
         inventory = ObservableMapInventory:new({
-            data = data,
+            data = tablex.observable(),
             slots = slotIds,
             owner = user
         })
@@ -79,7 +75,7 @@ function m.GetCustomDataBasedInventory(user, inventoryName, dataKey, slotIds, op
                 inventory[k] = v
             end
         end
-        user.SeleneInventories[inventoryName] = inventory
+        inventories[inventoryName] = inventory
     end
     return inventory
 end

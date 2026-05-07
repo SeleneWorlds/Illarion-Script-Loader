@@ -2,6 +2,7 @@ local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ActionManager = require("illarion-script-loader.server.lua.lib.actionManager")
 
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
@@ -20,20 +21,20 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     end
 
     local actionHandle = Schedules.setTimeout(duration, function()
-        local currentAction = entity:getCustomData(DataKeys.CurrentAction)
-        if type(currentAction.Function) == "function" and currentAction.Args then
+        local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
+        if currentAction and type(currentAction.Function) == "function" and currentAction.Args then
             pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
         end
         ActionManager.ClearAction(user)
     end)
-    entity:setCustomData(DataKeys.CurrentAction, {
-        Script = entity:getCustomData(DataKeys.LastActionScript),
-        Function = entity:getCustomData(DataKeys.LastActionFunction),
-        Args = entity:getCustomData(DataKeys.LastActionArgs),
-        ActionHandle = actionHandle,
-        GfxHandle = gfxHandle,
-        SfxHandle = sfxHandle
-    })
+    local action = entity:getRuntimeData(DataKeys.CurrentAction)
+    local lastAction = entity:getRuntimeData(DataKeys.LastAction)
+    action.Script = lastAction[DataFields.LastActionScript]
+    action.Function = lastAction[DataFields.LastActionFunction]
+    action.Args = lastAction[DataFields.LastActionArgs]
+    action.ActionHandle = actionHandle
+    action.GfxHandle = gfxHandle
+    action.SfxHandle = sfxHandle
 end
 
 Character.SeleneMethods.disturbAction = function(user, disturber)
@@ -41,10 +42,10 @@ Character.SeleneMethods.disturbAction = function(user, disturber)
     -- TODO special handling for crafting dialogs
     local shouldAbort = false
     local entity = user.SeleneEntity
-    local currentAction = entity:getCustomData(DataKeys.CurrentAction)
-    if currentAction.Script and type(currentAction.Script.actionDisturbed) == "function" then
+    local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
+    if currentAction and currentAction.Script and type(currentAction.Script.actionDisturbed) == "function" then
         shouldAbort = currentAction.Script.actionDisturbed(user, disturber)
-        entity:removeCustomData(DataKeys.CurrentAction)
+        entity:removeRuntimeData(DataKeys.CurrentAction)
     end
 
     if shouldAbort then
@@ -59,8 +60,8 @@ Character.SeleneMethods.successAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
-    local currentAction = entity:getCustomData(DataKeys.CurrentAction)
-     if type(currentAction.Function) == "function" then
+    local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
+     if currentAction and type(currentAction.Function) == "function" then
          pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
      end
 
@@ -71,8 +72,8 @@ Character.SeleneMethods.abortAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
-    local currentAction = entity:getCustomData(DataKeys.CurrentAction)
-    if type(currentAction.Function) == "function" then
+    local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
+    if currentAction and type(currentAction.Function) == "function" then
         pcall(currentAction.Function, table.unpack(currentAction.Args), Action.abort)
     end
 
@@ -81,7 +82,8 @@ end
 
 Character.SeleneMethods.isActionRunning = function(user)
     local entity = user.SeleneEntity
-    return entity:hasCustomData(DataKeys.CurrentAction) ~= nil
+    local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
+    return currentAction and currentAction.ActionHandle ~= nil
 end
 
 Character.SeleneMethods.changeSource = function(user, item)
@@ -105,9 +107,9 @@ Character.SeleneMethods.changeSource = function(user, item)
     if type(script.UseItem) ~= "function" then
         error("changeSource target item script has no UseItem function")
     end
-    local action = entity:getCustomData(DataKeys.CurrentAction) or {}
+    local action = entity:getRuntimeData(DataKeys.CurrentAction)
     action.Script = script
     action.Function = script.UseItem
-    action.Args = { user, item }
-    entity:setCustomData(DataKeys.CurrentAction, action)
+    -- action.Args = { user, item }
+    action.Args = { 1, 2 }
 end

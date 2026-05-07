@@ -6,7 +6,7 @@ local m = {}
 
 function m.ClearAction(character)
     local entity = character.SeleneEntity
-    local action = entity:getCustomData(DataKeys.CurrentAction) or {}
+    local action = entity:getRuntimeData(DataKeys.CurrentAction)
      if action.ActionHandle then
          Schedules.clearTimeout(action.ActionHandle)
      end
@@ -16,7 +16,7 @@ function m.ClearAction(character)
      if action.SfxHandle then
          Schedules.clearInterval(action.SfxHandle)
      end
-    entity:setCustomData(DataKeys.CurrentAction, nil)
+    entity:removeRuntimeData(DataKeys.CurrentAction)
 end
 
 return m

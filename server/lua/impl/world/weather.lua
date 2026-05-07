@@ -18,11 +18,11 @@ world.SeleneMethods.setWeather = function(world, weather)
 end
 
 world.SeleneGetters.weather = function(world)
-    return Server:getCustomData(DataKeys.Weather) or defaultWeather
+    return Server:getRuntimeData(DataKeys.Weather) or defaultWeather
 end
 
 world.SeleneSetters.weather = function(world, weather)
-    Server:setCustomData(DataKeys.Weather, {
+    Server:overwriteRuntimeData(DataKeys.Weather, {
         cloud_density = weather.cloud_density or defaultWeather.cloud_density,
         fog_density = weather.fog_density or defaultWeather.fog_density,
         wind_dir = weather.wind_dir or defaultWeather.wind_dir,

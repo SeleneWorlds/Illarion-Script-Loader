@@ -1,14 +1,16 @@
 local Network = require("selene.network")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local userEntity = user.SeleneEntity
     if messageEnglish == nil then
         local illaPlayerTalk = require("server.playertalk")
-        userEntity:setCustomData(DataKeys.LastActionScript, illaPlayerTalk)
-        userEntity:setCustomData(DataKeys.LastActionFunction, illaPlayerTalk.talk)
-        userEntity:setCustomData(DataKeys.LastActionArgs, { user, mode, message })
+        local lastAction = userEntity:getRuntimeData(DataKeys.LastAction)
+        lastAction[DataFields.LastActionScript] = illaPlayerTalk
+        lastAction[DataFields.LastActionFunction] = illaPlayerTalk.talk
+        lastAction[DataFields.LastActionArgs] = { user, mode, message }
         message = illaPlayerTalk.talk(user, mode, message)
     end
 
@@ -28,7 +30,8 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     for _, entity in ipairs(entities) do
         local diffZ = math.abs(userEntity:getCoordinate():getZ() - entity:getCoordinate():getZ())
         if diffZ <= zRange then
-            local characterType = entity:getCustomData(DataKeys.CharacterType)
+            local charData = entity:getRuntimeData(DataKeys.Character)
+            local characterType = charData[DataFields.CharacterType]
             if characterType == Character.player then
                 local effectiveMessage = message
                 if messageEnglish and user:getPlayerLanguage() == Player.english then
@@ -53,9 +56,10 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     end
     if user:getType() == Character.player then
         for _, entity in ipairs(nonPlayerListeners) do
-            local characterType = entity:getCustomData(DataKeys.CharacterType)
+            local charData = entity:getRuntimeData(DataKeys.Character)
+            local characterType = charData[DataFields.CharacterType]
             if characterType == Character.monster then
-                local scriptName = entity:getCustomData(DataKeys.Script)
+                local scriptName = charData[DataFields.Script]
                 if scriptName then
                     local status, script = pcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
@@ -64,7 +68,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     end
                 end
             elseif characterType == Character.npc then
-                local scriptName = entity:getCustomData(DataKeys.Script)
+                local scriptName = charData[DataFields.Script]
                 if scriptName then
                     local status, script = pcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
@@ -75,17 +79,21 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
             end
         end
     end
-    userEntity:setCustomData(DataKeys.LastSpokenText, message)
+    local charData = userEntity:getRuntimeData(DataKeys.Character)
+    charData[DataFields.LastSpokenText] = message
 end
 
 Character.SeleneGetters.activeLanguage = function(user)
-    return user.SeleneEntity:getCustomData(DataKeys.Language) or 0
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    return charData[DataFields.Language] or 0
 end
 
 Character.SeleneSetters.activeLanguage = function(user, language)
-    user.SeleneEntity:setCustomData(DataKeys.Language, language)
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    charData[DataFields.Language] = language
 end
 
 Character.SeleneGetters.lastSpokenText = function(user)
-    return user.SeleneEntity:getCustomData(DataKeys.LastSpokenText) or ""
+    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    return charData[DataFields.LastSpokenText] or ""
 end

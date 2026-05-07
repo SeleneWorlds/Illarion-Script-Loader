@@ -34,7 +34,7 @@ end
 
 local function getState(character)
     local entity = character.SeleneEntity
-    local state = entity:getCustomData(DataKeys.Route)
+    local state = entity:getRuntimeData(DataKeys.Route)
     if not state then
         state = {
             onRoute = false,
@@ -42,7 +42,6 @@ local function getState(character)
             currentPath = nil,
             currentGoal = nil
         }
-        entity:setCustomData(DataKeys.Route, state)
     end
     return state
 end

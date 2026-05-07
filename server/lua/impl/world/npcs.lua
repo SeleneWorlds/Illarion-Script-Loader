@@ -2,6 +2,7 @@ local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local NPCManager = require("illarion-script-loader.server.lua.lib.npcManager")
 
 world.SeleneMethods.getNPCSInRangeOf = function(world, pos, range)
@@ -9,7 +10,8 @@ world.SeleneMethods.getNPCSInRangeOf = function(world, pos, range)
     local entities = dimension:getEntitiesInRange(pos, range)
     local npcs = {}
     for _, entity in ipairs(entities) do
-        if entity:getCustomData(DataKeys.CharacterType) == Character.npc then
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.npc then
             table.insert(npcs, Character.fromSeleneEntity(entity))
         end
     end

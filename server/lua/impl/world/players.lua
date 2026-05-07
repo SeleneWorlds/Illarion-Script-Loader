@@ -8,8 +8,10 @@ local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManag
 
 world.SeleneMethods.getPlayerIdByName = function(world, name)
     local player = PlayerManager.getPlayerByCharacterName(name)
-    if player and player:getControlledEntity() then
-        return true, player:getControlledEntity():getCustomData(DataKeys.ID)
+    local entity = player and player:getControlledEntity()
+    if entity then
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        return true, charData[DataFields.ID]
     end
     return false, nil
 end

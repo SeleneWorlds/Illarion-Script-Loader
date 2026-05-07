@@ -9,9 +9,9 @@ Schedules.everySecond:connect(function()
     for _, player in pairs(players) do
         local entity = player.SeleneEntity
         if entity then
-            local effects = entity:getCustomData(DataKeys.Effects) or tablex.observable({})
+            local effects = entity:getRuntimeData(DataKeys.Effects)
             local removedEffects = {}
-            for effectName, effectData in effects:pairs() do
+            for effectName, effectData in pairs(effects) do
                 effectData.nextCalled = (effectData.nextCalled or 0) - 1
                 if effectData.nextCalled <= 0 then
                     effectData.numberCalled = (effectData.numberCalled or 0) + 1
@@ -37,7 +37,6 @@ Schedules.everySecond:connect(function()
             for _, effectName in pairs(removedEffects) do
                 effects[effectName] = nil
             end
-            entity:setCustomData(DataKeys.Effects, effects)
         end
     end
 end)

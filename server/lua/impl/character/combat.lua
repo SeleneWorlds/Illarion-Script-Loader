@@ -7,14 +7,15 @@ local AttributeManager = require("illarion-script-loader.server.lua.lib.attribut
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
 Character.SeleneMethods.stopAttack = function(user)
-    user.SeleneEntity:removeCustomData(DataKeys.CombatTarget)
+    user.SeleneEntity:removeRuntimeData(DataKeys.Combat)
     Network.sendToEntity(user.SeleneEntity, "illarion:set_combat_target", {
         networkId = -1
     })
 end
 
 Character.SeleneMethods.getAttackTarget = function(user)
-    local networkId = user.SeleneEntity:getCustomData(DataKeys.CombatTarget)
+    local combatData = user.SeleneEntity:getRuntimeData(DataKeys.Combat)
+    local networkId = combatData[DataFields.TargetId]
     if networkId then
         return Entities.getEntityById(networkId)
     end
@@ -22,7 +23,8 @@ Character.SeleneMethods.getAttackTarget = function(user)
 end
 
 Character.SeleneGetters.attackmode = function(user)
-    return user.SeleneEntity:hasCustomData(DataKeys.CombatTarget)
+    local combatData = user.SeleneEntity:getRuntimeData(DataKeys.Combat)
+    return combatData[DataFields.TargetId] ~= nil
 end
 
 Character.SeleneMethods.callAttackScript = function(attacker, defender)

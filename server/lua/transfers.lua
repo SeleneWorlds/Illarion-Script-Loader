@@ -5,6 +5,7 @@ local Registries = require("selene.registries")
 local InventoryItem = require("moonlight-inventory.server.lua.inventory_item")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local function CreateItemFromEntity(entity)
     local itemId = entity:getEntityDefinition():getMetadata("itemId")
@@ -16,11 +17,12 @@ local function CreateItemFromEntity(entity)
     if not itemDef then
         return nil
     end
+    local itemData = entity:getRuntimeData(DataKeys.Item)
 
     return {
         def = itemDef,
-        count = entity:getCustomData(DataKeys.Count) or 1,
-        data = entity:getCustomData(DataKeys.ItemData) or {}
+        count = itemData[DataFields.Count] or 1,
+        data = itemData[DataFields.Data] or {}
     }
 end
 
@@ -84,7 +86,8 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     local item = CreateItemFromEntity(sourceEntity)
     local rest = targetInventory:addItemAt(payload.toSlotId, item)
     if rest > 0 then
-        sourceEntity:setCustomData(DataKeys.Count, rest)
+        local itemData = sourceEntity:getRuntimeData(DataKeys.Item)
+        itemData[DataFields.Count] = rest
     else
         local triggerfieldAnnotation = sourceEntity:getDimension():getAnnotationAt(sourceEntity:getCoordinate(), "illarion:triggerfield", sourceEntity.Collision)
         if triggerfieldAnnotation then

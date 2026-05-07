@@ -2,6 +2,7 @@ local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 
 world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
@@ -31,7 +32,8 @@ world.SeleneMethods.getMonstersInRangeOf = function(world, pos, range)
     local entities = dimension:getEntitiesInRange(pos, range)
     local monsters = {}
     for _, entity in ipairs(entities) do
-        if entity:getCustomData(DataKeys.CharacterType) == Character.monster then
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.monster then
             table.insert(monsters, Character.fromSeleneEntity(entity))
         end
     end
