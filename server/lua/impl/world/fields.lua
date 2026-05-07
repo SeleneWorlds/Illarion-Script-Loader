@@ -32,8 +32,16 @@ world.SeleneMethods.isPersistentAt = function(world, pos)
 end
 
 world.SeleneMethods.createSavedArea = function(tileId, origin, height, width)
+    local tileDef = Registries.findByMetadata("illarion:tiles", "tileId", tileId)
+    if not tileDef then
+        error("Unknown tile id " .. tileId)
+    end
     local dimension = Dimensions.getDefault()
-
+    for y = origin.y, origin.y + height - 1 do
+        for x = origin.x, origin.x + width - 1 do
+            dimension:placeTile({ x = x, y = y, z = origin.z }, tileDef, "default")
+        end
+    end
 end
 
 world.SeleneMethods.changeTile = function(world, tileId, pos)
