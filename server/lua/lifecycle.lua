@@ -3,7 +3,9 @@ local Players = require("selene.players")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
-local illaReload = require("server.reload")
+local ok, illaReload = pcall(require, "server.reload")
+local ok, illaReloadDefs = pcall(require, "server.reload_defs")
+local ok, illaReloadTables = pcall(require, "server.reload_tables")
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
@@ -29,5 +31,13 @@ Players.playerLeft:connect(function(player)
 end)
 
 Server.serverReloaded:connect(function()
-    illaReload.onReload()
+    if illaReload then
+        illaReload.onReload()
+    end
+    if illaReloadDefs then
+        illaReloadDefs.onReload()
+    end
+    if illaReloadTables then
+        illaReloadTables.onReload()
+    end
 end)
