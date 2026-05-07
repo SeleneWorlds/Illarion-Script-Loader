@@ -52,6 +52,6 @@ world.SeleneMethods.broadcast = function(world, messageDe, messageEn)
 end
 
 world.SeleneMethods.sendMonitoringMessage = function(world, message, type)
-    local webhookUrl = Config.GetProperty("notifyAdminDiscordWebhook")
+    local webhookUrl = Config.getProperty("notifyAdminDiscordWebhook")
     HTTP.Post(webhookUrl, { content = message })
 end
