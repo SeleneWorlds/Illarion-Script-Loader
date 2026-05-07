@@ -100,9 +100,9 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
     local item = Registries.findByMetadata("illarion:items", "id", itemId)
     if item then
         if language == Player.german then
-            return I18n.Get("item." .. stringx.substringAfter(item:getName(), "illarion:"), "de") or item:getName()
+            return I18n.get("item." .. stringx.substringAfter(item:getName(), "illarion:"), "de") or item:getName()
         else
-            return I18n.Get("item." .. stringx.substringAfter(item:getName(), "illarion:"), "en") or item:getName()
+            return I18n.get("item." .. stringx.substringAfter(item:getName(), "illarion:"), "en") or item:getName()
         end
     end
 

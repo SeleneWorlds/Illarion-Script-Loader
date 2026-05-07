@@ -35,7 +35,7 @@ function m.Spawn(player)
             if race then
                 local sex = targetCharData[DataFields.Sex] or "male"
                 local key = "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
-                effectiveName = I18n.Get(key, player.Locale) or key
+                effectiveName = I18n.get(key, player.Locale) or key
             else
                 effectiveName = tostring(targetCharData[DataFields.Race])
             end
@@ -60,13 +60,25 @@ function m.Spawn(player)
     m.EntitiesById[id] = entity
     local character = CharacterManager.AddEntity(entity)
 
-    local inventory = InventoryManager.GetInventory(character)
-    inventory:subscribe(function(data)
+    local equipment = InventoryManager.GetEquipment(character)
+    equipment:subscribe(function(data)
         local slotId = data.dirtySlot
         if slotId then
-            local item = inventory:getItem(slotId)
+            local item = equipment:getItem(slotId)
             Network.sendToEntity(entity, "illarion:update_slot", {
-                viewId = "inventory",
+                viewId = "equipment",
+                slotId = slotId,
+                item = item and { visual = item.def:getField("visual") } or nil
+            })
+        end
+    end)
+    local belt = InventoryManager.GetBelt(character)
+    belt:subscribe(function(data)
+        local slotId = data.dirtySlot
+        if slotId then
+            local item = belt:getItem(slotId)
+            Network.sendToEntity(entity, "illarion:update_slot", {
+                viewId = "belt",
                 slotId = slotId,
                 item = item and { visual = item.def:getField("visual") } or nil
             })
