@@ -6,12 +6,14 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local userEntity = user.SeleneEntity
     if messageEnglish == nil then
-        local illaPlayerTalk = require("server.playertalk")
-        local lastAction = userEntity:getRuntimeData(DataKeys.LastAction)
-        lastAction[DataFields.LastActionScript] = illaPlayerTalk
-        lastAction[DataFields.LastActionFunction] = illaPlayerTalk.talk
-        lastAction[DataFields.LastActionArgs] = { user, mode, message }
-        message = illaPlayerTalk.talk(user, mode, message)
+        local illaPlayerTalkOk, illaPlayerTalk = pcall(require, "server.playertalk")
+        if illaPlayerTalkOk then
+            local lastAction = userEntity:getRuntimeData(DataKeys.LastAction)
+            lastAction[DataFields.LastActionScript] = illaPlayerTalk
+            lastAction[DataFields.LastActionFunction] = illaPlayerTalk.talk
+            lastAction[DataFields.LastActionArgs] = { user, mode, message }
+            message = illaPlayerTalk.talk(user, mode, message)
+        end
     end
 
     local range = 0
