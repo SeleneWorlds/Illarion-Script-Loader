@@ -3,6 +3,7 @@ local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
 local I18n = require("selene.i18n")
+local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -22,7 +23,7 @@ function m.Spawn(player)
     local race = Registries.findByName("illarion:races", "illarion:race_0")
     charData[DataFields.Race] = race:getMetadata("id")
     charData[DataFields.Sex] = "female"
-    entity:setCoordinate(702, 283, 0)
+    entity:setCoordinate(tonumber(Config.getProperty("spawnX")), tonumber(Config.getProperty("spawnY")), tonumber(Config.getProperty("spawnZ")))
     entity:addDynamicComponent("illarion:name", function(entity, forPlayer)
         local targetCharData = entity:getRuntimeData(DataKeys.Character)
         local isControlled = forPlayer:getControlledEntity() == entity
