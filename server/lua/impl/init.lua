@@ -2,7 +2,8 @@ local Registries = require("selene.registries")
 
 local allRaces = Registries.findAll("illarion:races")
 for _, race in pairs(allRaces) do
-    Character[race:getMetadata("name")] = race:getMetadata("id")
+    local raceName = race:getMetadata("name") or "race_" .. race:getMetadata("id")
+    Character[raceName] = race:getMetadata("id")
 end
 
 local allSkills = Registries.findAll("illarion:skills")
