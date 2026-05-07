@@ -119,13 +119,26 @@ Character.SeleneMethods.getBaseAttributeSum = function(user)
 end
 
 Character.SeleneMethods.saveBaseAttributes = function(user)
-    -- This behaviour is insane and should not exist
+    local persistedAttributes = user.SeleneEntity:getRuntimeData(DataKeys.PersistedAttributes)
+    local attributeKeys = { "agility", "constitution", "dexterity", "essence", "intelligence", "perception", "strength", "willpower" }
+
+    -- This behaviour is insane and should not exist, but Illarion wipes all changes if sum exceeds max
     if user:getMaxAttributePoints(use) ~= user:getBaseAttributeSum() then
-        -- TODO load base attributes to reset changes
+        for _, key in ipairs(attributeKeys) do
+            local attribute = AttributeManager.GetAttribute(user, key)
+            local persistedValue = persistedAttributes[key]
+            if persistedValue then
+                attribute:setValue(persistedValue)
+            end
+        end
         return false
     end
 
-    -- TODO save base attributes
+    local persistedAttributes = user.SeleneEntity:getRuntimeData(DataKeys.PersistedAttributes)
+    for _, key in ipairs(attributeKeys) do
+        local attribute = AttributeManager.GetAttribute(user, key)
+        persistedAttributes[key] = attribute:getValue()
+    end
     return true
 end
 
