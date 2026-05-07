@@ -1,20 +1,9 @@
-local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local Pathfinding = require("selene.pathfinding")
 
 local m = {}
 
 local SEARCH_RADIUS = 32
-
-local directions = {
-    { dx = 0, dy = -1, dir = Character.north },
-    { dx = 1, dy = -1, dir = Character.northeast },
-    { dx = 1, dy = 0, dir = Character.east },
-    { dx = 1, dy = 1, dir = Character.southeast },
-    { dx = 0, dy = 1, dir = Character.south },
-    { dx = -1, dy = 1, dir = Character.southwest },
-    { dx = -1, dy = 0, dir = Character.west },
-    { dx = -1, dy = -1, dir = Character.northwest }
-}
 
 local function clonePosition(pos)
     return position(pos.x, pos.y, pos.z)
@@ -22,14 +11,6 @@ end
 
 local function samePosition(a, b)
     return a ~= nil and b ~= nil and a.x == b.x and a.y == b.y and a.z == b.z
-end
-
-local function positionKey(pos)
-    return table.concat({ pos.x, pos.y, pos.z }, ":")
-end
-
-local function heuristic(a, b)
-    return math.max(math.abs(a.x - b.x), math.abs(a.y - b.y))
 end
 
 local function getState(character)
@@ -69,87 +50,6 @@ local function popReachedWaypoints(currentPos, state)
     end
 end
 
-local function reconstructPath(cameFrom, goalKey)
-    local path = {}
-    local currentKey = goalKey
-    while cameFrom[currentKey] do
-        local step = cameFrom[currentKey]
-        table.insert(path, 1, step.dir)
-        currentKey = step.parentKey
-    end
-    return path
-end
-
-local function canVisit(character, candidate, goal)
-    if samePosition(candidate, goal) then
-        return true
-    end
-    local dimension = character.SeleneEntity:getDimension()
-    if dimension == nil then
-        return false
-    end
-    return not dimension:hasCollisionAt(candidate, character.SeleneEntity.Collision)
-end
-
-local function findPath(character, goal)
-    local start = clonePosition(character.pos)
-    if samePosition(start, goal) then
-        return {}
-    end
-
-    local open = { start }
-    local openSet = { [positionKey(start)] = true }
-    local cameFrom = {}
-    local gScore = { [positionKey(start)] = 0 }
-    local fScore = { [positionKey(start)] = heuristic(start, goal) }
-
-    while #open > 0 do
-        local bestIndex = 1
-        local bestNode = open[1]
-        local bestScore = fScore[positionKey(bestNode)] or math.huge
-        for i = 2, #open do
-            local candidate = open[i]
-            local candidateScore = fScore[positionKey(candidate)] or math.huge
-            if candidateScore < bestScore then
-                bestIndex = i
-                bestNode = candidate
-                bestScore = candidateScore
-            end
-        end
-
-        table.remove(open, bestIndex)
-        local bestKey = positionKey(bestNode)
-        openSet[bestKey] = nil
-
-        if samePosition(bestNode, goal) then
-            return reconstructPath(cameFrom, bestKey)
-        end
-
-        local baseCost = gScore[bestKey] or math.huge
-        for _, step in ipairs(directions) do
-            local nextPos = position(bestNode.x + step.dx, bestNode.y + step.dy, bestNode.z)
-            if heuristic(start, nextPos) <= SEARCH_RADIUS and canVisit(character, nextPos, goal) then
-                local nextKey = positionKey(nextPos)
-                local tentativeCost = baseCost + 1
-                if tentativeCost < (gScore[nextKey] or math.huge) then
-                    cameFrom[nextKey] = {
-                        parentKey = bestKey,
-                        dir = step.dir
-                    }
-                    gScore[nextKey] = tentativeCost
-                    fScore[nextKey] = tentativeCost + heuristic(nextPos, goal)
-                    if not openSet[nextKey] then
-                        table.insert(open, nextPos)
-                        openSet[nextKey] = true
-                    end
-                end
-            end
-        end
-    end
-
-    return nil
-end
-
 local function ensurePath(character, state)
     popReachedWaypoints(character.pos, state)
     local goal = state.waypoints[1]
@@ -158,7 +58,7 @@ local function ensurePath(character, state)
     end
 
     if state.currentPath == nil or state.currentGoal == nil or not samePosition(state.currentGoal, goal) then
-        local path = findPath(character, goal)
+        local path = Pathfinding.findPath(character.SeleneEntity, goal, SEARCH_RADIUS)
         if path == nil then
             invalidatePath(state)
             return false, "blocked"
@@ -238,7 +138,7 @@ function m.Advance(character)
     end
 
     local step = table.remove(state.currentPath, 1)
-    local moved = character.SeleneEntity:move(DirectionUtils.IllaToSelene(step))
+    local moved = character.SeleneEntity:move(step)
     if not moved then
         invalidatePath(state)
         local retryReady, retryStatus = ensurePath(character, state)
@@ -246,7 +146,7 @@ function m.Advance(character)
             return retryStatus or "blocked"
         end
         step = table.remove(state.currentPath, 1)
-        moved = character.SeleneEntity:move(DirectionUtils.IllaToSelene(step))
+        moved = character.SeleneEntity:move(step)
         if not moved then
             invalidatePath(state)
             return "blocked"
