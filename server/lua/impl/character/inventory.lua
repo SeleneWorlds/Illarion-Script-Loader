@@ -51,19 +51,19 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
 end
 
 Character.SeleneMethods.getItemAt = function(user, slotId)
-    local inventory = InventoryManager.GetInventory(user)
+    local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     local inventoryItem = inventory:getInventoryItem(slotId)
     return Item.fromSeleneInventoryItem(inventoryItem)
 end
 
 Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
-    local inventory = InventoryManager.GetInventory(user)
+    local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     local item = inventory:getItem(slotId)
     world:changeQuality(item, amount)
 end
 
 Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
-    local inventory = InventoryManager.GetInventory(user)
+    local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     return inventory:increaseCountAt(slotId, amount)
 end
 
@@ -99,7 +99,7 @@ Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
     if not itemDef then
         error("Tried to create unknown item id " .. itemId)
     end
-    local inventory = InventoryManager.GetInventory(user)
+    local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     return inventory:addItemAt(slotId, {
         def = itemDef,
         count = count
@@ -112,8 +112,13 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
         error("Tried to erase unknown item id " .. itemId)
     end
     local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
-    local inventory = InventoryManager.GetInventory(user)
-    return inventory:removeItem(filter, count)
+    -- TODO Illarion checks backpack contents too
+    local rest = InventoryManager.GetBelt(user):removeItem(filter, count)
+    if rest > 0 then
+        -- TODO Illarion skips backpack slot here
+        rest = InventoryManager.GetEquipment(user):removeItem(filter, count)
+    end
+    return rest
 end
 
 Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
@@ -144,8 +149,12 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     end
     local result = {}
     local filter = InventoryManager.ItemMatchesFilter(itemDef)
-    local inventory = InventoryManager.GetInventory(user)
-    for _, inventoryItem in ipairs(inventory:findInventoryItems(filter)) do
+    local equipment = InventoryManager.GetEquipment(user)
+    for _, inventoryItem in ipairs(equipment:findInventoryItems(filter)) do
+        table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
+    end
+    local belt = InventoryManager.GetBelt(user)
+    for _, inventoryItem in ipairs(belt:findInventoryItems(filter)) do
         table.insert(result, Item.fromSeleneInventoryItem(inventoryItem))
     end
     local backpack = InventoryManager.GetBackpack(user)

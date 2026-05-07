@@ -6,7 +6,6 @@ local m = {}
 
 local equipmentSlotIds = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }
 local beltSlotIds = { 12, 13, 14, 15, 16, 17 }
-local inventorySlotIds = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 }
 
 local function DepotSlotIds(depotId)
     local slotIds = {}
@@ -32,9 +31,7 @@ function m.GetBackpack(user)
 end
 
 function m.GetInventoryAtView(user, viewId)
-    if viewId == "inventory" then
-        return m.GetInventory(user)
-    elseif viewId == "belt" then
+    if viewId == "belt" then
         return m.GetBelt(user)
     elseif viewId == "equipment" then
         return m.GetEquipment(user)
@@ -49,8 +46,13 @@ function m.GetInventoryAtView(user, viewId)
     return nil
 end
 
-function m.GetInventory(user)
-    return m.GetRuntimeDataBasedInventory(user, "inventory", inventorySlotIds)
+function m.GetInventoryAtSlot(user, slotId)
+    if slotId >= 0 and slotId <= 11 then
+        return m.GetEquipment(user)
+    elseif slotId >= 12 and slotId <= 17 then
+        return m.GetBelt(user)
+    end
+    error("No inventory found for slotId " .. slotId)
 end
 
 function m.GetBelt(user)
