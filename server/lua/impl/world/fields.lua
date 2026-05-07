@@ -1,7 +1,7 @@
 local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 
-local MapPersistenceManager = require("illarion-script-loader.server.lua.lib.MapPersistenceManager")
+local MapPersistenceManager = require("illarion-script-loader.server.lua.lib.mapPersistenceManager")
 
 world.SeleneMethods.getField = function(world, pos)
     local dimension = Dimensions.getDefault()
