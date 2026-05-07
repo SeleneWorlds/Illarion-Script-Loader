@@ -4,7 +4,7 @@ local Network = require("selene.network")
 local I18n = require("selene.i18n")
 
 local illaPlayerLookAt = require("server.playerlookat")
-local illaItemLookAt = require("server.itemlookat")
+local ok, illaItemLookAt = pcall(require, "server.itemlookat")
 
 local function LookAtItem(character, itemDef, item)
     local result = nil
@@ -15,7 +15,7 @@ local function LookAtItem(character, itemDef, item)
             result = script.LookAtItem(character, item)
         end
     end
-    if not result then
+    if not result and illaItemLookAt then
         result = illaItemLookAt.lookAtItem(character, item)
     end
     return result
