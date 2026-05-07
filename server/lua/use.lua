@@ -94,7 +94,7 @@ end)
 Network.handlePayload("illarion:use_slot", function(player, payload)
     -- Payload is viewId, slotId
     local character = Character.fromSelenePlayer(player)
-    local inventory = InventoryManager.getInventoryAtView(character, payload.viewId)
+    local inventory = InventoryManager.GetInventoryAtView(character, payload.viewId)
     if not inventory then
         return
     end
