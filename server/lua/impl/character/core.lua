@@ -18,6 +18,8 @@ Character.SeleneMethods.getRace = function(user)
     return charData[DataFields.Race]
 end
 
+Character.SeleneMethods.get_race = Character.SeleneMethods.getRace
+
 Character.SeleneMethods.setRace = function(user, raceId)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
     charData[DataFields.Race] = raceId
