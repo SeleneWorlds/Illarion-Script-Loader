@@ -151,6 +151,11 @@ Character.SeleneMethods.setBaseAttribute = function(user, attributeName, value)
     return false
 end
 
+Character.SeleneMethods.getBaseAttribute = function(user, attributeName)
+    local attribute = AttributeManager.GetAttribute(user, attributeName)
+    return attribute:getValue(value)
+end
+
 Character.SeleneMethods.increaseBaseAttribute = function(user, attributeName, amount)
     local attribute = AttributeManager.GetAttribute(user, attributeName)
     local prev = attribute:getValue()
