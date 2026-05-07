@@ -17,6 +17,7 @@
     "server/lua/impl/character/monsters.lua",
     "server/lua/impl/character/players.lua",
     "server/lua/impl/character/quests.lua",
+    "server/lua/impl/character/routes.lua",
     "server/lua/impl/character/skills.lua",
     "server/lua/impl/world/characters.lua",
     "server/lua/impl/world/core.lua",
