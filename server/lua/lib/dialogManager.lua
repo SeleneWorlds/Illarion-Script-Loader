@@ -28,18 +28,23 @@ function m.RequestDialog(user, dialog)
     elseif dialog.type == "MerchantDialog" then
         Network.sendToEntity(user.SeleneEntity, "illarion:merchant_dialog", {
             id = id,
-            title = title
+            title = dialog.title
         })
     elseif dialog.type == "SelectionDialog" then
         Network.sendToEntity(user.SeleneEntity, "illarion:selection_dialog", {
             id = id,
             title = title,
-            message = message
+            message = dialog.message
         })
     elseif dialog.type == "CraftingDialog" then
         Network.sendToEntity(user.SeleneEntity, "illarion:crafting_dialog", {
             id = id,
-            title = title
+            title = dialog.title
+        })
+    elseif dialog.type == "MenuStruct" then
+        Network.sendToEntity(user.SeleneEntity, "illarion:menu_struct", {
+            id = id,
+            items = dialog.items
         })
     end
 end
