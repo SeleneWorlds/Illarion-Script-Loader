@@ -15,7 +15,9 @@ Character.SeleneMethods.getMinorSkill = function(user, skillId)
     return SkillManager.GetMinorSkillAttribute(user, skillId):getEffectiveValue()
 end
 
-Character.SeleneMethods.increaseSkill = function(user, skillId, amount)
+Character.SeleneMethods.increaseSkill = function(user, skillGroupOrSkillId, skillIdOrAmount, amountOrNil)
+    local amount = type(skillIdOrAmount) == "number" and skillIdOrAmount or amountOrNil
+    local skillId = type(skillIdOrAmount) == "number" and skillGroupOrSkillId or skillIdOrAmount
     local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
     attribute:setValue(attribute:getValue() + amount)
     return attribute:getEffectiveValue()
