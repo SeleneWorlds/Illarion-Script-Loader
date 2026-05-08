@@ -78,6 +78,7 @@ function m.Update()
             -- TODO skip if no player nearby and not on route
             local status, script = pcall(require, charData[DataFields.Script])
             if status and type(script.nextCycle) == "function" then
+                thisNPC = npc
                 script.nextCycle(npc)
             end
 
