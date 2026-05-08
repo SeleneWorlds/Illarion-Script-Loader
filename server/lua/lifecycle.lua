@@ -1,8 +1,10 @@
 local Server = require("selene.server")
 local Players = require("selene.players")
+local Config = require("selene.config")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
+local common = require("base.common")
 local illaReloadOk, illaReload = pcall(require, "server.reload")
 local illaReloadDefsOk, illaReloadDefs = pcall(require, "server.reload_defs")
 local illaReloadTablesOk, illaReloadTables = pcall(require, "server.reload_tables")
@@ -11,12 +13,19 @@ local illaLogout = require("server.logout")
 
 Players.playerJoined:connect(function(player)
     local character = PlayerManager.Spawn(player)
+    if Config.getProperty("showWelcomeMessage") == "true" then
+        local otherPlayerCount = #world:getPlayersOnline() - 1
+        local welcomeMessageDe = ":) Willkommen in Illarion, es sind " .. otherPlayerCount .. " andere Spieler online."
+        local welcomeMessageEn = ":) Welcome to Illarion. There are " .. otherPlayerCount .. " other players online."
+        common.InformNLS(character, welcomeMessageDe, welcomeMessageEn)
+    end
+
     illaLogin.onLogin(character)
 
     character:createItem(15, 1, 333, {})
     character:createAtPos(Character.backpack, 97, 1)
     character:createAtPos(Character.head, 184, 1)
-    character:createAtPos(Character.neck, 222, 1)
+    --character:createAtPos(Character.neck, 222, 1)
     character:createAtPos(Character.breast, 4, 1)
     -- character:createAtPos(Character.hands, 1447, 1)
     -- character:createAtPos(Character.legs, 1485, 1)
