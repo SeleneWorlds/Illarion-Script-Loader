@@ -5,6 +5,7 @@ local Players = require("selene.players")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
@@ -12,6 +13,7 @@ Character.SeleneMethods.getType = function(user)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
     return charData[DataFields.CharacterType] or Character.player
 end
+Character.SeleneMethods.get_type = Character.SeleneMethods.getType
 
 Character.SeleneMethods.getRace = function(user)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
@@ -34,7 +36,7 @@ Character.SeleneMethods.introduce = function(user, other)
     local introductionData = user.SeleneEntity:getRuntimeData(DataKeys.Introductions)
     introductionData[other.id] = true
     -- TODO sync name component
-    error("introduce is not fully implemented - does not sync new nameplate yet")
+    -- TODO error("introduce is not fully implemented - does not sync new nameplate yet")
 end
 
 Character.SeleneGetters.id = function(user)
@@ -175,6 +177,10 @@ end
 isValidChar = function(user)
     -- TODO This should actually check if the user is truly still valid
     return true
+end
+
+getCharForId = function(id)
+    return CharacterManager.GetCharacterById(id)
 end
 
 function Character.fromSeleneEntity(entity)

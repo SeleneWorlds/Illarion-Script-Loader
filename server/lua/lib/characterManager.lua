@@ -52,4 +52,8 @@ function m.SetDead(character, dead)
     end
 end
 
+function m.GetCharacterById(id)
+    return m.CharactersById[id]
+end
+
 return m
