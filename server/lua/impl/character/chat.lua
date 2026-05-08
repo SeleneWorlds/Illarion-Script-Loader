@@ -1,4 +1,5 @@
 local Network = require("selene.network")
+local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -66,7 +67,12 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     local status, script = pcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
                         local illaMonster = Character.fromSeleneEntity(entity)
-                        script.receiveText(illaMonster, mode, messageEnglish or message, user)
+                        if Config.getProperty("useLegacyReceiveText") == "true" then
+                            thisNPC = illaMonster
+                            script.receiveText(mode, messageEnglish or message, user)
+                        else
+                            script.receiveText(illaMonster, mode, messageEnglish or message, user)
+                        end
                     end
                 end
             elseif characterType == Character.npc then
@@ -75,7 +81,12 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     local status, script = pcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
                         local illaNpc = Character.fromSeleneEntity(entity)
-                        script.receiveText(illaNpc, mode, messageEnglish or message, user)
+                        if Config.getProperty("useLegacyReceiveText") == "true" then
+                            thisNPC = illaNpc
+                            script.receiveText(mode, messageEnglish or message, user)
+                        else
+                            script.receiveText(illaNpc, mode, messageEnglish or message, user)
+                        end
                     end
                 end
             end
