@@ -85,6 +85,47 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     charData[DataFields.LastSpokenText] = message
 end
 
+Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
+    local userEntity = user.SeleneEntity
+    local range = 0
+    local zRange = 2
+    if mode == Character.say then
+        range = 14
+    elseif mode == Character.whisper then
+        range = 2
+        zRange = 0
+    elseif mode == Character.yell then
+        range = 30
+    end
+    local dimension = user.SeleneEntity:getDimension()
+    local entities = dimension:getEntitiesInRange(userEntity:getCoordinate(), range)
+    local nonPlayerListeners = {}
+    for _, entity in ipairs(entities) do
+        local diffZ = math.abs(userEntity:getCoordinate():getZ() - entity:getCoordinate():getZ())
+        if diffZ <= zRange then
+            local charData = entity:getRuntimeData(DataKeys.Character)
+            local characterType = charData[DataFields.CharacterType]
+            if characterType == Character.player and user:getPlayerLanguage() == language then
+                local showInChat = true
+                local effectiveMessage = message
+                if stringx.endsWith(effectiveMessage, "#npc") then
+                    effectiveMessage = stringx.removeSuffix(effectiveMessage, "#npc")
+                    showInChat = false
+                end
+                Network.sendToEntity(entity, "illarion:chat", {
+                    author = userEntity.NetworkId,
+                    authorName = user.name,
+                    mode = mode,
+                    message = effectiveMessage,
+                    showInChat = showInChat
+                })
+            elseif characterType == Character.npc or characterType == Character.monster then
+                table.insert(nonPlayerListeners, entity)
+            end
+        end
+    end
+end
+
 Character.SeleneGetters.activeLanguage = function(user)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
     return charData[DataFields.Language] or 0
