@@ -82,6 +82,7 @@ end
 Character.SeleneMethods.getFaceTo = function(user)
    return DirectionUtils.SeleneToIlla(user.SeleneEntity:getFacing()) or Character.north
 end
+Character.SeleneMethods.get_face_to = Character.SeleneMethods.getFaceTo
 
 Character.SeleneMethods.warp = function(user, pos)
     -- TODO illa fails this if occupied
