@@ -70,6 +70,22 @@ Item.SeleneGetters.isLarge = function(item)
     return false
 end
 
+Item.SeleneGetters.wear = function(item)
+    return tonumber(item:getData("wear")) or 0
+end
+
+Item.SeleneSetters.wear = function(item, wear)
+    item:setData("wear", wear)
+end
+
+Item.SeleneGetters.data = function(item)
+    return tonumber(item:getData("data")) or 0
+end
+
+Item.SeleneSetters.data = function(item, data)
+    item:setData("data", data)
+end
+
 Item.SeleneMethods.getType = function(item)
     if item.SeleneTile or item.SeleneEntity then
         return scriptItem.field
