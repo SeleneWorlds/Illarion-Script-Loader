@@ -491,11 +491,7 @@ function m.handle(character, message)
         return true
     end
 
-    local status, err = pcall(commandDefinition.handler, character, args)
-    if not status then
-        print("[admin_commands] " .. tostring(err))
-        character:inform("Befehl fehlgeschlagen.", "Command failed.")
-    end
+    commandDefinition.handler(character, args)
     return true
 end
 
