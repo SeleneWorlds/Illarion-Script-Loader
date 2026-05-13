@@ -307,7 +307,7 @@ local function handleWhat(character)
     if world:isPersistentAt(front) then
         character:inform("- Field is persistent.")
     end
-    character:inform("- Tile " .. field.tile)
+    character:inform("- Tile " .. field:tile())
     character:inform(field:isPassable() and "- Field is passable." or "- Field blocks movement.")
     if field:isWarp() then
         character:inform("- Field has a warp annotation.")
