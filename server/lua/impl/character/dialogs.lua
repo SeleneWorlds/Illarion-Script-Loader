@@ -3,7 +3,7 @@ local Network = require("selene.network")
 local DialogManager = require("illarion-script-loader.server.lua.lib.dialogManager")
 
 Character.SeleneMethods.sendMenu = function(user, menu)
-    DialogManager.RequestDialog(user, dialog)
+    DialogManager.RequestDialog(user, menu)
 end
 
 Character.SeleneMethods.requestMessageDialog = function(user, dialog)
