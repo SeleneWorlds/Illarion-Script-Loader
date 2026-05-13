@@ -74,11 +74,11 @@ Character.SeleneMethods.updateAppearance = function(user)
 end
 
 Character.SeleneMethods.setClippingActive = function(user, status)
-    user.SeleneEntity:setNoClip(status)
+    user.SeleneEntity:setCollisions(status)
 end
 
 Character.SeleneMethods.getClippingActive = function(user)
-    return user.SeleneEntity:isNoClip()
+    return user.SeleneEntity:hasCollisions()
 end
 
 Character.SeleneMethods.getFaceTo = function(user)
