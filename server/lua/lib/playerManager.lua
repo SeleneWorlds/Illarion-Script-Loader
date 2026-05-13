@@ -15,7 +15,7 @@ local m = {}
 m.EntitiesById = {}
 
 function m.Spawn(player)
-    local entity = Entities.create("illarion:races/race_0_1")
+    local entity = Entities.create("illarion:races/race_0_0")
     local id = 8147
     local charData = entity:getRuntimeData(DataKeys.Character)
     charData[DataFields.ID] = id
