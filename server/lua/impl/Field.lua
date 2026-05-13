@@ -1,6 +1,6 @@
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
-Field.SeleneGetters.tile = function(field)
+Field.SeleneMethods.tile = function(field)
     local tiles = field.SeleneDimension:getTilesAt(field.SelenePosition)
     if #tiles > 0 then
         return tiles[1]:getMetadata("tileId")
