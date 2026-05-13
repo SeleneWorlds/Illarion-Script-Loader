@@ -42,6 +42,23 @@ Network.handlePayload("illarion:selection_dialog", function(player, payload)
     DialogManager.ClearDialog(character, payload.id)
 end)
 
+Network.handlePayload("illarion:menu_struct", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    local dialog = DialogManager.GetDialog(character, payload.id)
+    if not dialog or dialog.type ~= "MenuStruct" then
+        return
+    end
+
+    dialog.success = payload.itemId ~= nil
+    dialog.selectedItemId = payload.itemId or 0
+
+    if dialog.callback then
+        dialog.callback(dialog)
+    end
+
+    DialogManager.ClearDialog(character, payload.id)
+end)
+
 Network.handlePayload("illarion:merchant_dialog:abort", function(player, payload)
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, payload.id)
