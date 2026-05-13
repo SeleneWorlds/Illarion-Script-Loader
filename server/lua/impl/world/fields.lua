@@ -45,7 +45,7 @@ world.SeleneMethods.createSavedArea = function(tileId, origin, height, width)
 end
 
 world.SeleneMethods.changeTile = function(world, tileId, pos)
-    local tileDef = Registries.findByMetadata("illarion:tiles", "tileId", tileId)
+    local tileDef = Registries.findByMetadata("tiles", "tileId", tileId)
     if not tileDef then
         error("Unknown tile id " .. tileId)
     end
