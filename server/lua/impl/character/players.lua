@@ -1,4 +1,5 @@
 local Network = require("selene.network")
+local HTTP = require("selene.http")
 local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -16,7 +17,7 @@ end
 
 Character.SeleneMethods.pageGM = function(user, message)
     local webhookUrl = Config.getProperty("notifyAdminDiscordWebhook")
-    HTTP.Post(webhookUrl, { username = user.name .. " (" .. user.SelenePlayer.UserId .. ")", content = message })
+    HTTP.post(webhookUrl, { username = user.name .. " (" .. user.SelenePlayer:getUserId() .. ")", content = message })
 end
 
 Character.SeleneMethods.isAdmin = function(user)
@@ -25,7 +26,7 @@ Character.SeleneMethods.isAdmin = function(user)
     end
     -- TODO Temporary solution until we have basic permission support in Selene
     local admins = stringx.split(Config.getProperty("admins"), ",")
-    return tablex.find(admins, user.SelenePlayer.UserId) ~= nil
+    return tablex.find(admins, user.SelenePlayer:getUserId()) ~= nil
 end
 
 Character.SeleneMethods.getPlayerLanguage = function(user)

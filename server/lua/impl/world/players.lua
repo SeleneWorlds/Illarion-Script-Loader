@@ -1,6 +1,7 @@
 local Dimensions = require("selene.dimensions")
 local Config = require("selene.config")
 local Network = require("selene.network")
+local HTTP = require("selene.http")
 local Players = require("selene.players")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -53,5 +54,5 @@ end
 
 world.SeleneMethods.sendMonitoringMessage = function(world, message, type)
     local webhookUrl = Config.getProperty("notifyAdminDiscordWebhook")
-    HTTP.Post(webhookUrl, { content = message })
+    HTTP.post(webhookUrl, { content = message })
 end

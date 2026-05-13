@@ -70,7 +70,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     end
 
     local sourceEntity = nil
-    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(payload.fromX, payload.fromY, payload.fromZ, character.SeleneEntity.Collision)
+    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(payload.fromX, payload.fromY, payload.fromZ, character.SeleneEntity:getCollision())
     for i = #sourceEntities, 1, -1 do
         local entity = sourceEntities[i]
         if entity:hasTag("illarion:item") then
