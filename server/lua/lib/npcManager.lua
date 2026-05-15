@@ -28,6 +28,35 @@ function m.Spawn(npc)
     charData[DataFields.Script] = npc:getField("script")
     charData[DataFields.Race] = npc:getField("race")
     charData[DataFields.Sex] = npc:getField("sex") == 1 and "female" or "male"
+    entity:addDynamicComponent("illarion:name", function(entity, forPlayer)
+        local targetCharData = entity:getRuntimeData(DataKeys.Character)
+        local isControlled = forPlayer:getControlledEntity() == entity
+        local introductionData = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getRuntimeData(DataKeys.Introductions) or nil
+        local isIntroduced = true -- introductionData and introductionData[targetCharData[DataFields.ID]]
+        local effectiveName = entity:getName()
+        if not isIntroduced and not isControlled then
+            local raceId = targetCharData[DataFields.Race]
+            local race = Registries.findByMetadata("illarion:races", "id", raceId)
+            if race then
+                local sex = targetCharData[DataFields.Sex] or "male"
+                local key = "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
+                effectiveName = I18n.get(key, player.Locale) or key
+            else
+                effectiveName = tostring(targetCharData[DataFields.Race])
+            end
+        end
+        return {
+            type = "visual",
+            visual = "illarion:labels/character",
+            position = {
+                origin = "top",
+                offsetY = 20
+            },
+            overrides = {
+                text = effectiveName
+            }
+        }
+    end)
     entity:spawn()
     m.EntitiesById[id] = entity
     m.EntitiesByNpcId[npc:getMetadata("id")] = entity
