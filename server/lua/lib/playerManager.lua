@@ -36,7 +36,7 @@ function m.Spawn(player)
             if race then
                 local sex = targetCharData[DataFields.Sex] or "male"
                 local key = "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
-                effectiveName = I18n.get(key, player.Locale) or key
+                effectiveName = I18n.get(key, player:getLocale()) or key
             else
                 effectiveName = tostring(targetCharData[DataFields.Race])
             end
