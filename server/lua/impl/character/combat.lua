@@ -3,6 +3,7 @@ local Network = require("selene.network")
 local Entities = require("selene.entities")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
