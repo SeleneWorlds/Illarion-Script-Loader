@@ -1,6 +1,8 @@
 local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
 local I18n = require("selene.i18n")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 world.SeleneMethods.getItemStatsFromId = function(world, itemId)
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
@@ -64,13 +66,25 @@ end
 
 world.SeleneMethods.erase = function(world, item, amount)
     if item:getType() == scriptItem.field then
+        if item.SeleneEntity ~= nil then
+            local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item) or {}
+            local currentCount = itemData[DataFields.Count] or 1
+            local newCount = currentCount - amount
+            if newCount > 0 then
+                itemData[DataFields.Count] = newCount
+                item.SeleneEntity:updateVisuals()
+            else
+                item.SeleneEntity:despawn()
+            end
+            return true
+        end
+
         local TileDef = Registries.findByMetadata("tiles", "itemId", item.id)
         if TileDef == nil then
             error("Missing tile for item " .. item.id)
         end
 
         local dimension = Dimensions.getDefault()
-        -- TODO erase from entity items if found
         if dimension:hasTile(item.pos, TileDef) then
             dimension:getMap():removeTile(item.pos, TileDef)
             return true
