@@ -3,6 +3,7 @@ local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Network.handlePayload("illarion:use_at", function(player, payload)
@@ -61,6 +62,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                     actionData[DataFields.LastActionScript] = script
                     actionData[DataFields.LastActionFunction] = script.useNPC
                     actionData[DataFields.LastActionArgs] = { illaNpc, illaUser }
+                    Events.npcUsed:fire(illaNpc, illaUser)
                     script.useNPC(illaNpc, illaUser)
                     return
                 end
