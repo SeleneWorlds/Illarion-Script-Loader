@@ -1,7 +1,7 @@
-local Events = require("selene.events")
+local Event = require("selene.event")
 
 local m = {}
 
-m.npcUsed = Events.create()
+m.npcUsed = Event.of("illarion-script-loader:npc_used")
 
 return m
