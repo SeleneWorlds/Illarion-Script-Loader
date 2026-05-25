@@ -54,15 +54,16 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                 end
             end
         elseif characterType == Character.npc then
+            local illaNpc = Character.fromSeleneEntity(entity)
+            Events.npcUsed:fire(illaNpc, illaUser)
+
             local scriptName = charData[DataFields.Script]
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.useNPC) == "function" then
-                    local illaNpc = Character.fromSeleneEntity(entity)
                     actionData[DataFields.LastActionScript] = script
                     actionData[DataFields.LastActionFunction] = script.useNPC
                     actionData[DataFields.LastActionArgs] = { illaNpc, illaUser }
-                    Events.npcUsed:fire(illaNpc, illaUser)
                     script.useNPC(illaNpc, illaUser)
                     return
                 end
