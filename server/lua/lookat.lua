@@ -21,6 +21,11 @@ local function LookAtItem(character, itemDef, item)
     if not result and illaItemLookAtOk then
         result = illaItemLookAt.lookAtItem(character, item)
     end
+    if not result then
+        result = {
+            name = itemDef:getField("name")
+        }
+    end
     return result
 end
 
@@ -84,17 +89,18 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
         if characterType == Character.player then
             illaPlayerLookAt.lookAtPlayer(character, target, mode)
         elseif characterType == Character.npc then
-            Events.onLookAtNpc:fire(target, character)
-            local status, script = pcall(require, charData[DataFields.Script])
-            if status and type(script.lookAtNpc) == "function" then
-                script.lookAtNpc(target, character, mode)
-            else
-                Network.sendToPlayer(player, "illarion:look_at_entity", {
-                    networkId = entity.NetworkId,
-                    tooltip = {
-                        name = entity:getName()
-                    }
-                })
+            if not Events.onLookAtNpc:fire(target, character) then
+                local status, script = pcall(require, charData[DataFields.Script])
+                if status and type(script.lookAtNpc) == "function" then
+                    script.lookAtNpc(target, character, mode)
+                else
+                    Network.sendToPlayer(player, "illarion:look_at_entity", {
+                        networkId = entity.NetworkId,
+                        tooltip = {
+                            name = entity:getName()
+                        }
+                    })
+                end
             end
         elseif characterType == Character.monster then
             local status, script = pcall(require, charData[DataFields.Script])
