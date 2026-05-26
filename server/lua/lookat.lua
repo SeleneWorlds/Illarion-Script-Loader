@@ -3,6 +3,9 @@ local Registries = require("selene.registries")
 local Network = require("selene.network")
 local I18n = require("selene.i18n")
 
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 local illaPlayerLookAt = require("server.playerlookat")
 local illaItemLookAtOk, illaItemLookAt = pcall(require, "server.itemlookat")
 
@@ -81,6 +84,7 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
         if characterType == Character.player then
             illaPlayerLookAt.lookAtPlayer(character, target, mode)
         elseif characterType == Character.npc then
+            Events.onLookAtNpc:fire(target, character)
             local status, script = pcall(require, charData[DataFields.Script])
             if status and type(script.lookAtNpc) == "function" then
                 script.lookAtNpc(target, character, mode)

@@ -55,7 +55,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
             end
         elseif characterType == Character.npc then
             local illaNpc = Character.fromSeleneEntity(entity)
-            Events.npcUsed:fire(illaNpc, illaUser)
+            Events.onUseNpc:fire(illaNpc, illaUser)
 
             local scriptName = charData[DataFields.Script]
             if scriptName then
