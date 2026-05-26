@@ -89,7 +89,7 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
             if status and type(script.lookAtNpc) == "function" then
                 script.lookAtNpc(target, character, mode)
             else
-                entity:sendToPlayer(player, "illarion:look_at_entity", {
+                Network.sendToPlayer(player, "illarion:look_at_entity", {
                     networkId = entity.NetworkId,
                     tooltip = {
                         name = entity:getName()
