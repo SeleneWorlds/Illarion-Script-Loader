@@ -60,9 +60,24 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
     if entity then
         local mode = payload.mode
         local character = Character.fromSelenePlayer(player)
+        if entity:hasTag("illarion:item") then
+            local itemId = entity:getEntityDefinition():getMetadata("itemId")
+            if itemId then
+                local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
+                if not itemDef then
+                    error("Unknown item id " .. itemId .. " on entity " .. entity:getName())
+                end
+                Network.sendToPlayer(player, "illarion:look_at_entity", {
+                    networkId = entity:getNetworkId(),
+                    tooltip = LookAtItem(character, itemDef, Item.fromSeleneEntity(entity))
+                })
+            end
+            return
+        end
+
         local target = Character.fromSeleneEntity(entity)
         local charData = entity:getRuntimeData(DataKeys.Character)
-        local characterType = charData[DataFields.CharacterType]
+        local characterType = charData and charData[DataFields.CharacterType]
         if characterType == Character.player then
             illaPlayerLookAt.lookAtPlayer(character, target, mode)
         elseif characterType == Character.npc then
