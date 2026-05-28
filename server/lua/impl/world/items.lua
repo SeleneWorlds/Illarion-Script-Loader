@@ -212,3 +212,34 @@ world.SeleneMethods.increase = function(world, item, count)
     end
     return false
 end
+
+world.SeleneMethods.itemInform = function(world, user, item, text)
+    local payload = {
+        tooltip = {
+            name = text
+        }
+    }
+
+    if item.SeleneEntity then
+        payload.networkId = item.SeleneEntity:getNetworkId()
+        Network.sendToEntity(user.SeleneEntity, "illarion:look_at_entity", payload)
+    elseif item.SeleneTile then
+        local coordinate = item.SeleneTile:getCoordinate()
+        payload.x = coordinate.x
+        payload.y = coordinate.y
+        payload.z = coordinate.z
+        Network.sendToEntity(user.SeleneEntity, "illarion:look_at_coordinate", payload)
+    elseif item.SeleneInventoryItem then
+        local itemType = item:getType()
+        local viewId = itemType == scriptItem.belt and "belt" or itemType == scriptItem.inventory and "equipment" or nil
+        if viewId then
+            payload.viewId = viewId
+            payload.slotId = item.SeleneInventoryItem.slotId
+            Network.sendToEntity(user.SeleneEntity, "illarion:look_at_slot", payload)
+        else
+            Network.sendToEntity(user.SeleneEntity, "illarion:look_at", payload)
+        end
+    else
+        Network.sendToEntity(user.SeleneEntity, "illarion:look_at", payload)
+    end
+end
