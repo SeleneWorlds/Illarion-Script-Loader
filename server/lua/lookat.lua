@@ -89,7 +89,9 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
         if characterType == Character.player then
             illaPlayerLookAt.lookAtPlayer(character, target, mode)
         elseif characterType == Character.npc then
-            if not Events.onLookAtNpc:fire(target, character) then
+            local event = { cancel = false }
+            Events.onLookAtNpc:fire(event, entity, player)
+            if not event.cancel then
                 local status, script = pcall(require, charData[DataFields.Script])
                 if status and type(script.lookAtNpc) == "function" then
                     script.lookAtNpc(target, character, mode)
