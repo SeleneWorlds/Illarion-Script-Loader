@@ -46,7 +46,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     showInChat = false
                 end
                 Network.sendToEntity(entity, "illarion:chat", {
-                    author = userEntity.NetworkId,
+                    author = userEntity:getNetworkId(),
                     authorName = user.name,
                     mode = mode,
                     message = effectiveMessage,
@@ -124,7 +124,7 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
                     showInChat = false
                 end
                 Network.sendToEntity(entity, "illarion:chat", {
-                    author = userEntity.NetworkId,
+                    author = userEntity:getNetworkId(),
                     authorName = user.name,
                     mode = mode,
                     message = effectiveMessage,

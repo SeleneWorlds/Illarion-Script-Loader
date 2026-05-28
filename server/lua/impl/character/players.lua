@@ -54,7 +54,7 @@ Character.SeleneMethods.sendCharDescription = function(user, id, description)
     local target = CharacterManager.EntitiesById[id]
     if target then
         Network.sendToEntity(user.SeleneEntity, "illarion:char_description", {
-            networkId = target.NetworkId,
+            networkId = target:getNetworkId(),
             description = description
         })
     end
