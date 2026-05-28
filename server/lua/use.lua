@@ -54,7 +54,11 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                 end
             end
         elseif characterType == Character.npc then
-            Events.onUseNpc:fire(entity, player)
+            local event = { cancel = true }
+            Events.onUseNpc:fire(event, entity, player)
+            if event.cancel then
+                return
+            end
 
             local scriptName = charData[DataFields.Script]
             if scriptName then
