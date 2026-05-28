@@ -66,7 +66,7 @@ end)
 Network.handlePayload("illarion:look_at_entity", function(player, payload)
     local entity = Entities.getByNetworkId(payload.networkId)
     if entity then
-        local mode = payload.mode
+        local mode = payload.mode or 0
         local character = Character.fromSelenePlayer(player)
         if entity:hasTag("illarion:item") then
             local itemId = entity:getEntityDefinition():getMetadata("itemId")
