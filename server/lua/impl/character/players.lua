@@ -5,6 +5,7 @@ local Config = require("selene.config")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
     if not user.SelenePlayer then
@@ -12,7 +13,9 @@ Character.SeleneMethods.inform = function(user, message, messageEnglish, priorit
     end
 
     local localizedMessage = user:getPlayerLanguage() == Player.english and messageEnglish or message
-    Network.sendToPlayer(user.SelenePlayer, "illarion:inform", { Message = localizedMessage })
+    local mode
+    mode, localizedMessage = ChatMode.parsePrefix(Character.say, localizedMessage)
+    Network.sendToPlayer(user.SelenePlayer, "illarion:inform", { Message = localizedMessage, mode = mode })
 end
 
 Character.SeleneMethods.pageGM = function(user, message)

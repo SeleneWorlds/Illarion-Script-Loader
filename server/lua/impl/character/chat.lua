@@ -3,9 +3,16 @@ local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
 
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local userEntity = user.SeleneEntity
+    mode, message = ChatMode.parsePrefix(mode, message)
+    if messageEnglish then
+        local englishMode
+        englishMode, messageEnglish = ChatMode.parsePrefix(mode, messageEnglish)
+        mode = englishMode
+    end
     if messageEnglish == nil then
         local illaPlayerTalkOk, illaPlayerTalk = pcall(require, "server.playertalk")
         if illaPlayerTalkOk then
@@ -19,7 +26,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
 
     local range = 0
     local zRange = 2
-    if mode == Character.say then
+    if mode == Character.say or mode == "ooc" or mode == "emote" then
         range = 14
     elseif mode == Character.whisper then
         range = 2
