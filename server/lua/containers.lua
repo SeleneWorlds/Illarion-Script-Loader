@@ -46,8 +46,8 @@ Network.handlePayload("illarion:open_container_slot", function(player, payload)
 
     local inventoryItem = inventory:getInventoryItem(payload.slotId)
     if inventoryItem then
-        local inventory = InventoryManager.GetContentsContainer(item)
+        local contents = InventoryManager.GetContentsContainer(Item.fromSeleneInventoryItem(inventoryItem))
         -- TODO
-        print("opening item container " .. tablex.tostring(inventory))
+        print("opening item container " .. tablex.tostring(contents))
     end
 end)
