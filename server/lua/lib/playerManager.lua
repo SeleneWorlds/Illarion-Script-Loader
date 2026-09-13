@@ -69,7 +69,11 @@ function m.Spawn(player)
             Network.sendToEntity(entity, "illarion:update_slot", {
                 viewId = "equipment",
                 slotId = slotId,
-                item = item and { visual = item.def:getField("visual") } or nil
+                item = item and {
+                    visual = item.def:getField("visual"),
+                    count = item.count or 1,
+                    container = (item.def:getField("containerSlots") or 0) > 0
+                } or nil
             })
         end
     end)
@@ -81,7 +85,11 @@ function m.Spawn(player)
             Network.sendToEntity(entity, "illarion:update_slot", {
                 viewId = "belt",
                 slotId = slotId,
-                item = item and { visual = item.def:getField("visual") } or nil
+                item = item and {
+                    visual = item.def:getField("visual"),
+                    count = item.count or 1,
+                    container = (item.def:getField("containerSlots") or 0) > 0
+                } or nil
             })
         end
     end)
