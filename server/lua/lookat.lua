@@ -112,3 +112,19 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
         end
     end
 end)
+
+Network.handlePayload("illarion:look_at_slot", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    local inventory = require("illarion-script-loader.server.lua.lib.inventoryManager").GetInventoryAtView(character, payload.viewId)
+    local inventoryItem = inventory and inventory:getInventoryItem(payload.slotId)
+    if not inventoryItem then
+        return
+    end
+
+    local item = inventoryItem:getItem()
+    Network.sendToPlayer(player, "illarion:look_at_slot", {
+        viewId = payload.viewId,
+        slotId = payload.slotId,
+        tooltip = LookAtItem(character, item.def, Item.fromSeleneInventoryItem(inventoryItem))
+    })
+end)
