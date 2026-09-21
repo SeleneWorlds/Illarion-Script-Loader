@@ -47,9 +47,9 @@ Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
 end
 
 Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
-    local item = container.SeleneInventory:getItem(slotId)
-    if item then
-        world:changeQuality(item, amount)
+    local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
+    if inventoryItem then
+        world:changeQuality(Item.fromSeleneInventoryItem(inventoryItem), amount)
         return true
     end
     return false

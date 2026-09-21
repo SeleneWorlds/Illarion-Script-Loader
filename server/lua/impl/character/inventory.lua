@@ -58,7 +58,8 @@ end
 
 Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
-    local item = inventory:getItem(slotId)
+    local inventoryItem = inventory:getInventoryItem(slotId)
+    local item = Item.fromSeleneInventoryItem(inventoryItem)
     world:changeQuality(item, amount)
 end
 
