@@ -193,6 +193,8 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     if not item then
         return
     end
+    local sourceInventoryItem = fromInventory:getInventoryItem(payload.fromSlotId)
+    local sourceIllaItem = Item.fromSeleneInventoryItem(sourceInventoryItem)
 
     local itemId = item.def:getMetadata("id")
     local entityType = Registries.findByMetadata("entities", "itemId", itemId)
@@ -203,6 +205,11 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     fromInventory:setItem(payload.fromSlotId, nil)
 
     local entity = Entities.create(entityType)
+    local entityItemData = entity:getRuntimeData(DataKeys.Item)
+    local customData = item.data or {}
+    entityItemData[DataFields.Count] = item.count or 1
+    entityItemData[DataFields.Data] = customData
+    Item.fromSeleneEntity(entity).quality = sourceIllaItem.quality
     entity:setCoordinate(payload.x, payload.y, payload.z)
     entity:spawn(character.SeleneEntity:getDimension())
 
