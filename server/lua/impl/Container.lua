@@ -100,18 +100,19 @@ Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQualit
         error("Tried to swap to unknown item id " .. newId)
     end
     local inventory = container.SeleneInventory
-    local item = inventory:getItem(slotId)
+    local inventoryItem = inventory:getInventoryItem(slotId)
+    local item = inventoryItem and inventoryItem:getItem()
     if item ~= nil then
         item.def = itemDef
         if newQuality > 0 then
-            item.quality = newQuality
+            Item.fromSeleneInventoryItem(inventoryItem).quality = newQuality
         end
     else
         inventory:setItem(slotId, {
             def = itemDef,
-            count = 1,
-            quality = newQuality
+            count = 1
         })
+        Item.fromSeleneInventoryItem(inventory:getInventoryItem(slotId)).quality = newQuality
     end
     return true
 end

@@ -128,18 +128,23 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
     end
-    local item = inventory:getItem(slotId)
+    local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
+    local inventoryItem = inventory:getInventoryItem(slotId)
+    local item = inventoryItem and inventoryItem:getItem()
+    local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
     if item ~= nil then
         item.def = itemDef
         if newQuality > 0 then
-            item.quality = newQuality
+            illaItem.quality = newQuality
         end
     else
         inventory:setItem(slotId, {
             def = itemDef,
-            count = 1,
-            quality = newQuality
+            count = 1
         })
+        local newInventoryItem = inventory:getInventoryItem(slotId)
+        local newIllaItem = Item.fromSeleneInventoryItem(newInventoryItem)
+        newIllaItem.quality = newQuality
     end
     return true
 end
