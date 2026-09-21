@@ -149,7 +149,19 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         error("Unknown tile for item id " .. itemId)
     end
     local tile = dimension:placeTile(pos, tileDef)
-    return Item.fromSeleneTile(tile)
+    local item = Item.fromSeleneTile(tile)
+    item.quality = tonumber(quality) or 333
+    if type(data) == "table" then
+        for key, value in pairs(data) do
+            item:setData(key, value)
+        end
+    else
+        local legacyData = tonumber(data)
+        if legacyData and legacyData ~= 0 then
+            item.data = legacyData
+        end
+    end
+    return item
 end
 
 world.SeleneMethods.createItemFromItem = function(world, item, pos, always)
