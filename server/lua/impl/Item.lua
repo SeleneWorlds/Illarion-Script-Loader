@@ -79,18 +79,11 @@ Item.SeleneSetters.wear = function(item, wear)
 end
 
 Item.SeleneGetters.quality = function(item)
-    if item.SeleneItem then
-        return tonumber(item.SeleneItem.quality) or 333
-    end
     return tonumber(item:getData("quality")) or 333
 end
 
 Item.SeleneSetters.quality = function(item, quality)
-    if item.SeleneItem then
-        item.SeleneItem.quality = quality
-    else
-        item:setData("quality", quality)
-    end
+    item:setData("quality", quality)
 end
 
 Item.SeleneGetters.durability = function(item)
