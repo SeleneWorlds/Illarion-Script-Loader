@@ -119,10 +119,7 @@ Item.SeleneMethods.getData = function(item, key)
     elseif item.SeleneEntity then
         local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
         local itemDataMap = itemData and itemData[DataFields.Data]
-        if itemDataMap then
-            return itemDataMap[key]
-        end
-        return ""
+        return itemDataMap and itemDataMap[key] or ""
     elseif item.SeleneItem then
         return item.SeleneItem.data and item.SeleneItem.data[key] or ""
     end
@@ -133,18 +130,17 @@ Item.SeleneMethods.setData = function(item, key, value)
     if item.SeleneTile then
         local dimension = item.SeleneTile:getDimension()
         local data = dimension:getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName()) or {}
-        data[key] = tostring(value)
+        data[key] = value ~= nil and tostring(value) or nil
         dimension:annotateTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getName(), data)
     elseif item.SeleneEntity then
         local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
-        local itemDataMap = itemData[DataFields.Data]
-        if type(itemDataMap) ~= "table" then
-            itemDataMap = {}
-        end
-        itemDataMap[key] = tostring(value)
+        local itemDataMap = itemData[DataFields.Data] or {}
+        itemDataMap[key] = value ~= nil and tostring(value) or nil
         itemData[DataFields.Data] = itemDataMap
     elseif item.SeleneItem then
-        item.SeleneItem.data[key] = tostring(value)
+        local data = item.SeleneItem.data or {}
+        data[key] = value ~= nil and tostring(value) or nil
+        item.SeleneItem.data = data
     end
 end
 
