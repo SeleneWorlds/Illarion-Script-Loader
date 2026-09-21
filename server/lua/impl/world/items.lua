@@ -153,7 +153,8 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
 end
 
 world.SeleneMethods.createItemFromItem = function(world, item, pos, always)
-    return world:createItemFromId(item.id, item.count, pos, always)
+    local data = item.SeleneItem and item.SeleneItem.data or item.data
+    return world:createItemFromId(item.id, item.number, pos, always, item.quality, data)
 end
 
 world.SeleneMethods.getArmorStruct = function(world, itemId)
