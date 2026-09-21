@@ -95,7 +95,8 @@ Item.SeleneGetters.data = function(item)
 end
 
 Item.SeleneSetters.data = function(item, data)
-    item:setData("data", data)
+    local value = tonumber(data)
+    item:setData("data", value ~= 0 and value or nil)
 end
 
 Item.SeleneMethods.getType = function(item)
