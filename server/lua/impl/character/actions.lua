@@ -1,6 +1,7 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 local Config = require("selene.config")
+local Entities = require("selene.entities")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -131,3 +132,10 @@ Character.SeleneMethods.changeSource = function(user, item)
         action.Args = { user, item }
     end
 end
+
+Entities.beforeMove:connect(function(entity)
+    Character.fromSeleneEntity(entity):abortAction()
+end)
+Entities.beforeTurn:connect(function(entity)
+   Character.fromSeleneEntity(entity):abortAction()
+end)
