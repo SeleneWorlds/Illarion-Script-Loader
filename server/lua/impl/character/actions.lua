@@ -7,14 +7,6 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ActionManager = require("illarion-script-loader.server.lua.lib.actionManager")
 
-local function callActionFunction(actionFunction, actionArgs, actionState)
-    local argumentCount = actionArgs.n or #actionArgs
-    local args = table.pack(table.unpack(actionArgs, 1, argumentCount))
-    args.n = argumentCount + 1
-    args[args.n] = actionState
-    pcall(actionFunction, table.unpack(args, 1, args.n))
-end
-
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
     local entity = user.SeleneEntity
     local gfxHandle = nil
@@ -37,7 +29,7 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
             local actionFunction = currentAction.Function
             local actionArgs = currentAction.Args
             ActionManager.ClearAction(user)
-            callActionFunction(actionFunction, actionArgs, Action.success)
+            ActionManager.CallActionFunction(actionFunction, actionArgs, Action.success)
         else
             ActionManager.ClearAction(user)
         end
@@ -79,21 +71,14 @@ Character.SeleneMethods.successAction = function(user)
     local actionArgs = currentAction and currentAction.Args
     ActionManager.ClearAction(user)
     if type(actionFunction) == "function" and actionArgs then
-        callActionFunction(actionFunction, actionArgs, Action.success)
+        ActionManager.CallActionFunction(actionFunction, actionArgs, Action.success)
     end
 end
 
 Character.SeleneMethods.abortAction = function(user)
     -- TODO checkSource to invalidate target parameter if character logged out or monster died (castOnChar/useMonster)
     -- TODO special handling for crafting dialogs
-    local entity = user.SeleneEntity
-    local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
-    local actionFunction = currentAction and currentAction.Function
-    local actionArgs = currentAction and currentAction.Args
-    ActionManager.ClearAction(user)
-    if type(actionFunction) == "function" and actionArgs then
-        callActionFunction(actionFunction, actionArgs, Action.abort)
-    end
+    ActionManager.AbortAction(user)
 end
 
 Character.SeleneMethods.isActionRunning = function(user)
