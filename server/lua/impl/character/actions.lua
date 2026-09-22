@@ -1,9 +1,18 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
+local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ActionManager = require("illarion-script-loader.server.lua.lib.actionManager")
+
+local function callActionFunction(actionFunction, actionArgs, actionState)
+    local argumentCount = actionArgs.n or #actionArgs
+    local args = table.pack(table.unpack(actionArgs, 1, argumentCount))
+    args.n = argumentCount + 1
+    args[args.n] = actionState
+    pcall(actionFunction, table.unpack(args, 1, args.n))
+end
 
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
     local entity = user.SeleneEntity
@@ -26,7 +35,7 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
             local actionFunction = currentAction.Function
             local actionArgs = currentAction.Args
             ActionManager.ClearAction(user)
-            pcall(actionFunction, table.unpack(actionArgs), Action.success)
+            callActionFunction(actionFunction, actionArgs, Action.success)
         else
             ActionManager.ClearAction(user)
         end
@@ -69,7 +78,7 @@ Character.SeleneMethods.successAction = function(user)
     local actionArgs = currentAction and currentAction.Args
     ActionManager.ClearAction(user)
     if type(actionFunction) == "function" and actionArgs then
-        pcall(actionFunction, table.unpack(actionArgs), Action.success)
+        callActionFunction(actionFunction, actionArgs, Action.success)
     end
 end
 
@@ -82,7 +91,7 @@ Character.SeleneMethods.abortAction = function(user)
     local actionArgs = currentAction and currentAction.Args
     ActionManager.ClearAction(user)
     if type(actionFunction) == "function" and actionArgs then
-        pcall(actionFunction, table.unpack(actionArgs), Action.abort)
+        callActionFunction(actionFunction, actionArgs, Action.abort)
     end
 end
 
