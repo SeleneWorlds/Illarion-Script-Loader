@@ -23,9 +23,13 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     local actionHandle = Schedules.setTimeout(duration, function()
         local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
         if currentAction and type(currentAction.Function) == "function" and currentAction.Args then
-            pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
+            local actionFunction = currentAction.Function
+            local actionArgs = currentAction.Args
+            ActionManager.ClearAction(user)
+            pcall(actionFunction, table.unpack(actionArgs), Action.success)
+        else
+            ActionManager.ClearAction(user)
         end
-        ActionManager.ClearAction(user)
     end)
     local action = entity:getRuntimeData(DataKeys.CurrentAction)
     local lastAction = entity:getRuntimeData(DataKeys.LastAction)
@@ -61,11 +65,12 @@ Character.SeleneMethods.successAction = function(user)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
     local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
-     if currentAction and type(currentAction.Function) == "function" then
-         pcall(currentAction.Function, table.unpack(currentAction.Args), Action.success)
-     end
-
+    local actionFunction = currentAction and currentAction.Function
+    local actionArgs = currentAction and currentAction.Args
     ActionManager.ClearAction(user)
+    if type(actionFunction) == "function" and actionArgs then
+        pcall(actionFunction, table.unpack(actionArgs), Action.success)
+    end
 end
 
 Character.SeleneMethods.abortAction = function(user)
@@ -73,11 +78,12 @@ Character.SeleneMethods.abortAction = function(user)
     -- TODO special handling for crafting dialogs
     local entity = user.SeleneEntity
     local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
-    if currentAction and type(currentAction.Function) == "function" then
-        pcall(currentAction.Function, table.unpack(currentAction.Args), Action.abort)
-    end
-
+    local actionFunction = currentAction and currentAction.Function
+    local actionArgs = currentAction and currentAction.Args
     ActionManager.ClearAction(user)
+    if type(actionFunction) == "function" and actionArgs then
+        pcall(actionFunction, table.unpack(actionArgs), Action.abort)
+    end
 end
 
 Character.SeleneMethods.isActionRunning = function(user)
@@ -92,12 +98,12 @@ Character.SeleneMethods.changeSource = function(user, item)
     if itemId == nil then
         error("changeSource target tile does not have an item id")
     end
-    local item = Registries.findByMetadata("illarion:items", "id", itemId)
-    if item == nil then
+    local itemDefinition = Registries.findByMetadata("illarion:items", "id", itemId)
+    if itemDefinition == nil then
         error("changeSource target tile is missing item definition")
     end
-    local scriptName = item:getField("script")
-    if item == nil then
+    local scriptName = itemDefinition:getField("script")
+    if scriptName == nil then
         error("changeSource target item does not have a script")
     end
     local status, script = pcall(require, scriptName)
@@ -110,6 +116,5 @@ Character.SeleneMethods.changeSource = function(user, item)
     local action = entity:getRuntimeData(DataKeys.CurrentAction)
     action.Script = script
     action.Function = script.UseItem
-    -- action.Args = { user, item }
-    action.Args = { 1, 2 }
+    action.Args = { user, item }
 end
