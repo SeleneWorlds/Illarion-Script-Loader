@@ -28,6 +28,7 @@ end
 
 Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
     local toInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
     if not fromInventory or not toInventory then
@@ -64,6 +65,7 @@ end)
 
 Network.handlePayload("illarion:move_coordinate_to_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local targetInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
     if not targetInventory or not targetInventory:hasSlot(payload.toSlotId) then
         return
@@ -105,6 +107,7 @@ end)
 
 Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player, payload)
     local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local dimension = character.SeleneEntity:getDimension()
     if not dimension then
         return
@@ -184,6 +187,7 @@ end)
 
 Network.handlePayload("illarion:move_slot_to_coordinate", function(player, payload)
     local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
     if not fromInventory then
         return
