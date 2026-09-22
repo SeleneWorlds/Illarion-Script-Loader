@@ -9,9 +9,9 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 
 local function callUseItem(script, user, item)
     if Config.getProperty("useLegacyUseItem") == "true" then
-        script.UseItem(user, item, nil, nil, nil)
+        script.UseItem(user, item, nil, nil, nil, Action.none)
     else
-        script.UseItem(user, item)
+        script.UseItem(user, item, Action.none)
     end
 end
 
