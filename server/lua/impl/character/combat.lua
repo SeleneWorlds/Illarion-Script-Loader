@@ -29,6 +29,10 @@ Character.SeleneGetters.attackmode = function(user)
 end
 
 Character.SeleneMethods.callAttackScript = function(attacker, defender)
+    if defender:getType() == Character.player then
+        defender:disturbAction(attacker)
+    end
+
     local weaponId = attacker:getItemAt(Character.right_tool).id
     local itemDef = Registries.findByMetadata("illarion:items", "id", weaponId)
     if itemDef then
