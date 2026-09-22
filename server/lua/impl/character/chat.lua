@@ -123,20 +123,23 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
         if diffZ <= zRange then
             local charData = entity:getRuntimeData(DataKeys.Character)
             local characterType = charData[DataFields.CharacterType]
-            if characterType == Character.player and user:getPlayerLanguage() == language then
-                local showInChat = true
-                local effectiveMessage = message
-                if stringx.endsWith(effectiveMessage, "#npc") then
-                    effectiveMessage = stringx.removeSuffix(effectiveMessage, "#npc")
-                    showInChat = false
+            if characterType == Character.player then
+                local listener = Character.fromSeleneEntity(entity)
+                if listener:getPlayerLanguage() == language then
+                    local showInChat = true
+                    local effectiveMessage = message
+                    if stringx.endsWith(effectiveMessage, "#npc") then
+                        effectiveMessage = stringx.removeSuffix(effectiveMessage, "#npc")
+                        showInChat = false
+                    end
+                    Network.sendToEntity(entity, "illarion:chat", {
+                        author = userEntity:getNetworkId(),
+                        authorName = user.name,
+                        mode = mode,
+                        message = effectiveMessage,
+                        showInChat = showInChat
+                    })
                 end
-                Network.sendToEntity(entity, "illarion:chat", {
-                    author = userEntity:getNetworkId(),
-                    authorName = user.name,
-                    mode = mode,
-                    message = effectiveMessage,
-                    showInChat = showInChat
-                })
             elseif characterType == Character.npc or characterType == Character.monster then
                 table.insert(nonPlayerListeners, entity)
             end
