@@ -26,6 +26,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
     local playerEntity = player:getControlledEntity()
     local dimension = playerEntity:getDimension()
     local illaUser = Character.fromSelenePlayer(player)
+    illaUser:abortAction()
     local illaPos = position(payload.x, payload.y, payload.z)
     local actionData = playerEntity:getRuntimeData(DataKeys.LastAction)
 
@@ -133,6 +134,7 @@ end)
 Network.handlePayload("illarion:use_slot", function(player, payload)
     -- Payload is viewId, slotId
     local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local inventory = InventoryManager.GetInventoryAtView(character, payload.viewId)
     if not inventory then
         return
