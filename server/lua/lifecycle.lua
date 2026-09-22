@@ -34,7 +34,9 @@ end)
 
 Players.playerLeft:connect(function(player)
     if player:getControlledEntity() then
-        illaLogout.onLogout(Character.fromSelenePlayer(player))
+        local character = Character.fromSelenePlayer(player)
+        character:abortAction()
+        illaLogout.onLogout(character)
     end
     PlayerManager.Despawn(player)
 end)
