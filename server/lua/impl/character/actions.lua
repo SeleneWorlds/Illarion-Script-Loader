@@ -116,5 +116,9 @@ Character.SeleneMethods.changeSource = function(user, item)
     local action = entity:getRuntimeData(DataKeys.CurrentAction)
     action.Script = script
     action.Function = script.UseItem
-    action.Args = { user, item }
+    if Config.getProperty("useLegacyUseItem") == "true" then
+        action.Args = table.pack(user, item, nil, nil, nil)
+    else
+        action.Args = { user, item }
+    end
 end

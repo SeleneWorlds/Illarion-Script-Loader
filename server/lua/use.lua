@@ -1,10 +1,26 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
+local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local Events = require("illarion-script-loader.server.lua.lib.events")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+
+local function callUseItem(script, user, item)
+    if Config.getProperty("useLegacyUseItem") == "true" then
+        script.UseItem(user, item, nil, nil, nil)
+    else
+        script.UseItem(user, item)
+    end
+end
+
+local function getUseItemArgs(user, item)
+    if Config.getProperty("useLegacyUseItem") == "true" then
+        return table.pack(user, item, nil, nil, nil)
+    end
+    return { user, item }
+end
 
 Network.handlePayload("illarion:use_at", function(player, payload)
     local playerEntity = player:getControlledEntity()
@@ -30,8 +46,8 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                             local illaItem = Item.fromSeleneEntity(entity)
                             actionData[DataFields.LastActionScript] = script
                             actionData[DataFields.LastActionFunction] = script.UseItem
-                            actionData[DataFields.LastActionArgs] = { illaUser, illaItem }
-                            script.UseItem(illaUser, illaItem)
+                            actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem)
+                            callUseItem(script, illaUser, illaItem)
                             return
                         end
                     end
@@ -104,8 +120,8 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                         local illaItem = Item.fromSeleneTile(tile)
                         actionData[DataFields.LastActionScript] = script
                         actionData[DataFields.LastActionFunction] = script.UseItem
-                        actionData[DataFields.LastActionArgs] = { illaUser, illaItem }
-                        script.UseItem(illaUser, illaItem)
+                        actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem)
+                        callUseItem(script, illaUser, illaItem)
                         return
                     end
                 end
@@ -128,7 +144,7 @@ Network.handlePayload("illarion:use_slot", function(player, payload)
         if scriptName then
             local status, script = pcall(require, scriptName)
             if status and type(script.UseItem) == "function" then
-                script.UseItem(character, Item.fromSeleneInventoryItem(inventoryItem))
+                callUseItem(script, character, Item.fromSeleneInventoryItem(inventoryItem))
             end
         end
     end
