@@ -59,7 +59,6 @@ Character.SeleneMethods.disturbAction = function(user, disturber)
     local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
     if currentAction and currentAction.Script and type(currentAction.Script.actionDisturbed) == "function" then
         shouldAbort = currentAction.Script.actionDisturbed(user, disturber)
-        entity:removeRuntimeData(DataKeys.CurrentAction)
     end
 
     if shouldAbort then
