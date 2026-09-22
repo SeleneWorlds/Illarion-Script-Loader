@@ -29,7 +29,8 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
         end, { immediate = true })
     end
 
-    local actionHandle = Schedules.setTimeout(duration, function()
+    -- Duration is in deciseconds for whatever reason
+    local actionHandle = Schedules.setTimeout(duration * 100, function()
         local currentAction = entity:getRuntimeData(DataKeys.CurrentAction)
         if currentAction and type(currentAction.Function) == "function" and currentAction.Args then
             local actionFunction = currentAction.Function
