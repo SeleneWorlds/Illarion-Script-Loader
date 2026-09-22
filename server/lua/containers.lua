@@ -5,6 +5,8 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 local illaDepot = require("server.depot")
 
 Network.handlePayload("illarion:open_container_at", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local playerEntity = player:getControlledEntity()
     local dimension = playerEntity:getDimension()
     local entities = dimension:getEntitiesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
@@ -22,7 +24,6 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
             local isDepot = itemId == 321 or itemId == 4817
             local item = Item.fromSeleneTile(tile)
             if isDepot then
-                local character = Character.fromSelenePlayer(player)
                 if illaDepot.onOpenDepot(character, item) then
                     local inventory = InventoryManager.getDepot(tonumber(item:getData("depot")))
                     print("opening depot " .. tablex.tostring(inventory))
@@ -39,6 +40,7 @@ end)
 
 Network.handlePayload("illarion:open_container_slot", function(player, payload)
     local character = Character.fromSelenePlayer(player)
+    character:abortAction()
     local inventory = InventoryManager.GetInventoryAtView(character, payload.viewId)
     if not inventory then
         return
