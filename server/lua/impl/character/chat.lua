@@ -105,9 +105,10 @@ end
 
 Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
     local userEntity = user.SeleneEntity
+    mode, message = ChatMode.parsePrefix(mode, message)
     local range = 0
     local zRange = 2
-    if mode == Character.say then
+    if mode == Character.say or mode == "ooc" or mode == "emote" then
         range = 14
     elseif mode == Character.whisper then
         range = 2
