@@ -1,5 +1,4 @@
-local Inventory = require("moonlight-inventory.server.lua.inventory")
-local ObservableMapInventory = require("moonlight-inventory.server.lua.observable_map_inventory")
+local IllarionInventory = require("illarion-script-loader.server.lua.lib.illarionInventory")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local m = {}
@@ -67,7 +66,7 @@ function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)
     local inventories = user.SeleneEntity:getRuntimeData(DataKeys.Inventories)
     local inventory = inventories[inventoryName]
     if not inventory then
-        inventory = ObservableMapInventory:new({
+        inventory = IllarionInventory:new({
             data = tablex.observable(),
             slots = slotIds,
             owner = user
@@ -94,7 +93,7 @@ function m.GetContentsContainer(item)
         for i = 1, slotCount do
             table.insert(slots, i)
         end
-        return ObservableMapInventory:new({
+        return IllarionInventory:new({
             data = item.SeleneItem.content,
             slots = slots,
             isContainer = true,
