@@ -6,28 +6,8 @@ local I18n = require("selene.i18n")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local Events = require("illarion-script-loader.server.lua.lib.events")
+local ItemLookAt = require("illarion-script-loader.server.lua.lib.itemLookAt")
 local illaPlayerLookAt = require("server.playerlookat")
-local illaItemLookAtOk, illaItemLookAt = pcall(require, "server.itemlookat")
-
-local function LookAtItem(character, itemDef, item)
-    local result = nil
-    local scriptName = itemDef:getField("script")
-    if scriptName then
-        local status, script = pcall(require, scriptName)
-        if status and type(script.LookAtItem) == "function" then
-            result = script.LookAtItem(character, item)
-        end
-    end
-    if not result and illaItemLookAtOk then
-        result = illaItemLookAt.lookAtItem(character, item)
-    end
-    if not result then
-        result = {
-            name = itemDef:getField("name")
-        }
-    end
-    return result
-end
 
 Network.handlePayload("illarion:look_at", function(player, payload)
     local entity = player:getControlledEntity()
@@ -41,7 +21,7 @@ Network.handlePayload("illarion:look_at", function(player, payload)
             if not itemDef then
                 error("Unknown item id " .. itemId .. " at " .. tile:getCoordinate())
             end
-            local result = LookAtItem(Character.fromSelenePlayer(player), itemDef, Item.fromSeleneTile(tile))
+            local result = ItemLookAt.Get(Character.fromSelenePlayer(player), itemDef, Item.fromSeleneTile(tile))
             Network.sendToPlayer(player, "illarion:look_at", {
                 x = payload.x,
                 y = payload.y,
@@ -77,7 +57,7 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
                 end
                 Network.sendToPlayer(player, "illarion:look_at_entity", {
                     networkId = entity:getNetworkId(),
-                    tooltip = LookAtItem(character, itemDef, Item.fromSeleneEntity(entity))
+                    tooltip = ItemLookAt.Get(character, itemDef, Item.fromSeleneEntity(entity))
                 })
             end
             return
@@ -125,6 +105,6 @@ Network.handlePayload("illarion:look_at_slot", function(player, payload)
     Network.sendToPlayer(player, "illarion:look_at_slot", {
         viewId = payload.viewId,
         slotId = payload.slotId,
-        tooltip = LookAtItem(character, item.def, Item.fromSeleneInventoryItem(inventoryItem))
+        tooltip = ItemLookAt.Get(character, item.def, Item.fromSeleneInventoryItem(inventoryItem))
     })
 end)

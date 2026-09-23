@@ -1,7 +1,9 @@
 local Network = require("selene.network")
+local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DialogManager = require("illarion-script-loader.server.lua.lib.dialogManager")
+local ItemLookAt = require("illarion-script-loader.server.lua.lib.itemLookAt")
 
 Network.handlePayload("illarion:message_dialog", function(player, payload)
     local character = Character.fromSelenePlayer(player)
@@ -57,6 +59,46 @@ Network.handlePayload("illarion:menu_struct", function(player, payload)
     end
 
     DialogManager.ClearDialog(character, payload.id)
+end)
+
+Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
+    local character = Character.fromSelenePlayer(player)
+    local dialog = DialogManager.GetDialog(character, payload.id)
+    if not dialog or dialog.type ~= "MenuStruct" then
+        return
+    end
+
+    local slotIndex = tonumber(payload.slotIndex)
+    if not slotIndex or slotIndex % 1 ~= 0 then
+        return
+    end
+
+    local entry = dialog.items[slotIndex]
+    if not entry or entry.id ~= payload.itemId then
+        return
+    end
+
+    local itemDef = Registries.findByMetadata("illarion:items", "id", entry.id)
+    if not itemDef then
+        return
+    end
+
+    local item = setmetatable({
+        SeleneItem = {
+            def = itemDef,
+            count = 1,
+            quality = 333,
+            wear = 0,
+            data = {}
+        }
+    }, Item.SeleneMetatable)
+
+    Network.sendToPlayer(player, "illarion:look_at_menu_item", {
+        id = payload.id,
+        slotIndex = slotIndex,
+        itemId = entry.id,
+        tooltip = ItemLookAt.Get(character, itemDef, item)
+    })
 end)
 
 Network.handlePayload("illarion:merchant_dialog:abort", function(player, payload)
