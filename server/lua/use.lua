@@ -71,7 +71,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                 end
             end
         elseif characterType == Character.npc then
-            local event = { cancel = true }
+            local event = { cancel = false }
             Events.onUseNpc:fire(event, entity, player)
             if event.cancel then
                 return
