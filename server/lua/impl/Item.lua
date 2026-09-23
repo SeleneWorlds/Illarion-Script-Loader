@@ -71,19 +71,55 @@ Item.SeleneGetters.isLarge = function(item)
 end
 
 Item.SeleneGetters.wear = function(item)
-    return tonumber(item:getData("wear")) or 0
+    if item.SeleneTile then
+        local data = item.SeleneTile:getDimension():getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
+        return tonumber(data and data[DataFields.Wear]) or 0
+    elseif item.SeleneEntity then
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        return tonumber(itemData and itemData[DataFields.Wear]) or 0
+    elseif item.SeleneItem then
+        return tonumber(item.SeleneItem.wear) or 0
+    end
+    return 0
 end
 
 Item.SeleneSetters.wear = function(item, wear)
-    item:setData("wear", wear)
+    if item.SeleneTile then
+        local dimension = item.SeleneTile:getDimension()
+        local data = dimension:getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName()) or {}
+        data[DataFields.Wear] = wear
+        dimension:annotateTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getName(), data)
+    elseif item.SeleneEntity then
+        item.SeleneEntity:getRuntimeData(DataKeys.Item)[DataFields.Wear] = wear
+    elseif item.SeleneItem then
+        item.SeleneItem.wear = wear
+    end
 end
 
 Item.SeleneGetters.quality = function(item)
-    return tonumber(item:getData("quality")) or 333
+    if item.SeleneTile then
+        local data = item.SeleneTile:getDimension():getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
+        return tonumber(data and data[DataFields.Quality]) or 333
+    elseif item.SeleneEntity then
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        return tonumber(itemData and itemData[DataFields.Quality]) or 333
+    elseif item.SeleneItem then
+        return tonumber(item.SeleneItem.quality) or 333
+    end
+    return 333
 end
 
 Item.SeleneSetters.quality = function(item, quality)
-    item:setData("quality", quality)
+    if item.SeleneTile then
+        local dimension = item.SeleneTile:getDimension()
+        local data = dimension:getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName()) or {}
+        data[DataFields.Quality] = quality
+        dimension:annotateTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getName(), data)
+    elseif item.SeleneEntity then
+        item.SeleneEntity:getRuntimeData(DataKeys.Item)[DataFields.Quality] = quality
+    elseif item.SeleneItem then
+        item.SeleneItem.quality = quality
+    end
 end
 
 Item.SeleneGetters.durability = function(item)

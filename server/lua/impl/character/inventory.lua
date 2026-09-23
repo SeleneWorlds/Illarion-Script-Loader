@@ -74,10 +74,10 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         error("Tried to create unknown item id " .. itemId)
     end
     local itemData = type(data) == "table" and data or {data = tonumber(data) ~= 0 and tonumber(data) or nil}
-    itemData.quality = quality
     local rest = InventoryManager.GetBelt(user):addItem({
         def = itemDef,
         count = count,
+        quality = quality,
         data = itemData
     })
     if rest <= 0 then
@@ -89,6 +89,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         rest = backpack:addItem({
             def = itemDef,
             count = rest,
+            quality = quality,
             data = itemData
         })
     end

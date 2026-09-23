@@ -19,6 +19,8 @@ m.Script = "script"
 m.Dead = "dead"
 m.Data = "data"
 m.Count = "count"
+m.Quality = "quality"
+m.Wear = "wear"
 m.TargetId = "targetId"
 
 return m

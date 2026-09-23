@@ -22,6 +22,8 @@ local function CreateItemFromEntity(entity)
     return {
         def = itemDef,
         count = itemData[DataFields.Count] or 1,
+        quality = itemData[DataFields.Quality],
+        wear = itemData[DataFields.Wear],
         data = itemData[DataFields.Data] or {}
     }
 end
@@ -151,6 +153,8 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         movedEntity = Entities.create(sourceEntity:getEntityDefinition())
         local movedItemData = movedEntity:getRuntimeData(DataKeys.Item)
         movedItemData[DataFields.Count] = count
+        movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
+        movedItemData[DataFields.Wear] = itemData[DataFields.Wear]
         movedItemData[DataFields.Data] = itemData[DataFields.Data] or {}
         movedEntity:setCoordinate(payload.toX, payload.toY, payload.toZ)
         movedEntity:spawn(dimension)
@@ -197,9 +201,6 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     if not item then
         return
     end
-    local sourceInventoryItem = fromInventory:getInventoryItem(payload.fromSlotId)
-    local sourceIllaItem = Item.fromSeleneInventoryItem(sourceInventoryItem)
-
     local itemId = item.def:getMetadata("id")
     local entityType = Registries.findByMetadata("entities", "itemId", itemId)
     if not entityType then
@@ -212,8 +213,9 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     local entityItemData = entity:getRuntimeData(DataKeys.Item)
     local customData = item.data or {}
     entityItemData[DataFields.Count] = item.count or 1
+    entityItemData[DataFields.Quality] = item.quality
+    entityItemData[DataFields.Wear] = item.wear
     entityItemData[DataFields.Data] = customData
-    Item.fromSeleneEntity(entity).quality = sourceIllaItem.quality
     entity:setCoordinate(payload.x, payload.y, payload.z)
     entity:spawn(character.SeleneEntity:getDimension())
 
