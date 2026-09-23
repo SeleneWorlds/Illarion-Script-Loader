@@ -87,34 +87,88 @@ Character.SeleneMethods.isActionRunning = function(user)
     return currentAction and currentAction.ActionHandle ~= nil
 end
 
-Character.SeleneMethods.changeSource = function(user, item)
+Character.SeleneMethods.changeSource = function(user, source)
     local entity = user.SeleneEntity
-    local itemId = item.SeleneTile:getMetadata("itemId")
-    if itemId == nil then
-        error("changeSource target tile does not have an item id")
-    end
-    local itemDefinition = Registries.findByMetadata("illarion:items", "id", itemId)
-    if itemDefinition == nil then
-        error("changeSource target tile is missing item definition")
-    end
-    local scriptName = itemDefinition:getField("script")
-    if scriptName == nil then
-        error("changeSource target item does not have a script")
-    end
-    local status, script = pcall(require, scriptName)
-    if not status then
-        error("changeSource target item script failed to load")
-    end
-    if type(script.UseItem) ~= "function" then
-        error("changeSource target item script has no UseItem function")
-    end
     local action = entity:getRuntimeData(DataKeys.CurrentAction)
-    action.Script = script
-    action.Function = script.UseItem
-    if Config.getProperty("useLegacyUseItem") == "true" then
-        action.Args = table.pack(user, item, nil, nil, nil)
+
+    if source == nil then
+        action.Function = nil
+        action.Args = nil
+        return
+    end
+
+    if getmetatable(source) == Character.SeleneMetatable then
+        local sourceData = source.SeleneEntity:getRuntimeData(DataKeys.Character)
+        local characterType = sourceData and sourceData[DataFields.CharacterType]
+        if characterType == Character.player then
+            -- The legacy server accepts players as a character source, but an
+            -- ACTION_USE has no completion callback for player sources.
+            action.Function = nil
+            action.Args = nil
+            return
+        elseif characterType ~= Character.npc and characterType ~= Character.monster then
+            return
+        end
+
+        local scriptName = sourceData[DataFields.Script]
+        if scriptName == nil then
+            return
+        end
+        local status, script = pcall(require, scriptName)
+        if not status then
+            return
+        end
+        local actionFunction = characterType == Character.npc and script.useNPC or script.useMonster
+        if type(actionFunction) ~= "function" then
+            return
+        end
+
+        action.Script = script
+        action.Function = actionFunction
+        action.Args = { source, user }
+        return
+    elseif getmetatable(source) == position.SeleneMetatable then
+        local script = action.Script
+        if type(script) ~= "table" or type(script.useTile) ~= "function" then
+            return
+        end
+        action.Function = script.useTile
+        action.Args = { user, source }
+        return
+    elseif getmetatable(source) == Item.SeleneMetatable then
+        local itemId
+        if source.SeleneTile then
+            itemId = source.SeleneTile:getMetadata("itemId")
+        elseif source.SeleneEntity then
+            itemId = source.SeleneEntity:getEntityDefinition():getMetadata("itemId")
+        end
+        if itemId == nil then
+            return
+        end
+        local itemDefinition = Registries.findByMetadata("illarion:items", "id", itemId)
+        if itemDefinition == nil then
+            return
+        end
+        local scriptName = itemDefinition:getField("script")
+        if scriptName == nil then
+            return
+        end
+        local status, script = pcall(require, scriptName)
+        if not status then
+            return
+        end
+        if type(script.UseItem) ~= "function" then
+            return
+        end
+        action.Script = script
+        action.Function = script.UseItem
+        if Config.getProperty("useLegacyUseItem") == "true" then
+            action.Args = table.pack(user, source, nil, nil, nil)
+        else
+            action.Args = { user, source }
+        end
     else
-        action.Args = { user, item }
+        return
     end
 end
 
