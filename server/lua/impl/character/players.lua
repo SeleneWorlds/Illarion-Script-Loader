@@ -1,10 +1,10 @@
 local Network = require("selene.network")
+local Entities = require("selene.entities")
 local HTTP = require("selene.http")
 local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
-local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
@@ -55,7 +55,7 @@ Character.SeleneMethods.logAdmin = function(user, message)
 end
 
 Character.SeleneMethods.sendCharDescription = function(user, id, description)
-    local target = CharacterManager.EntitiesById[id]
+    local target = Entities.findByRuntimeData(DataKeys.Character, DataFields.ID, id)
     if target then
         Network.sendToEntity(user.SeleneEntity, "illarion:char_description", {
             networkId = target:getNetworkId(),
