@@ -4,6 +4,7 @@ local Config = require("selene.config")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local userEntity = user.SeleneEntity
@@ -83,16 +84,20 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                     end
                 end
             elseif characterType == Character.npc then
-                local scriptName = charData[DataFields.Script]
-                if scriptName then
-                    local status, script = pcall(require, scriptName)
-                    if status and type(script.receiveText) == "function" then
-                        local illaNpc = Character.fromSeleneEntity(entity)
-                        if Config.getProperty("useLegacyReceiveText") == "true" then
-                            thisNPC = illaNpc
-                            script.receiveText(mode, messageEnglish or message, user)
-                        else
-                            script.receiveText(illaNpc, mode, messageEnglish or message, user)
+                local event = { cancel = false }
+                Events.onTalkToNpc:fire(event, entity, user.SelenePlayer, mode, messageEnglish or message)
+                if not event.cancel then
+                    local scriptName = charData[DataFields.Script]
+                    if scriptName then
+                        local status, script = pcall(require, scriptName)
+                        if status and type(script.receiveText) == "function" then
+                            local illaNpc = Character.fromSeleneEntity(entity)
+                            if Config.getProperty("useLegacyReceiveText") == "true" then
+                                thisNPC = illaNpc
+                                script.receiveText(mode, messageEnglish or message, user)
+                            else
+                                script.receiveText(illaNpc, mode, messageEnglish or message, user)
+                            end
                         end
                     end
                 end
