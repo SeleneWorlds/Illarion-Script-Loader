@@ -105,6 +105,26 @@ world.SeleneMethods.erase = function(world, item, amount)
 end
 
 world.SeleneMethods.changeItem = function(world, item)
+    -- Legacy scripts change an item's id on the scriptItem and then call
+    -- changeItem. The id assignment is stored directly on the Lua wrapper,
+    -- while the backing Selene tile or inventory item still has its old id.
+    local newId = rawget(item, "id")
+    if newId ~= nil then
+        if item.SeleneTile ~= nil then
+            local oldId = tonumber(item.SeleneTile:getMetadata("itemId"))
+            if newId ~= oldId then
+                world:swap(item, newId, item.quality)
+                return
+            end
+        elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
+            item.owner:swapAtPos(item.itempos, newId, item.quality)
+            return
+        elseif item:getType() == scriptItem.container then
+            item.inside:swapAtPos(item.itempos, newId, item.quality)
+            return
+        end
+    end
+
     if item.SeleneEntity ~= nil then
         item.SeleneEntity:updateVisuals()
     end
