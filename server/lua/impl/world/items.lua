@@ -132,6 +132,10 @@ world.SeleneMethods.changeItem = function(world, item)
 end
 
 world.SeleneMethods.getItemName = function(world, itemId, language)
+    if getmetatable(itemId) == Item.SeleneMetatable then
+        itemId = itemId.id
+    end
+
     local item = Registries.findByMetadata("illarion:items", "id", itemId)
     if item then
         if language == Player.german then
