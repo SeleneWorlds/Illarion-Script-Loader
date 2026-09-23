@@ -38,6 +38,7 @@ Character.SeleneMethods.getPlayerLanguage = function(user)
     end
     return Player.english
 end
+Character.SeleneMethods.GetPlayerLanguage = Character.SeleneMethods.getPlayerLanguage
 
 Character.SeleneMethods.isNewPlayer = function(user)
     local playerData = user.SelenePlayer and user.SelenePlayer:getRuntimeData(DataKeys.Player) or nil
