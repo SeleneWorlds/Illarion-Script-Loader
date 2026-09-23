@@ -57,9 +57,11 @@ end
 Character.SeleneMethods.sendCharDescription = function(user, id, description)
     local target = Entities.findByRuntimeData(DataKeys.Character, DataFields.ID, id)
     if target then
-        Network.sendToEntity(user.SeleneEntity, "illarion:char_description", {
+        Network.sendToEntity(user.SeleneEntity, "illarion:look_at_entity", {
             networkId = target:getNetworkId(),
-            description = description
+            tooltip = {
+                name = description
+            }
         })
     end
 end
