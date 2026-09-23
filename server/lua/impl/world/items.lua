@@ -1,5 +1,6 @@
 local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
+local Network = require("selene.network")
 local I18n = require("selene.i18n")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
