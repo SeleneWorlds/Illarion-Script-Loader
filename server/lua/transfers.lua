@@ -37,7 +37,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
         return
     end
 
-    fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId, {
+    fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId, payload.count, {
         character = character,
         beforeMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
             local scriptName = fromItem.def:getField("script")
@@ -88,10 +88,19 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     end
 
     local item = CreateItemFromEntity(sourceEntity)
+    local sourceCount = item.count
+    local count = math.min(sourceCount, math.max(1, math.floor(tonumber(payload.count) or 1)))
+    item.count = count
     local rest = targetInventory:addItemAt(payload.toSlotId, item)
-    if rest > 0 then
+    local movedCount = count - rest
+    if movedCount <= 0 then
+        return
+    end
+
+    if movedCount < sourceCount then
         local itemData = sourceEntity:getRuntimeData(DataKeys.Item)
-        itemData[DataFields.Count] = rest
+        itemData[DataFields.Count] = sourceCount - movedCount
+        sourceEntity:updateVisuals()
     else
         local triggerfieldAnnotation = sourceEntity:getDimension():getAnnotationAt(sourceEntity:getCoordinate(), "illarion:triggerfield", sourceEntity.Collision)
         if triggerfieldAnnotation then
@@ -207,12 +216,19 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
         error("Unknown item entity for item id " .. tostring(itemId))
     end
 
-    fromInventory:setItem(payload.fromSlotId, nil)
+    local sourceCount = fromInventory:getItemCount(item)
+    local count = math.min(sourceCount, math.max(1, math.floor(tonumber(payload.count) or 1)))
+    if count == sourceCount then
+        fromInventory:setItem(payload.fromSlotId, nil)
+    else
+        fromInventory:setItemCount(item, sourceCount - count)
+        fromInventory:slotUpdated(payload.fromSlotId)
+    end
 
     local entity = Entities.create(entityType)
     local entityItemData = entity:getRuntimeData(DataKeys.Item)
     local customData = item.data or {}
-    entityItemData[DataFields.Count] = item.count or 1
+    entityItemData[DataFields.Count] = count
     entityItemData[DataFields.Quality] = item.quality
     entityItemData[DataFields.Wear] = item.wear
     entityItemData[DataFields.Data] = customData
