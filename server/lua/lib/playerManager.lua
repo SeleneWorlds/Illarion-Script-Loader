@@ -12,8 +12,6 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 
 local m = {}
 
-m.EntitiesById = {}
-
 function m.Spawn(player)
     local entity = Entities.create("illarion:races/race_0_0")
     local id = 8147
@@ -58,7 +56,6 @@ function m.Spawn(player)
     player:setCameraEntity(entity)
     player:setCameraToFollowTarget()
 
-    m.EntitiesById[id] = entity
     local character = CharacterManager.AddEntity(entity)
 
     local equipment = InventoryManager.GetEquipment(character)
