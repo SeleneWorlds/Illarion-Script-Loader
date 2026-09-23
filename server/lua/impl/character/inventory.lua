@@ -88,7 +88,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
     if backpack then
         rest = backpack:addItem({
             def = itemDef,
-            count = count,
+            count = rest,
             data = itemData
         })
     end
