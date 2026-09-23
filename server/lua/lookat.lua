@@ -29,7 +29,7 @@ Network.handlePayload("illarion:look_at", function(player, payload)
                 tooltip = result
             })
         elseif tile:hasTag("illarion:tile") then
-            local name = I18n.get("tiles." .. stringx.substringAfter("illarion:", tile:getName()), player:getLocale()) or tile:getName()
+            local name = I18n.get("tiles." .. stringx.substringAfter(tile:getName(), "illarion:"), player:getLocale()) or tile:getName()
             Network.sendToPlayer(player, "illarion:look_at", {
                 x = payload.x,
                 y = payload.y,
