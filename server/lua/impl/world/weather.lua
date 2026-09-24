@@ -19,7 +19,7 @@ world.SeleneMethods.setWeather = function(world, weather)
 end
 
 world.SeleneGetters.weather = function(world)
-    return Server:getRuntimeData(DataKeys.Weather) or defaultWeather
+    return Server.getRuntimeData(DataKeys.Weather) or defaultWeather
 end
 
 world.SeleneSetters.weather = function(world, weather)
@@ -33,6 +33,6 @@ world.SeleneSetters.weather = function(world, weather)
         thunderstorm = weather.thunderstorm or defaultWeather.thunderstorm,
         temperature = weather.temperature or defaultWeather.temperature
     }
-    Server:overwriteRuntimeData(DataKeys.Weather, updatedWeather)
+    Server.overwriteRuntimeData(DataKeys.Weather, updatedWeather)
     Events.onWeatherChanged:fire(updatedWeather)
 end
