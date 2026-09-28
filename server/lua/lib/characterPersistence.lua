@@ -423,7 +423,12 @@ function m.restoreCollections(character, saved)
     restoreInventory(InventoryManager.GetEquipment(character), items.equipment)
     restoreInventory(InventoryManager.GetBelt(character), items.belt)
     for _, depot in ipairs(items.depots or {}) do
-        restoreInventory(InventoryManager.GetDepot(character, tonumber(depot.id)), depot.items)
+        local numericDepotId = tonumber(depot.id)
+        local depotId = numericDepotId and math.tointeger(numericDepotId) or nil
+        if not depotId then
+            error("Cannot restore invalid depot " .. tostring(depot.id))
+        end
+        restoreInventory(InventoryManager.GetDepot(character, depotId), depot.items)
     end
 end
 
