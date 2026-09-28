@@ -132,11 +132,22 @@ end
 
 local function createDefaultCharacter(userId)
     local now = os.time()
+    local items = Json.encode({
+        equipment = {
+            { slot = Character.backpack, item = { id = 97, count = 1 } },
+            { slot = Character.head, item = { id = 184, count = 1 } },
+            { slot = Character.breast, item = { id = 4, count = 1 } }
+        },
+        belt = {
+            { slot = Character.belt_pos_1, item = { id = 15, count = 1, quality = 333, data = {} } }
+        },
+        depots = {}
+    })
     database:execute(
         [[
             INSERT INTO characters (
-                user_id, name, race, sex, x, y, z, created_at, last_saved_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                user_id, name, race, sex, x, y, z, items, created_at, last_saved_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, jsonb(?), ?, ?)
         ]],
         {
             userId,
@@ -146,6 +157,7 @@ local function createDefaultCharacter(userId)
             tonumber(Config.getProperty("spawnX")) or 0,
             tonumber(Config.getProperty("spawnY")) or 0,
             tonumber(Config.getProperty("spawnZ")) or 0,
+            items,
             now,
             now
         }
