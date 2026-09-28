@@ -4,6 +4,7 @@ local Config = require("selene.config")
 local Network = require("selene.network")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
+local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 
 local common = require("base.common")
 local illaReloadOk, illaReload = pcall(require, "server.reload")
@@ -12,16 +13,9 @@ local illaReloadTablesOk, illaReloadTables = pcall(require, "server.reload_table
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
--- Character persistence is not wired up yet. Keeping the simulated character
--- here makes the selection protocol real while leaving a single place to swap
--- in an account-backed character query later.
-local testCharacters = {
-    { id = 8147, name = "Test Character" }
-}
-
 local function sendCharacters(player)
     Network.sendToPlayer(player, "illarion:characters", {
-        characters = testCharacters
+        characters = CharacterPersistence.loadCharacterSummaries(player)
     })
 end
 
@@ -62,9 +56,13 @@ Network.handlePayload("illarion:select_character", function(player, payload)
     end
 
     local selectedId = tonumber(payload.id)
-    for _, ownedCharacter in ipairs(testCharacters) do
+    for _, ownedCharacter in ipairs(CharacterPersistence.loadCharacterSummaries(player)) do
         if ownedCharacter.id == selectedId then
-            finishLogin(player, ownedCharacter)
+            local character = CharacterPersistence.loadCharacter(player, selectedId)
+            if not character then
+                return
+            end
+            finishLogin(player, character)
             Network.sendToPlayer(player, "illarion:character_selected", {
                 id = ownedCharacter.id
             })
@@ -78,6 +76,7 @@ Players.playerLeft:connect(function(player)
         local character = Character.fromSelenePlayer(player)
         character:abortAction()
         illaLogout.onLogout(character)
+        CharacterPersistence.saveCharacter(player, character)
     end
     PlayerManager.Despawn(player)
 end)

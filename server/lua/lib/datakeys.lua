@@ -15,5 +15,6 @@ m.Player = "illarion:player"
 m.Character = "illarion:character"
 m.Item = "illarion:item"
 m.Dialogs = "illarion:dialogs"
+m.PersistedAttributes = "illarion:persistedAttributes"
 
 return m
