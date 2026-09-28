@@ -80,7 +80,6 @@ function m.Spawn(player, selectedCharacter)
     player:setCameraToFollowTarget()
 
     local character = CharacterManager.AddEntity(entity)
-    CharacterPersistence.restoreCollections(character, selectedCharacter)
 
     local equipment = InventoryManager.GetEquipment(character)
     equipment:subscribe(function(data)
@@ -114,6 +113,8 @@ function m.Spawn(player, selectedCharacter)
             })
         end
     end)
+
+    CharacterPersistence.restoreCollections(character, selectedCharacter)
 
     local scalarAttributes = {
         age = selectedCharacter.age,
