@@ -1,6 +1,7 @@
 local Server = require("selene.server")
 local Players = require("selene.players")
 local Config = require("selene.config")
+local Network = require("selene.network")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
@@ -11,8 +12,21 @@ local illaReloadTablesOk, illaReloadTables = pcall(require, "server.reload_table
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
-Players.playerJoined:connect(function(player)
-    local character = PlayerManager.Spawn(player)
+-- Character persistence is not wired up yet. Keeping the simulated character
+-- here makes the selection protocol real while leaving a single place to swap
+-- in an account-backed character query later.
+local testCharacters = {
+    { id = 8147, name = "Test Character" }
+}
+
+local function sendCharacters(player)
+    Network.sendToPlayer(player, "illarion:characters", {
+        characters = testCharacters
+    })
+end
+
+local function finishLogin(player, selectedCharacter)
+    local character = PlayerManager.Spawn(player, selectedCharacter)
     if Config.getProperty("showWelcomeMessage") == "true" then
         local otherPlayerCount = #world:getPlayersOnline() - 1
         local welcomeMessageDe = ":) Willkommen in Illarion, es sind " .. otherPlayerCount .. " andere Spieler online."
@@ -30,6 +44,33 @@ Players.playerJoined:connect(function(player)
     -- character:createAtPos(Character.hands, 1447, 1)
     -- character:createAtPos(Character.legs, 1485, 1)
     -- character:createAtPos(Character.feet, 1500, 1)
+end
+
+Players.playerJoined:connect(function(player)
+    sendCharacters(player)
+end)
+
+Network.handlePayload("illarion:request_characters", function(player)
+    if not player:getControlledEntity() then
+        sendCharacters(player)
+    end
+end)
+
+Network.handlePayload("illarion:select_character", function(player, payload)
+    if player:getControlledEntity() then
+        return
+    end
+
+    local selectedId = tonumber(payload.id)
+    for _, ownedCharacter in ipairs(testCharacters) do
+        if ownedCharacter.id == selectedId then
+            finishLogin(player, ownedCharacter)
+            Network.sendToPlayer(player, "illarion:character_selected", {
+                id = ownedCharacter.id
+            })
+            return
+        end
+    end
 end)
 
 Players.playerLeft:connect(function(player)

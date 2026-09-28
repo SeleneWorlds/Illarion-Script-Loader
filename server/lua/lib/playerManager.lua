@@ -12,9 +12,10 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 
 local m = {}
 
-function m.Spawn(player)
+function m.Spawn(player, selectedCharacter)
     local entity = Entities.create("illarion:races/race_0_0")
-    local id = 8147
+    local id = selectedCharacter.id
+    entity:setName(selectedCharacter.name)
     local charData = entity:getRuntimeData(DataKeys.Character)
     charData[DataFields.ID] = id
     charData[DataFields.CharacterType] = Character.player
