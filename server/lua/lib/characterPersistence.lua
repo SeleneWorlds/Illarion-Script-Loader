@@ -242,7 +242,17 @@ end
 
 local function copyStringMap(source)
     local result = {}
-    for key, value in pairs(source or {}) do
+    if source == nil then
+        return result
+    end
+
+    -- Runtime-data maps are ObservableMaps, which Lua exposes as userdata.
+    -- Convert those to a plain table before using the standard iterator.
+    if type(source) ~= "table" then
+        source = source:toTable()
+    end
+
+    for key, value in pairs(source) do
         result[tostring(key)] = value
     end
     return result
