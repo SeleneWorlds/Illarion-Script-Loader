@@ -34,7 +34,9 @@ end
 
 Character.SeleneMethods.introduce = function(user, other)
     local introductionData = user.SeleneEntity:getRuntimeData(DataKeys.Introductions)
-    introductionData[other.id] = true
+    local relationship = introductionData[other.id] or {}
+    relationship.introduced = true
+    introductionData[other.id] = relationship
     -- TODO sync name component
     -- TODO error("introduce is not fully implemented - does not sync new nameplate yet")
 end

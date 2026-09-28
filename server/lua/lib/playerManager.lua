@@ -48,7 +48,8 @@ function m.Spawn(player, selectedCharacter)
         local targetCharData = entity:getRuntimeData(DataKeys.Character)
         local isControlled = forPlayer:getControlledEntity() == entity
         local introductionData = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getRuntimeData(DataKeys.Introductions) or nil
-        local isIntroduced = introductionData and introductionData[targetCharData[DataFields.ID]]
+        local relationship = introductionData and introductionData[targetCharData[DataFields.ID]]
+        local isIntroduced = relationship and relationship.introduced
         local effectiveName = entity:getName()
         if not isIntroduced and not isControlled then
             local raceId = targetCharData[DataFields.Race]
