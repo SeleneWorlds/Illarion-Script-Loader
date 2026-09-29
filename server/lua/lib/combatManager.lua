@@ -1,4 +1,5 @@
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
 
