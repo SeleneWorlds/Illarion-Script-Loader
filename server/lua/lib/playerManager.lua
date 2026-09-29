@@ -50,8 +50,8 @@ function m.Spawn(player, selectedCharacter)
         local introductionData = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getRuntimeData(DataKeys.Introductions) or nil
         local relationship = introductionData and introductionData[targetCharData[DataFields.ID]]
         local isIntroduced = relationship and relationship.introduced
-        local effectiveName = entity:getName()
-        if not isIntroduced and not isControlled then
+        local effectiveName = relationship and relationship.customName or entity:getName()
+        if not isIntroduced and not isControlled and not (relationship and relationship.customName) then
             local raceId = targetCharData[DataFields.Race]
             local race = Registries.findByMetadata("illarion:races", "id", raceId)
             if race then
