@@ -17,7 +17,7 @@ local function introduceToNearbyPlayers(character)
         end
     end
 
-    entity:updateVisual()
+    entity:updateVisuals()
 end
 
 Network.handlePayload("illarion:chat", function(player, payload)

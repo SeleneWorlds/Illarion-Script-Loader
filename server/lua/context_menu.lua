@@ -147,14 +147,14 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
         user:stopAttack()
     elseif action == "introduce" and targetType == Character.player then
         Character.fromSeleneEntity(target):introduce(user)
-        user.SeleneEntity:updateVisual()
+        user.SeleneEntity:updateVisuals()
     elseif action == "giveName" and targetType == Character.player and type(payload.detail) == "string" then
         local introductions = user.SeleneEntity:getRuntimeData(DataKeys.Introductions)
         local id = targetData[DataFields.ID]
         local relationship = introductions[id] or {}
         relationship.customName = string.sub(payload.detail, 1, 50)
         introductions[id] = relationship
-        target:updateVisual()
+        target:updateVisuals()
     elseif action == "report" and targetType == Character.player and type(payload.detail) == "string" then
         user:pageGM("Report concerning " .. target:getName() .. " (" .. target:getNetworkId() .. "): " .. string.sub(payload.detail, 1, 1000))
     end

@@ -72,7 +72,7 @@ Character.SeleneSetters.isinvisible = function(user)
 end
 
 Character.SeleneMethods.updateAppearance = function(user)
-    user.SeleneEntity:updateVisual()
+    user.SeleneEntity:updateVisuals()
 end
 
 Character.SeleneMethods.setClippingActive = function(user, status)
