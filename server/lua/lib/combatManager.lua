@@ -1,3 +1,5 @@
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+
 local m = {}
 
 function m.SetAttackTarget(user, target)
