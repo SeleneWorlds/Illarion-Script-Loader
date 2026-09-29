@@ -6,9 +6,13 @@ local Players = require("selene.players")
 Network.handlePayload("illarion:set_combat_target", function(player, payload)
     local user = Character.fromSelenePlayer(player)
     user:abortAction()
-    local entity = Entities.getEntityById(payload.networkId)
+    if payload.networkId == -1 then
+        user:stopAttack()
+        return
+    end
+    local entity = Entities.getByNetworkId(payload.networkId)
     if entity then
-        CombatManager.SetAttackTarget(user, entity)
+        CombatManager.SetAttackTarget(user, Character.fromSeleneEntity(entity))
     end
 end)
 
