@@ -6,6 +6,14 @@ local m = {}
 local equipmentSlotIds = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }
 local beltSlotIds = { 12, 13, 14, 15, 16, 17 }
 
+function m.SerializeItem(item)
+    return item and {
+        visual = item.def:getField("visual"),
+        count = item.count or 1,
+        container = (item.def:getField("containerSlots") or 0) > 0
+    } or nil
+end
+
 local function DepotSlotIds(depotId)
     local slotIds = {}
     for i = 1, 100 do
@@ -36,13 +44,45 @@ function m.GetInventoryAtView(user, viewId)
         return m.GetEquipment(user)
     elseif viewId == "backpack" then
         return m.GetBackpack(user)
-    elseif stringx.startsWith(viewId, "depot:") then
+    elseif type(viewId) == "string" and stringx.startsWith(viewId, "showcase:") then
+        local showcaseId = tonumber(stringx.removePrefix(viewId, "showcase:"))
+        local showcases = user.SeleneEntity:getRuntimeData(DataKeys.Showcases)
+        local showcase = showcases and showcaseId and showcases[showcaseId]
+        return showcase and showcase.inventory or nil
+    elseif type(viewId) == "string" and stringx.startsWith(viewId, "depot:") then
         local depotId = tonumber(stringx.removePrefix(viewId, "depot:"))
         if depotId then
             return m.GetDepot(user, depotId)
         end
     end
     return nil
+end
+
+function m.GetShowcases(user)
+    return user.SeleneEntity:getRuntimeData(DataKeys.Showcases)
+end
+
+function m.FindShowcase(user, inventory)
+    for showcaseId, showcase in pairs(m.GetShowcases(user)) do
+        if showcase.inventory.data == inventory.data then
+            return showcaseId, showcase
+        end
+    end
+    return nil, nil
+end
+
+function m.SetShowcase(user, showcaseId, inventory, token)
+    m.GetShowcases(user)[showcaseId] = {
+        inventory = inventory,
+        token = token
+    }
+end
+
+function m.CloseShowcase(user, showcaseId)
+    local showcases = m.GetShowcases(user)
+    local showcase = showcases[showcaseId]
+    showcases[showcaseId] = nil
+    return showcase
 end
 
 function m.GetInventoryAtSlot(user, slotId)

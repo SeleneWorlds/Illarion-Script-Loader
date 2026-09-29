@@ -89,11 +89,7 @@ function m.Spawn(player, selectedCharacter)
             Network.sendToEntity(entity, "illarion:update_slot", {
                 viewId = "equipment",
                 slotId = slotId,
-                item = item and {
-                    visual = item.def:getField("visual"),
-                    count = item.count or 1,
-                    container = (item.def:getField("containerSlots") or 0) > 0
-                } or nil
+                item = InventoryManager.SerializeItem(item)
             })
         end
     end)
@@ -105,11 +101,7 @@ function m.Spawn(player, selectedCharacter)
             Network.sendToEntity(entity, "illarion:update_slot", {
                 viewId = "belt",
                 slotId = slotId,
-                item = item and {
-                    visual = item.def:getField("visual"),
-                    count = item.count or 1,
-                    container = (item.def:getField("containerSlots") or 0) > 0
-                } or nil
+                item = InventoryManager.SerializeItem(item)
             })
         end
     end)
