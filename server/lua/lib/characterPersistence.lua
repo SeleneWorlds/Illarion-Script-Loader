@@ -371,7 +371,6 @@ local function restoreInventory(inventory, savedItems)
             error("Cannot restore item into invalid slot " .. tostring(entry.slot))
         end
         local item = deserializeItem(entry.item)
-        inventory:setItem(slotId, item)
         if entry.item.content then
             local contents = InventoryManager.GetContentsContainer({ SeleneItem = item })
             if not contents then
@@ -379,6 +378,7 @@ local function restoreInventory(inventory, savedItems)
             end
             restoreInventory(contents, entry.item.content)
         end
+        inventory:setItem(slotId, item)
     end
 end
 
