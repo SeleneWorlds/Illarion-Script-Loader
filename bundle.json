@@ -48,6 +48,7 @@
     "server/lua/dialogs.lua",
     "server/lua/effects.lua",
     "server/lua/lookat.lua",
+    "server/lua/context_menu.lua",
     "server/lua/monster_spawns.lua",
     "server/lua/monsters.lua",
     "server/lua/npcs.lua",
