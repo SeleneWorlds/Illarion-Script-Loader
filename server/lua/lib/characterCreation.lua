@@ -77,22 +77,29 @@ function m.getOptions(compactColours, locale)
             local types = {}
             for typeId, raceType in pairs(plainTable(race:getField("types"))) do
                 raceType = plainTable(raceType)
-                local resultType = { id = tonumber(typeId), hairs = {}, beards = {}, hairColors = {}, skinColors = {} }
-                for _, hair in pairs(plainTable(raceType.hairs)) do
-                    table.insert(resultType.hairs, idPayload(plainTable(hair), "hairId"))
-                end
-                for _, beard in pairs(plainTable(raceType.beards)) do
-                    table.insert(resultType.beards, idPayload(plainTable(beard), "beardId"))
-                end
-                if compactColours then
-                    resultType.hairColors = packedColours(raceType.hairColors)
-                    resultType.skinColors = packedColours(raceType.skinColors)
-                else
-                    for _, colour in pairs(plainTable(raceType.hairColors)) do
-                        table.insert(resultType.hairColors, colourPayload(plainTable(colour)))
+                local resultType = { id = tonumber(typeId) }
+                if raceType.hairs ~= nil then
+                    resultType.hairs = {}
+                    for _, hair in pairs(plainTable(raceType.hairs)) do
+                        table.insert(resultType.hairs, idPayload(plainTable(hair), "hairId"))
                     end
-                    for _, colour in pairs(plainTable(raceType.skinColors)) do
-                        table.insert(resultType.skinColors, colourPayload(plainTable(colour)))
+                end
+                if raceType.beards ~= nil then
+                    resultType.beards = {}
+                    for _, beard in pairs(plainTable(raceType.beards)) do
+                        table.insert(resultType.beards, idPayload(plainTable(beard), "beardId"))
+                    end
+                end
+                for _, field in ipairs({ "hairColors", "skinColors" }) do
+                    if raceType[field] ~= nil then
+                        if compactColours then
+                            resultType[field] = packedColours(raceType[field])
+                        else
+                            resultType[field] = {}
+                            for _, colour in pairs(plainTable(raceType[field])) do
+                                table.insert(resultType[field], colourPayload(plainTable(colour)))
+                            end
+                        end
                     end
                 end
                 table.insert(types, resultType)
@@ -193,16 +200,24 @@ function m.validate(payload)
         return nil, "Allocate exactly " .. race.attributes.total .. " attribute points."
     end
 
-    result.hair = PayloadValidation.integer(payload.hair, 0)
-    result.beard = PayloadValidation.integer(payload.beard, 0)
+    result.hair = raceType.hairs and PayloadValidation.integer(payload.hair, 0) or 0
+    result.beard = raceType.beards and PayloadValidation.integer(payload.beard, 0) or 0
     if result.hair ~= 0 and not findById(raceType.hairs, result.hair) then
         return nil, "Choose a valid hairstyle."
     end
     if result.beard ~= 0 and not findById(raceType.beards, result.beard) then
         return nil, "Choose a valid beard."
     end
-    result.hairColor = validateColour(payload.hairColor, raceType.hairColors)
-    result.skinColor = validateColour(payload.skinColor, raceType.skinColors)
+    if raceType.hairColors then
+        result.hairColor = validateColour(payload.hairColor, raceType.hairColors)
+    else
+        result.hairColor = { red = 255, green = 255, blue = 255, alpha = 255 }
+    end
+    if raceType.skinColors then
+        result.skinColor = validateColour(payload.skinColor, raceType.skinColors)
+    else
+        result.skinColor = { red = 255, green = 255, blue = 255, alpha = 255 }
+    end
     if not result.hairColor or not result.skinColor then
         return nil, "Choose valid hair and skin colours."
     end
