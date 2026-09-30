@@ -1,9 +1,12 @@
 local Dimensions = require("selene.dimensions")
+local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
 local I18n = require("selene.i18n")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+
+local PERMANENT_WEAR = 255
 
 world.SeleneMethods.getItemStatsFromId = function(world, itemId)
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
@@ -169,13 +172,37 @@ end
 
 world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data)
     local dimension = Dimensions.getDefault()
-    local tileDef = Registries.findByMetadata("tiles", "itemId", itemId)
-    if not tileDef then
-        error("Unknown tile for item id " .. itemId)
+    local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
+    if not itemDef then
+        error("Unknown item id " .. tostring(itemId))
     end
-    local tile = dimension:placeTile(pos, tileDef)
-    local item = Item.fromSeleneTile(tile)
+
+    local agingSpeed = tonumber(itemDef:getField("agingSpeed")) or 0
+    local item
+    if agingSpeed == PERMANENT_WEAR then
+        local tileDef = Registries.findByMetadata("tiles", "itemId", itemId)
+        if not tileDef then
+            error("Unknown tile for item id " .. tostring(itemId))
+        end
+        item = Item.fromSeleneTile(dimension:placeTile(pos, tileDef))
+    else
+        local entityType = Registries.findByMetadata("entities", "itemId", itemId)
+        if not entityType then
+            error("Unknown item entity for item id " .. tostring(itemId))
+        end
+        local entity = Entities.create(entityType)
+        local itemData = entity:getRuntimeData(DataKeys.Item)
+        itemData[DataFields.Count] = tonumber(count) or 1
+        itemData[DataFields.Quality] = tonumber(quality) or 333
+        itemData[DataFields.Wear] = agingSpeed
+        itemData[DataFields.Data] = {}
+        entity:setCoordinate(pos)
+        entity:spawn(dimension)
+        item = Item.fromSeleneEntity(entity)
+    end
+
     item.quality = tonumber(quality) or 333
+    item.wear = agingSpeed
     if type(data) == "table" then
         for key, value in pairs(data) do
             item:setData(key, value)
