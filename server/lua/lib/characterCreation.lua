@@ -121,7 +121,28 @@ function m.getOptions(compactColours, locale)
         if id then
             local name = locale and I18n.get("characterCreation.startPack." .. id, locale) or nil
             name = name or ("Starter pack " .. id)
-            table.insert(startPacks, { id = id, name = name })
+            local items = {}
+            for slot, item in pairs(plainTable(pack:getField("items"))) do
+                item = plainTable(item)
+                local definition = Registries.findByName("illarion:items", item.itemId)
+                if definition then
+                    local itemId = tonumber(definition:getMetadata("id"))
+                    if itemId then
+                        local itemName = locale and I18n.get("item.item_" .. itemId, locale) or nil
+                        table.insert(items, {
+                            slot = tonumber(slot) or 0,
+                            id = itemId,
+                            name = itemName or definition:getField("name") or definition:getName(),
+                            count = tonumber(item.count) or 1
+                        })
+                    end
+                end
+            end
+            table.sort(items, function(a, b) return a.slot < b.slot end)
+            for _, item in ipairs(items) do
+                item.slot = nil
+            end
+            table.insert(startPacks, { id = id, name = name, items = items })
         end
     end
     table.sort(startPacks, function(a, b) return a.id < b.id end)
