@@ -6,6 +6,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local Events = require("illarion-script-loader.server.lua.lib.events")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local function callUseItem(script, user, item)
     if Config.getProperty("useLegacyUseItem") == "true" then
@@ -23,15 +24,19 @@ local function getUseItemArgs(user, item)
 end
 
 Network.handlePayload("illarion:use_at", function(player, payload)
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 1)
+    if not x then
+        return
+    end
     local playerEntity = player:getControlledEntity()
     local dimension = playerEntity:getDimension()
     local illaUser = Character.fromSelenePlayer(player)
     illaUser:abortAction()
-    local illaPos = position(payload.x, payload.y, payload.z)
+    local illaPos = position(x, y, z)
     local actionData = playerEntity:getRuntimeData(DataKeys.LastAction)
 
     -- Entities can be either Monsters, NPCs, or non-static (dropped) items
-    local entities = dimension:getEntitiesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
+    local entities = dimension:getEntitiesAt(x, y, z, playerEntity:getCollisionViewer())
     for i = #entities, 1, -1 do
         local entity = entities[i]
         if entity:hasTag("illarion:item") then
@@ -93,7 +98,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
     end
 
     -- Tiles can be either tiles or static items
-    local tiles = dimension:getTilesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
+    local tiles = dimension:getTilesAt(x, y, z, playerEntity:getCollisionViewer())
     for i = #tiles, 1, -1 do
         local tile = tiles[i]
         -- If this tile has a script metadata field, we use it as a TileScript.
@@ -133,14 +138,19 @@ end)
 
 Network.handlePayload("illarion:use_slot", function(player, payload)
     -- Payload is viewId, slotId
+    local viewId = PayloadValidation.string(payload.viewId, 64)
+    local slotId = PayloadValidation.integer(payload.slotId, 0)
+    if not viewId or not slotId then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
-    local inventory = InventoryManager.GetInventoryAtView(character, payload.viewId)
+    local inventory = InventoryManager.GetInventoryAtView(character, viewId)
     if not inventory then
         return
     end
 
-    local inventoryItem = inventory:getInventoryItem(payload.slotId)
+    local inventoryItem = inventory:getInventoryItem(slotId)
     if inventoryItem then
         local scriptName = inventoryItem:getItem().def:getField("script")
         if scriptName then

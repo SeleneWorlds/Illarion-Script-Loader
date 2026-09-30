@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local AdminCommands = require("illarion-script-loader.server.lua.admin_commands")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local function introduceToNearbyPlayers(character)
     local entity = character.SeleneEntity
@@ -21,19 +22,24 @@ local function introduceToNearbyPlayers(character)
 end
 
 Network.handlePayload("illarion:chat", function(player, payload)
+    local message = PayloadValidation.string(payload.message, 1000)
+    local modeName = PayloadValidation.oneOf(payload.mode, { normal = true, whisper = true, shout = true })
+    if not message or not modeName then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
-    if payload.message == "#i" then
+    if message == "#i" then
         introduceToNearbyPlayers(character)
         return
     end
-    if AdminCommands.handle(character, payload.message) then
+    if AdminCommands.handle(character, message) then
         return
     end
     local mode = Character.say
-    if payload.mode == "whisper" then
+    if modeName == "whisper" then
         mode = Character.whisper
-    elseif payload.mode == "yell" then
+    elseif modeName == "shout" then
         mode = Character.yell
     end
-    character:talk(mode, payload.message)
+    character:talk(mode, message)
 end)

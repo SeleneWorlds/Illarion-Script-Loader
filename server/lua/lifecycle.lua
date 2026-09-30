@@ -6,6 +6,7 @@ local Schedules = require("selene.schedules")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local common = require("base.common")
 local illaReloadOk, illaReload = pcall(require, "server.reload")
@@ -58,7 +59,10 @@ Network.handlePayload("illarion:select_character", function(player, payload)
         return
     end
 
-    local selectedId = tonumber(payload.id)
+    local selectedId = PayloadValidation.integer(payload.id, 0)
+    if not selectedId then
+        return
+    end
     for _, ownedCharacter in ipairs(CharacterPersistence.loadCharacterSummaries(player)) do
         if ownedCharacter.id == selectedId then
             if PlayerManager.IsCharacterOnline(selectedId) then

@@ -1,13 +1,22 @@
-local Entities = require("selene.entities")
 local Network = require("selene.network")
 local Registries = require("selene.registries")
 
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
-local function validTarget(player, payload)
-    local target = tonumber(payload.networkId) and Entities.getByNetworkId(payload.networkId) or nil
+local menuActions = {
+    lookAt = true, lookAtClose = true, open = true, use = true, useWith = true,
+    pickup = true, attack = true, standDown = true, introduce = true,
+    giveName = true, report = true
+}
+
+local function validTarget(player, payload, maximumRange)
+    if payload.networkId == nil then
+        return nil
+    end
+    local target = PayloadValidation.entityInRange(player, payload.networkId, maximumRange)
     if not target then
         return nil
     end
@@ -42,8 +51,15 @@ local function staticItemDefinition(player, payload)
 end
 
 Network.handlePayload("illarion:request_menu_at", function(player, payload)
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
+    local requestId = PayloadValidation.integer(payload.requestId, 0)
+    local target = payload.networkId == nil and nil or PayloadValidation.entityInRange(player, payload.networkId, 14)
+    if not x or not requestId or (payload.networkId ~= nil and not target) then
+        return
+    end
+    payload = { x = x, y = y, z = z, networkId = payload.networkId, requestId = requestId }
     local actions = {}
-    local target = validTarget(player, payload)
+    target = target and validTarget(player, payload, 14)
     local userEntity = player:getControlledEntity()
     local targetData = target and target:getRuntimeData(DataKeys.Character)
     local targetType = targetData and targetData[DataFields.CharacterType]
@@ -116,9 +132,24 @@ local function pickup(player, payload, target)
 end
 
 Network.handlePayload("illarion:menu_action_at", function(player, payload)
-    local target = validTarget(player, payload)
+    local action = PayloadValidation.oneOf(payload.action, menuActions)
+    if not action then
+        return
+    end
+    local maximumRange = (action == "lookAt" or action == "lookAtClose" or action == "attack") and 14 or 1
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, maximumRange)
+    local target = payload.networkId == nil and nil
+        or PayloadValidation.entityInRange(player, payload.networkId, maximumRange)
+    if not x or (payload.networkId ~= nil and not target) then
+        return
+    end
+    local detail = payload.detail == nil and nil or PayloadValidation.string(payload.detail, 1000)
+    if payload.detail ~= nil and not detail then
+        return
+    end
+    payload = { x = x, y = y, z = z, networkId = payload.networkId, action = action, detail = detail }
+    target = target and validTarget(player, payload, maximumRange)
     local user = Character.fromSelenePlayer(player)
-    local action = payload.action
     local targetData = target and target:getRuntimeData(DataKeys.Character)
     local targetType = targetData and targetData[DataFields.CharacterType]
     if action == "lookAt" then

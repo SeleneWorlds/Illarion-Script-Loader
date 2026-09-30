@@ -1,18 +1,22 @@
 local Network = require("selene.network")
 local Schedules = require("selene.schedules")
-local Entities = require("selene.entities")
 local Players = require("selene.players")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 Network.handlePayload("illarion:set_combat_target", function(player, payload)
+    local networkId = PayloadValidation.integer(payload.networkId, -1)
+    if not networkId then
+        return
+    end
     local user = Character.fromSelenePlayer(player)
     user:abortAction()
-    if payload.networkId == -1 then
+    if networkId == -1 then
         user:stopAttack()
         return
     end
-    local entity = Entities.getByNetworkId(payload.networkId)
-    if entity then
-        CombatManager.SetAttackTarget(user, Character.fromSeleneEntity(entity))
+    local target = PayloadValidation.characterInRange(player, networkId, 14)
+    if target and target.SeleneEntity ~= user.SeleneEntity then
+        CombatManager.SetAttackTarget(user, target)
     end
 end)
 

@@ -6,6 +6,17 @@ local InventoryItem = require("moonlight-inventory.server.lua.inventory_item")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
+
+local function validViewAndSlot(payload, viewKey, slotKey)
+    local viewId = PayloadValidation.string(payload[viewKey], 64)
+    local slotId = PayloadValidation.integer(payload[slotKey], 0)
+    return viewId, slotId
+end
+
+local function validCount(value)
+    return PayloadValidation.integer(value, 1)
+end
 
 local function CreateItemFromEntity(entity)
     local itemId = entity:getEntityDefinition():getMetadata("itemId")
@@ -29,15 +40,24 @@ local function CreateItemFromEntity(entity)
 end
 
 Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
+    local fromViewId, fromSlotId = validViewAndSlot(payload, "fromViewId", "fromSlotId")
+    local toViewId, toSlotId = validViewAndSlot(payload, "toViewId", "toSlotId")
+    local count = validCount(payload.count)
+    if not fromViewId or not fromSlotId or not toViewId or not toSlotId or not count then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
-    local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
-    local toInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
+    local fromInventory = InventoryManager.GetInventoryAtView(character, fromViewId)
+    local toInventory = InventoryManager.GetInventoryAtView(character, toViewId)
     if not fromInventory or not toInventory then
         return
     end
 
-    fromInventory:moveItemTo(toInventory, payload.fromSlotId, payload.toSlotId, payload.count, {
+    if not fromInventory:hasSlot(fromSlotId) or not toInventory:hasSlot(toSlotId) then
+        return
+    end
+    fromInventory:moveItemTo(toInventory, fromSlotId, toSlotId, count, {
         character = character,
         beforeMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
             local scriptName = fromItem.def:getField("script")
@@ -66,15 +86,21 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
 end)
 
 Network.handlePayload("illarion:move_coordinate_to_slot", function(player, payload)
+    local fromX, fromY, fromZ = PayloadValidation.coordinateInRange(player, payload, "from", 1)
+    local toViewId, toSlotId = validViewAndSlot(payload, "toViewId", "toSlotId")
+    local requestedCount = validCount(payload.count)
+    if not fromX or not toViewId or not toSlotId or not requestedCount then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
-    local targetInventory = InventoryManager.GetInventoryAtView(character, payload.toViewId)
-    if not targetInventory or not targetInventory:hasSlot(payload.toSlotId) then
+    local targetInventory = InventoryManager.GetInventoryAtView(character, toViewId)
+    if not targetInventory or not targetInventory:hasSlot(toSlotId) then
         return
     end
 
     local sourceEntity = nil
-    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(payload.fromX, payload.fromY, payload.fromZ, character.SeleneEntity:getCollisionViewer())
+    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(fromX, fromY, fromZ, character.SeleneEntity:getCollisionViewer())
     for i = #sourceEntities, 1, -1 do
         local entity = sourceEntities[i]
         if entity:hasTag("illarion:item") then
@@ -89,9 +115,9 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
 
     local item = CreateItemFromEntity(sourceEntity)
     local sourceCount = item.count
-    local count = math.min(sourceCount, math.max(1, math.floor(tonumber(payload.count) or 1)))
+    local count = math.min(sourceCount, requestedCount)
     item.count = count
-    local rest = targetInventory:addItemAt(payload.toSlotId, item)
+    local rest = targetInventory:addItemAt(toSlotId, item)
     local movedCount = count - rest
     if movedCount <= 0 then
         return
@@ -117,6 +143,12 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
 end)
 
 Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player, payload)
+    local fromX, fromY, fromZ = PayloadValidation.coordinateInRange(player, payload, "from", 1)
+    local toX, toY, toZ = PayloadValidation.coordinateInRange(player, payload, "to", 1)
+    local requestedCount = validCount(payload.count)
+    if not fromX or not toX or not requestedCount then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
     local dimension = character.SeleneEntity:getDimension()
@@ -126,9 +158,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
 
     local sourceEntity = nil
     local sourceEntities = dimension:getEntitiesAt(
-        payload.fromX,
-        payload.fromY,
-        payload.fromZ,
+        fromX, fromY, fromZ,
         character.SeleneEntity:getCollisionViewer()
     )
     for i = #sourceEntities, 1, -1 do
@@ -144,15 +174,15 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     end
 
     local sourceCoordinate = sourceEntity:getCoordinate()
-    if sourceCoordinate:getX() == payload.toX
-            and sourceCoordinate:getY() == payload.toY
-            and sourceCoordinate:getZ() == payload.toZ then
+    if sourceCoordinate:getX() == toX
+            and sourceCoordinate:getY() == toY
+            and sourceCoordinate:getZ() == toZ then
         return
     end
 
     local itemData = sourceEntity:getRuntimeData(DataKeys.Item)
     local sourceCount = itemData[DataFields.Count] or 1
-    local count = math.min(sourceCount, math.max(1, math.floor(tonumber(payload.count) or 1)))
+    local count = math.min(sourceCount, requestedCount)
     local movedEntity = sourceEntity
 
     if count < sourceCount then
@@ -165,10 +195,10 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
         movedItemData[DataFields.Wear] = itemData[DataFields.Wear]
         movedItemData[DataFields.Data] = itemData[DataFields.Data] or {}
-        movedEntity:setCoordinate(payload.toX, payload.toY, payload.toZ)
+        movedEntity:setCoordinate(toX, toY, toZ)
         movedEntity:spawn(dimension)
     else
-        sourceEntity:setCoordinate(payload.toX, payload.toY, payload.toZ)
+        sourceEntity:setCoordinate(toX, toY, toZ)
     end
 
     local targetCoordinate = movedEntity:getCoordinate()
@@ -199,14 +229,20 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
 end)
 
 Network.handlePayload("illarion:move_slot_to_coordinate", function(player, payload)
+    local fromViewId, fromSlotId = validViewAndSlot(payload, "fromViewId", "fromSlotId")
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 1)
+    local requestedCount = validCount(payload.count)
+    if not fromViewId or not fromSlotId or not x or not requestedCount then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
-    local fromInventory = InventoryManager.GetInventoryAtView(character, payload.fromViewId)
-    if not fromInventory then
+    local fromInventory = InventoryManager.GetInventoryAtView(character, fromViewId)
+    if not fromInventory or not fromInventory:hasSlot(fromSlotId) then
         return
     end
 
-    local item = fromInventory:getItem(payload.fromSlotId)
+    local item = fromInventory:getItem(fromSlotId)
     if not item then
         return
     end
@@ -217,12 +253,12 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     end
 
     local sourceCount = fromInventory:getItemCount(item)
-    local count = math.min(sourceCount, math.max(1, math.floor(tonumber(payload.count) or 1)))
+    local count = math.min(sourceCount, requestedCount)
     if count == sourceCount then
-        fromInventory:setItem(payload.fromSlotId, nil)
+        fromInventory:setItem(fromSlotId, nil)
     else
         fromInventory:setItemCount(item, sourceCount - count)
-        fromInventory:slotUpdated(payload.fromSlotId)
+        fromInventory:slotUpdated(fromSlotId)
     end
 
     local entity = Entities.create(entityType)
@@ -232,7 +268,7 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     entityItemData[DataFields.Quality] = item.quality
     entityItemData[DataFields.Wear] = item.wear
     entityItemData[DataFields.Data] = customData
-    entity:setCoordinate(payload.x, payload.y, payload.z)
+    entity:setCoordinate(x, y, z)
     entity:spawn(character.SeleneEntity:getDimension())
 
     local triggerfieldAnnotation = entity:getDimension():getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)

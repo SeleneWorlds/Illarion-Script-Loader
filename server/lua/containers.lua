@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local Config = require("selene.config")
 
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local illaDepot = require("server.depot")
 
@@ -67,18 +68,22 @@ local function openShowcase(player, character, inventory)
 end
 
 Network.handlePayload("illarion:open_container_at", function(player, payload)
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 1)
+    if not x then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
     local playerEntity = player:getControlledEntity()
     local dimension = playerEntity:getDimension()
-    local entities = dimension:getEntitiesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
+    local entities = dimension:getEntitiesAt(x, y, z, playerEntity:getCollisionViewer())
     for i = #entities, 1, -1 do
         local entity = entities[i]
         if entity:hasTag("illarion:item") then
             -- TODO entity items
         end
     end
-    local tiles = dimension:getTilesAt(payload.x, payload.y, payload.z, playerEntity:getCollisionViewer())
+    local tiles = dimension:getTilesAt(x, y, z, playerEntity:getCollisionViewer())
     for i = #tiles, 1, -1 do
         local tile = tiles[i]
         local itemId = tile:getMetadata("itemId")
@@ -99,14 +104,19 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
 end)
 
 Network.handlePayload("illarion:open_container_slot", function(player, payload)
+    local viewId = PayloadValidation.string(payload.viewId, 64)
+    local slotId = PayloadValidation.integer(payload.slotId, 0)
+    if not viewId or not slotId then
+        return
+    end
     local character = Character.fromSelenePlayer(player)
     character:abortAction()
-    local inventory = InventoryManager.GetInventoryAtView(character, payload.viewId)
+    local inventory = InventoryManager.GetInventoryAtView(character, viewId)
     if not inventory then
         return
     end
 
-    local inventoryItem = inventory:getInventoryItem(payload.slotId)
+    local inventoryItem = inventory:getInventoryItem(slotId)
     if inventoryItem then
         local contents = InventoryManager.GetContentsContainer(Item.fromSeleneInventoryItem(inventoryItem))
         openShowcase(player, character, contents)
@@ -115,7 +125,7 @@ end)
 
 Network.handlePayload("illarion:close_showcase", function(player, payload)
     local character = Character.fromSelenePlayer(player)
-    local showcaseId = math.tointeger(tonumber(payload.showcaseId))
+    local showcaseId = PayloadValidation.integer(payload.showcaseId, 0, maxShowcases - 1)
     if showcaseId and showcaseId >= 0 and showcaseId < maxShowcases then
         InventoryManager.CloseShowcase(character, showcaseId)
     end
