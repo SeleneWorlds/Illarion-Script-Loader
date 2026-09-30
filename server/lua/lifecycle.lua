@@ -2,6 +2,7 @@ local Server = require("selene.server")
 local Players = require("selene.players")
 local Config = require("selene.config")
 local Network = require("selene.network")
+local Schedules = require("selene.schedules")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
@@ -12,6 +13,8 @@ local illaReloadDefsOk, illaReloadDefs = pcall(require, "server.reload_defs")
 local illaReloadTablesOk, illaReloadTables = pcall(require, "server.reload_tables")
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
+
+local CHARACTER_SAVE_INTERVAL_MS = 5 * 60 * 1000
 
 local function sendCharacters(player)
     Network.sendToPlayer(player, "illarion:characters", {
@@ -83,6 +86,14 @@ Players.playerLeft:connect(function(player)
         CharacterPersistence.saveCharacter(player, character)
     end
     PlayerManager.Despawn(player)
+end)
+
+Schedules.setInterval(CHARACTER_SAVE_INTERVAL_MS, function()
+    for _, player in ipairs(Players.getOnlinePlayers()) do
+        if player:getControlledEntity() then
+            CharacterPersistence.saveCharacter(player, Character.fromSelenePlayer(player))
+        end
+    end
 end)
 
 Server.serverReloaded:connect(function()
