@@ -7,6 +7,7 @@ local Schedules = require("selene.schedules")
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
+local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
 
 local common = require("base.common")
 local illaReloadOk, illaReload = pcall(require, "server.reload")
@@ -33,6 +34,7 @@ local function finishLogin(player, selectedCharacter)
     end
 
     illaLogin.onLogin(character)
+    SkillManager.SendAll(character)
 end
 
 Players.playerQueued:connect(function(entry)
