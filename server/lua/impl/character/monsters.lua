@@ -12,6 +12,7 @@ Character.SeleneMethods.getMonsterType = function(user)
     end
     return 0
 end
+Character.SeleneMethods.get_mon_type = Character.SeleneMethods.getMonsterType
 
 Character.SeleneMethods.getLoot = function(user)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
