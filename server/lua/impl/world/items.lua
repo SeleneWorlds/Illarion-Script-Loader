@@ -212,7 +212,7 @@ world.SeleneMethods.getArmorStruct = function(world, itemId)
     return false, nil
 end
 
-world.SeleneMethods.getWeaponStruct = function(world, item)
+world.SeleneMethods.getWeaponStruct = function(world, itemId)
     local item = Registries.findByMetadata("illarion:items", "id", itemId)
     local weapon = item and item:getField("weapon") or nil
     if weapon then
