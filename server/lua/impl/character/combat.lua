@@ -1,11 +1,15 @@
 local Registries = require("selene.registries")
 local Network = require("selene.network")
 local Entities = require("selene.entities")
+local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
+local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+
+local useLegacyDualHandCombat = Config.getProperty("useLegacyDualHandCombat") == "true"
 
 Character.SeleneMethods.stopAttack = function(user)
     user.SeleneEntity:removeRuntimeData(DataKeys.Combat)
@@ -31,24 +35,49 @@ Character.SeleneGetters.attackmode = function(user)
     return combatData[DataFields.TargetId] ~= nil
 end
 
-Character.SeleneMethods.callAttackScript = function(attacker, defender)
-    if defender:getType() == Character.player then
-        defender:disturbAction(attacker)
-    end
-
-    local weaponId = attacker:getItemAt(Character.right_tool).id
+local function callWeaponScript(attacker, defender, attackPosition)
+    local weaponId = attacker:getItemAt(attackPosition).id
     local itemDef = Registries.findByMetadata("illarion:items", "id", weaponId)
     if itemDef then
         local weapon = itemDef:getField("weapon")
         if weapon and weapon.fightingScript then
             local status, script = pcall(require, weapon.fightingScript)
             if status and type(script.onAttack) == "function" then
-                script.onAttack(attacker, defender)
+                if useLegacyDualHandCombat then
+                    script.onAttack(attacker, defender, attackPosition)
+                else
+                    script.onAttack(attacker, defender)
+                end
+                return true
             end
         end
     end
+    return false
+end
 
-    require("server.standardfighting").onAttack(attacker, defender)
+Character.SeleneMethods.callAttackScript = function(attacker, defender)
+    local attackPositions = useLegacyDualHandCombat
+        and { Character.right_tool, Character.left_tool }
+        or { Character.right_tool }
+
+    for _, attackPosition in ipairs(attackPositions) do
+        if defender:getType() == Character.player then
+            defender:disturbAction(attacker)
+        end
+
+        local weaponScriptCalled = callWeaponScript(attacker, defender, attackPosition)
+        if useLegacyDualHandCombat then
+            if not weaponScriptCalled then
+                require("server.standardfighting").onAttack(attacker, defender, attackPosition)
+            end
+        else
+            require("server.standardfighting").onAttack(attacker, defender)
+        end
+
+        if CharacterManager.IsDead(defender) then
+            break
+        end
+    end
 end
 
 Character.SeleneGetters.fightpoints = function(user)

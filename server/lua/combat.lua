@@ -28,6 +28,9 @@ Schedules.setInterval(100, function()
             local user = Character.fromSelenePlayer(player)
             user.movepoints = user.movepoints + 1
             user.fightpoints = user.fightpoints + 1
+            if user.attackmode and user.fightpoints >= 0 then
+                CombatManager.Attack(user)
+            end
         end
     end
 end)
