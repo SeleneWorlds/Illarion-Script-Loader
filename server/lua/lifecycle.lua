@@ -59,7 +59,11 @@ end)
 
 Network.handlePayload("illarion:request_character_creation", function(player)
     if not player:getControlledEntity() then
-        Network.sendToPlayer(player, "illarion:character_creation_options", CharacterCreation.getOptions(true))
+        Network.sendToPlayer(
+            player,
+            "illarion:character_creation_options",
+            CharacterCreation.getOptions(true, player:getLocale())
+        )
     end
 end)
 

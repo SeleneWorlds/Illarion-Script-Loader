@@ -2,6 +2,7 @@ local SQLite = require("selene.sqlite")
 local Config = require("selene.config")
 local Json = require("selene.json")
 local Registries = require("selene.registries")
+local I18n = require("selene.i18n")
 
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
@@ -54,7 +55,7 @@ local function packedColours(colours)
 end
 
 ---Returns the server-authoritative choices and limits used by character creation.
-function m.getOptions(compactColours)
+function m.getOptions(compactColours, locale)
     local races = {}
     for _, race in pairs(Registries.findAll("illarion:races")) do
         local raceId = tonumber(race:getMetadata("id"))
@@ -111,7 +112,9 @@ function m.getOptions(compactColours)
     for _, pack in pairs(Registries.findAll("illarion:starter_packs")) do
         local id = tonumber(pack:getMetadata("id"))
         if id then
-            table.insert(startPacks, { id = id, name = "Starter pack " .. id })
+            local name = locale and I18n.get("characterCreation.startPack." .. id, locale) or nil
+            name = name or ("Starter pack " .. id)
+            table.insert(startPacks, { id = id, name = name })
         end
     end
     table.sort(startPacks, function(a, b) return a.id < b.id end)
