@@ -39,6 +39,15 @@ function MonsterSpawn:scheduleNext()
     end)
 end
 
+function MonsterSpawn:monsterRemoved(monsterDef)
+    for _, monsterType in ipairs(self.monsterTypes) do
+        if monsterType.def:getName() == monsterDef:getName() then
+            monsterType.count = math.max(0, monsterType.count - 1)
+            return
+        end
+    end
+end
+
 function MonsterSpawn:spawn()
     -- TODO check if spawn is enabled
     local monsters = self.def:getField("monsters")

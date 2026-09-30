@@ -33,6 +33,26 @@ function m.Spawn(monsterDef, pos)
     return Character.fromSeleneEntity(entity)
 end
 
+function m.Remove(entity)
+    local charData = entity:getRuntimeData(DataKeys.Character)
+    local id = charData[DataFields.ID]
+    local spawnName = charData[DataFields.MonsterSpawn]
+
+    m.EntitiesById[id] = nil
+    CharacterManager.RemoveEntity(entity)
+
+    if spawnName then
+        local MonsterSpawn = require("illarion-script-loader.server.lua.lib.monsterSpawn")
+        local spawn = MonsterSpawn.ByName[spawnName]
+        local monsterDef = charData[DataFields.Monster]
+        if spawn and monsterDef then
+            spawn:monsterRemoved(monsterDef)
+        end
+    end
+
+    entity:remove()
+end
+
 function m.Update()
     for _, entity in pairs(m.NewMonsters) do
         local charData = entity:getRuntimeData(DataKeys.Character)

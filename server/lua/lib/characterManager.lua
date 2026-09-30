@@ -48,6 +48,8 @@ function m.SetDead(character, dead)
                     script.onDeath(illaMonster)
                 end
             end
+            local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
+            MonsterManager.Remove(character.SeleneEntity)
         end
     end
 end
