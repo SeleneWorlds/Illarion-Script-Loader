@@ -18,7 +18,10 @@ Character.SeleneMethods.getAttackTarget = function(user)
     local combatData = user.SeleneEntity:getRuntimeData(DataKeys.Combat)
     local networkId = combatData[DataFields.TargetId]
     if networkId then
-        return Entities.getEntityById(networkId)
+        local entity = Entities.getByNetworkId(networkId)
+        if entity and entity:getRuntimeData(DataKeys.Character)[DataFields.CharacterType] then
+            return Character.fromSeleneEntity(entity)
+        end
     end
     return nil
 end
