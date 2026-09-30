@@ -6,6 +6,7 @@ local Schedules = require("selene.schedules")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
+local CharacterCreation = require("illarion-script-loader.server.lua.lib.characterCreation")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
 
@@ -54,6 +55,34 @@ Network.handlePayload("illarion:request_characters", function(player)
     if not player:getControlledEntity() then
         sendCharacters(player)
     end
+end)
+
+Network.handlePayload("illarion:request_character_creation", function(player)
+    if not player:getControlledEntity() then
+        Network.sendToPlayer(player, "illarion:character_creation_options", CharacterCreation.getOptions(true))
+    end
+end)
+
+Network.handlePayload("illarion:create_character", function(player, payload)
+    if player:getControlledEntity() then
+        return
+    end
+    local data, validationError = CharacterCreation.validate(payload)
+    if not data then
+        Network.sendToPlayer(player, "illarion:character_creation_result", { error = validationError })
+        return
+    end
+    local ok, id, creationError = pcall(CharacterCreation.create, player, data)
+    if not ok then
+        Network.sendToPlayer(player, "illarion:character_creation_result", { error = "Character creation failed." })
+        return
+    end
+    if not id then
+        Network.sendToPlayer(player, "illarion:character_creation_result", { error = creationError })
+        return
+    end
+    Network.sendToPlayer(player, "illarion:character_creation_result", { id = id })
+    sendCharacters(player)
 end)
 
 Network.handlePayload("illarion:select_character", function(player, payload)
