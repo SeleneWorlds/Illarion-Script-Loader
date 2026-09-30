@@ -6,6 +6,7 @@ local Config = require("selene.config")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
+local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
     if not user.SelenePlayer then
@@ -27,9 +28,7 @@ Character.SeleneMethods.isAdmin = function(user)
     if not user.SelenePlayer then
         return false
     end
-    -- TODO Temporary solution until we have basic permission support in Selene
-    local admins = stringx.split(Config.getProperty("admins"), ",")
-    return tablex.find(admins, user.SelenePlayer:getUserId()) ~= nil
+    return PlayerManager.IsAdminUserId(user.SelenePlayer:getUserId())
 end
 
 Character.SeleneMethods.getPlayerLanguage = function(user)

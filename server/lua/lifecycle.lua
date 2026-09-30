@@ -31,6 +31,15 @@ local function finishLogin(player, selectedCharacter)
     illaLogin.onLogin(character)
 end
 
+Players.playerQueued:connect(function(entry)
+    local userId = entry:getUserId()
+    if not PlayerManager.IsAdminUserId(userId) and PlayerManager.IsUserOnline(userId) then
+        entry:reject("This account is already logged in.")
+    else
+        entry:accept()
+    end
+end)
+
 Players.playerJoined:connect(function(player)
     sendCharacters(player)
 end)

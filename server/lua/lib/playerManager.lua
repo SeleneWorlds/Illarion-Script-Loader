@@ -3,6 +3,7 @@ local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
 local I18n = require("selene.i18n")
+local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -13,6 +14,20 @@ local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionU
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 
 local m = {}
+
+function m.IsAdminUserId(userId)
+    local admins = stringx.split(Config.getProperty("admins"), ",")
+    return tablex.find(admins, userId) ~= nil
+end
+
+function m.IsUserOnline(userId)
+    for _, onlinePlayer in ipairs(Players.getOnlinePlayers()) do
+        if onlinePlayer:getUserId() == userId then
+            return true
+        end
+    end
+    return false
+end
 
 local function findRaceEntity(raceId, sex)
     local preferredTypeId = sex == "female" and 1 or 0
