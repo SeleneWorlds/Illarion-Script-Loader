@@ -2,6 +2,7 @@ local Network = require("selene.network")
 local Schedules = require("selene.schedules")
 local Players = require("selene.players")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
+local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
 Network.handlePayload("illarion:set_combat_target", function(player, payload)
     local networkId = PayloadValidation.integer(payload.networkId, -1)
