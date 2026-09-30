@@ -29,6 +29,19 @@ function m.IsUserOnline(userId)
     return false
 end
 
+function m.IsCharacterOnline(characterId)
+    for _, onlinePlayer in ipairs(Players.getOnlinePlayers()) do
+        local entity = onlinePlayer:getControlledEntity()
+        if entity then
+            local charData = entity:getRuntimeData(DataKeys.Character)
+            if charData[DataFields.ID] == characterId then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 local function findRaceEntity(raceId, sex)
     local preferredTypeId = sex == "female" and 1 or 0
     local fallback = nil

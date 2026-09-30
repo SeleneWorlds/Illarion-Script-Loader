@@ -58,6 +58,10 @@ Network.handlePayload("illarion:select_character", function(player, payload)
     local selectedId = tonumber(payload.id)
     for _, ownedCharacter in ipairs(CharacterPersistence.loadCharacterSummaries(player)) do
         if ownedCharacter.id == selectedId then
+            if PlayerManager.IsCharacterOnline(selectedId) then
+                player:kick("This character is already logged in.")
+                return
+            end
             local character = CharacterPersistence.loadCharacter(player, selectedId)
             if not character then
                 return
