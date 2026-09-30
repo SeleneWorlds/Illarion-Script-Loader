@@ -95,6 +95,18 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
             local status, script = pcall(require, charData[DataFields.Script])
             if status and type(script.lookAtMonster) == "function" then
                 script.lookAtMonster(character, target, mode)
+            else
+                local race = Registries.findByMetadata("illarion:races", "id", charData[DataFields.Race])
+                local raceName = race and race:getField("name")
+                local sex = charData[DataFields.Sex] or "male"
+                local key = race and "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
+                local translatedName = key and I18n.get(key, player:getLocale())
+                Network.sendToPlayer(player, "illarion:look_at_entity", {
+                    networkId = entity:getNetworkId(),
+                    tooltip = {
+                        name = translatedName or raceName or entity:getEntityDefinition():getName()
+                    }
+                })
             end
         end
     end
