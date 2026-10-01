@@ -109,28 +109,47 @@ world.SeleneMethods.erase = function(world, item, amount)
 end
 
 world.SeleneMethods.changeItem = function(world, item)
-    -- Legacy scripts change an item's id on the scriptItem and then call
-    -- changeItem. The id assignment is stored directly on the Lua wrapper,
-    -- while the backing Selene tile or inventory item still has its old id.
-    local newId = rawget(item, "id")
-    if newId ~= nil then
-        if item.SeleneTile ~= nil then
-            local oldId = tonumber(item.SeleneTile:getMetadata("itemId"))
-            if newId ~= oldId then
-                world:swap(item, newId, item.quality)
-                return
-            end
-        elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
-            item.owner:swapAtPos(item.itempos, newId, item.quality)
-            return
-        elseif item:getType() == scriptItem.container then
-            item.inside:swapAtPos(item.itempos, newId, item.quality)
-            return
-        end
-    end
+    local newId = tonumber(item.id) or 0
+    local newNumber = tonumber(item.number) or 0
+    local newQuality = tonumber(item.quality) or 0
+    local newWear = tonumber(item.wear) or 0
 
-    if item.SeleneEntity ~= nil then
+    if item.SeleneTile ~= nil then
+        local tile = item.SeleneTile
+        local dimension = tile:getDimension()
+        local coordinate = tile:getCoordinate()
+        local tileDef = tile:getDefinition()
+        if newId ~= tonumber(tile:getMetadata("itemId")) then
+            tileDef = Registries.findByMetadata("tiles", "itemId", newId)
+            if tileDef == nil then
+                error("Unknown tile id " .. tostring(newId))
+            end
+            dimension:getMap():swapTile(coordinate, tile:getDefinition(), tileDef)
+        end
+        local data = dimension:getAnnotationAt(coordinate, tileDef:getName()) or {}
+        data[DataFields.Quality] = newQuality
+        data[DataFields.Wear] = newWear
+        dimension:annotateTile(coordinate, tileDef:getName(), data)
+    elseif item.SeleneEntity ~= nil then
+        local oldId = tonumber(item.SeleneEntity:getEntityDefinition():getMetadata("itemId"))
+        if newId ~= oldId then
+            world:swap(item, newId, newQuality)
+        end
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        itemData[DataFields.Count] = newNumber
+        itemData[DataFields.Quality] = newQuality
+        itemData[DataFields.Wear] = newWear
         item.SeleneEntity:updateVisuals()
+    elseif item.SeleneItem ~= nil then
+        local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
+        if itemDef == nil then
+            error("Unknown item id " .. tostring(newId))
+        end
+        item.SeleneItem.def = itemDef
+        item.SeleneItem.count = newNumber
+        item.SeleneItem.quality = newQuality
+        item.SeleneItem.wear = newWear
+        item.SeleneInventory:slotUpdated(item.SeleneInventoryItem.slotId)
     end
 end
 
