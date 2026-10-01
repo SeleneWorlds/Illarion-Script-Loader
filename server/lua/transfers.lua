@@ -239,7 +239,7 @@ end)
 
 Network.handlePayload("illarion:move_slot_to_coordinate", function(player, payload)
     local fromViewId, fromSlotId = validViewAndSlot(payload, "fromViewId", "fromSlotId")
-    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 1)
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
     local requestedCount = validCount(payload.count)
     if not fromViewId or not fromSlotId or not x or not requestedCount then
         return
