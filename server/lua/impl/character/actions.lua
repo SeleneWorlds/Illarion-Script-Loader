@@ -163,7 +163,7 @@ Character.SeleneMethods.changeSource = function(user, source)
         action.Script = script
         action.Function = script.UseItem
         if Config.getProperty("useLegacyUseItem") == "true" then
-            action.Args = table.pack(user, source, nil, nil, nil)
+            action.Args = { user, source, Item.fromSeleneEmpty(), 1, 0 }
         else
             action.Args = { user, source }
         end
