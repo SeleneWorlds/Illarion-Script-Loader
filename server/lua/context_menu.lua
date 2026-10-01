@@ -4,6 +4,7 @@ local Registries = require("selene.registries")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+local ItemMovement = require("illarion-script-loader.server.lua.lib.itemMovement")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local menuActions = {
@@ -90,7 +91,9 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
             table.insert(actions, { id = "open", label = "Open" })
         end
         table.insert(actions, { id = "lookAt", label = "Examine" })
-        if itemDef then
+        local itemData = target and target:getRuntimeData(DataKeys.Item)
+        local wear = itemData and itemData[DataFields.Wear]
+        if itemDef and not ItemMovement.isImmovable(itemDef, wear) then
             table.insert(actions, { id = "pickup", label = "Pick up" })
         end
         if (topItem and topItem:getField("script") and topItem:getField("script") ~= "")
@@ -111,6 +114,9 @@ local function pickup(player, payload, target)
         return
     end
     local itemData = target:getRuntimeData(DataKeys.Item)
+    if ItemMovement.isImmovable(itemDef, itemData[DataFields.Wear]) then
+        return
+    end
     local item = {
         def = itemDef,
         count = itemData[DataFields.Count] or 1,

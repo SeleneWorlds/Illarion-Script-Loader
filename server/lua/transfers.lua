@@ -6,10 +6,8 @@ local InventoryItem = require("moonlight-inventory.server.lua.inventory_item")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ItemMovement = require("illarion-script-loader.server.lua.lib.itemMovement")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
-
-local PERMANENT_WEAR = 255
-local IMMOVABLE_WEIGHT = 30000
 
 local function validViewAndSlot(payload, viewKey, slotKey)
     local viewId = PayloadValidation.string(payload[viewKey], 64)
@@ -40,12 +38,6 @@ local function CreateItemFromEntity(entity)
         wear = itemData[DataFields.Wear],
         data = itemData[DataFields.Data] or {}
     }
-end
-
-local function IsImmovable(item)
-    local wear = tonumber(item.wear) or 0
-    local weight = tonumber(item.def:getField("weight")) or 0
-    return wear == PERMANENT_WEAR or weight >= IMMOVABLE_WEIGHT
 end
 
 Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
@@ -123,7 +115,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     end
 
     local item = CreateItemFromEntity(sourceEntity)
-    if not item or IsImmovable(item) then
+    if not item or ItemMovement.isImmovable(item.def, item.wear) then
         return
     end
     local sourceCount = item.count
@@ -186,7 +178,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     end
 
     local sourceItem = CreateItemFromEntity(sourceEntity)
-    if not sourceItem or IsImmovable(sourceItem) then
+    if not sourceItem or ItemMovement.isImmovable(sourceItem.def, sourceItem.wear) then
         return
     end
 
