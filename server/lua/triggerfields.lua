@@ -11,6 +11,25 @@ for _, field in pairs(allTriggerFields) do
     })
 end
 
+local function notifyItemCharacterOnField(itemId, character)
+    if not itemId then
+        return
+    end
+
+    local item = Registries.findByMetadata("illarion:items", "id", itemId)
+    if not item or item:getField("specialItem") ~= 1 then
+        return
+    end
+
+    local scriptName = item:getField("script")
+    if scriptName then
+        local status, script = pcall(require, scriptName)
+        if status and type(script.CharacterOnField) == "function" then
+            script.CharacterOnField(character)
+        end
+    end
+end
+
 Entities.steppedOnTile:connect(function(entity, coordinate)
     local dimension = entity:getDimension()
 
@@ -26,22 +45,17 @@ Entities.steppedOnTile:connect(function(entity, coordinate)
     end
 
     -- Items with a special flag receive "CharacterOnField" events
-    -- TODO We should add a helper that can handle both tile and entity items in one
+    local character = Character.fromSeleneEntity(entity)
+    local itemEntities = dimension:getEntitiesAt(coordinate, entity:getCollisionViewer())
+    for _, itemEntity in ipairs(itemEntities) do
+        if itemEntity:hasTag("illarion:item") then
+            notifyItemCharacterOnField(itemEntity:getEntityDefinition():getMetadata("itemId"), character)
+        end
+    end
+
     local tiles = dimension:getTilesAt(coordinate, entity:getCollisionViewer())
     for _, tile in ipairs(tiles) do
-        local itemId = tile:getDefinition():getMetadata("itemId")
-        if itemId then
-            local item = Registries.findByMetadata("illarion:items", "id", itemId)
-            if item and item:getField("specialItem") == 1 then
-                local scriptName = item:getField("script")
-                if scriptName then
-                    local status, script = pcall(require, scriptName)
-                    if status and type(script.CharacterOnField) == "function" then
-                        script.CharacterOnField(Character.fromSeleneEntity(entity))
-                    end
-                end
-            end
-        end
+        notifyItemCharacterOnField(tile:getDefinition():getMetadata("itemId"), character)
     end
 
     -- Trigger fields receive events when characters move onto them
@@ -52,12 +66,12 @@ Entities.steppedOnTile:connect(function(entity, coordinate)
         if scriptName then
             local status, script = pcall(require, scriptName)
             if status and type(script.MoveToField) == "function" then
-                script.MoveToField(Character.fromSeleneEntity(entity))
+                script.MoveToField(character)
             end
             -- Not sure what the realistic purpose of this one is.
             -- TODO In Illarion, this also fires if a character is standing on a trigger script and an item gets dropped onto it.
             if status and type(script.CharacterOnField) == "function" then
-                script.CharacterOnField(Character.fromSeleneEntity(entity))
+                script.CharacterOnField(character)
             end
         end
     end
