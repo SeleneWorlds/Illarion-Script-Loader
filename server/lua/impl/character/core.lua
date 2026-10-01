@@ -84,7 +84,8 @@ Character.SeleneMethods.getClippingActive = function(user)
 end
 
 Character.SeleneMethods.getFaceTo = function(user)
-   return DirectionUtils.SeleneToIlla(user.SeleneEntity:getFacing()) or Character.north
+   local facing = user.SeleneEntity:getFacing()
+   return DirectionUtils.SeleneToIlla(facing and facing.name) or Character.north
 end
 Character.SeleneMethods.get_face_to = Character.SeleneMethods.getFaceTo
 
