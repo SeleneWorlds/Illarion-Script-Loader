@@ -90,7 +90,10 @@ Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
 end
 
 Character.SeleneMethods.setAttrib = function(user, attributeName, value)
-    if attributeName == "sex" then
+    if attributeName == "faceto" then
+        user:turn(value)
+        return
+    elseif attributeName == "sex" then
         local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
         charData[DataFields.Sex] = value == Character.female and "female" or "male"
         return
