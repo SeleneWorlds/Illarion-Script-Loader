@@ -152,16 +152,35 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
 end
 
 world.SeleneMethods.swap = function(world, item, newId, newQuality)
-    local NewTileDef = Registries.findByMetadata("tiles", "itemId", newId)
-    if NewTileDef == nil then
-        error("Unknown tile id " .. newId)
-        return
-    end
-
     if item:getType() == scriptItem.field then
         if item.SeleneTile ~= nil then
+            local NewTileDef = Registries.findByMetadata("tiles", "itemId", newId)
+            if NewTileDef == nil then
+                error("Unknown tile id " .. tostring(newId))
+            end
             local map = item.SeleneTile:getDimension():getMap()
             map:swapTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getDefinition(), NewTileDef)
+        elseif item.SeleneEntity ~= nil then
+            local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
+            local entityDef = Registries.findByMetadata("entities", "itemId", newId)
+            if itemDef == nil or entityDef == nil then
+                error("Unknown item entity for item id " .. tostring(newId))
+            end
+
+            local oldEntity = item.SeleneEntity
+            local dimension = oldEntity:getDimension()
+            local oldData = oldEntity:getRuntimeData(DataKeys.Item)
+            local newEntity = Entities.create(entityDef)
+            local newData = newEntity:getRuntimeData(DataKeys.Item)
+            newData[DataFields.Count] = oldData[DataFields.Count] or 1
+            newData[DataFields.Quality] = tonumber(newQuality) or 333
+            newData[DataFields.Wear] = tonumber(itemDef:getField("agingSpeed")) or 0
+            newData[DataFields.Data] = oldData[DataFields.Data] or {}
+            newEntity:setCoordinate(oldEntity:getCoordinate())
+
+            oldEntity:despawn()
+            newEntity:spawn(dimension)
+            item.SeleneEntity = newEntity
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
         item.owner:swapAtPos(item.itempos, newId, newQuality)
