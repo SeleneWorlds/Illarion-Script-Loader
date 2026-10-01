@@ -28,7 +28,7 @@ function m.CallActionFunction(actionFunction, actionArgs, actionState)
     local args = table.pack(table.unpack(actionArgs, 1, argumentCount))
     args.n = argumentCount + 1
     args[args.n] = actionState
-    pcall(actionFunction, table.unpack(args, 1, args.n))
+    actionFunction(table.unpack(args, 1, args.n))
 end
 
 function m.AbortAction(character)
