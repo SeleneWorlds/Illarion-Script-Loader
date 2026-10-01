@@ -144,8 +144,9 @@ function m.GetContentsContainer(item)
 end
 
 function m.ItemMatchesFilter(itemDef, data)
+    local itemId = itemDef:getMetadata("id")
     return function(item)
-        if item.def ~= itemDef then
+        if item.def:getMetadata("id") ~= itemId then
             return false
         end
 
