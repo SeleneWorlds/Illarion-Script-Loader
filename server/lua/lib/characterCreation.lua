@@ -254,19 +254,22 @@ local function starterPackData(pack)
             skills[tostring(id)] = { major = tonumber(plainTable(skill).value) or 0, minor = 0 }
         end
     end
+    local equipment = {}
     local belt = {}
     for slot, item in pairs(plainTable(pack:getField("items"))) do
         item = plainTable(item)
         local definition = Registries.findByName("illarion:items", item.itemId)
         local id = definition and tonumber(definition:getMetadata("id"))
-        if id then
-            table.insert(belt, {
-                slot = tonumber(slot),
+        local slotId = tonumber(slot)
+        if id and slotId and slotId >= 0 and slotId <= 17 then
+            local inventory = slotId <= 11 and equipment or belt
+            table.insert(inventory, {
+                slot = slotId,
                 item = { id = id, count = tonumber(item.count) or 1, quality = tonumber(item.quality) or 333, data = {} }
             })
         end
     end
-    return skills, { equipment = {}, belt = belt, depots = {} }
+    return skills, { equipment = equipment, belt = belt, depots = {} }
 end
 
 ---Creates a character owned by player. Callers must validate the payload first.
