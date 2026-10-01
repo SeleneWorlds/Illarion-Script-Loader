@@ -435,13 +435,13 @@ COMMANDS = {
         requireAdmin = true,
     },
     {
-        names = {"clippingon"},
-        help = "!clippingon / !clippingoff - toggles clipping.",
+        names = {"clippingon", "con"},
+        help = "!clippingon / !clippingoff - (!con / !coff) toggles clipping.",
         handler = function(character) handleClipping(character, true) end,
         requireAdmin = true,
     },
     {
-        names = {"clippingoff"},
+        names = {"clippingoff", "coff"},
         handler = function(character) handleClipping(character, false) end,
         requireAdmin = true,
     },
