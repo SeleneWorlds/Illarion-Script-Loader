@@ -36,6 +36,14 @@ Field.SeleneMethods.countItems = function(field)
             count = count + 1
         end
     end
+
+    local entities = field.SeleneDimension:getEntitiesAt(field.SelenePosition)
+    for _, entity in ipairs(entities) do
+        if entity:hasTag("illarion:item") then
+            count = count + 1
+        end
+    end
+
     return count
 end
 
@@ -50,6 +58,17 @@ Field.SeleneMethods.getStackItem = function(field, index)
             end
         end
     end
+
+    local entities = field.SeleneDimension:getEntitiesAt(field.SelenePosition)
+    for _, entity in ipairs(entities) do
+        if entity:hasTag("illarion:item") then
+            i = i + 1
+            if i == index then
+                return Item.fromSeleneEntity(entity)
+            end
+        end
+    end
+
     return Item.fromSeleneEmpty()
 end
 
