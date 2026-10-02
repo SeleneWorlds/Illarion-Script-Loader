@@ -41,8 +41,10 @@ world.SeleneMethods.getItemOnField = function(world, position)
         end
     end
 
+
     local tiles = dimension:getTilesAt(position)
-    for _, tile in ipairs(tiles) do
+    for i = #tiles, 1, -1 do
+        local tile = tiles[i]
         if tile:hasTag("illarion:item") then
             return Item.fromSeleneTile(tile)
         end
