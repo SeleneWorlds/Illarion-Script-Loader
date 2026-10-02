@@ -1,5 +1,6 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
+local Dimensions = require("selene.dimensions")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -51,6 +52,7 @@ end
 function MonsterSpawn:spawn()
     -- TODO check if spawn is enabled
     local monsters = self.def:getField("monsters")
+    local dimension = Dimensions.getDefault()
     for _, monsterType in ipairs(self.monsterTypes) do
         local num = monsterType.maxCount - monsterType.count
         if num > 0 then
@@ -64,12 +66,13 @@ function MonsterSpawn:spawn()
             for i = 1, num do
                 local x = centerX + math.random(-spawnRange, spawnRange)
                 local y = centerY + math.random(-spawnRange, spawnRange)
-                -- TODO find nearby passable location
                 local pos = position(x, y, z)
-                local monster = world:createMonster(monsterType.def:getMetadata("id"), pos, 0)
-                local charData = monster.SeleneEntity:getRuntimeData(DataKeys.Character)
-                charData[DataFields.MonsterSpawn] = self.def:getName()
-                monsterType.count = monsterType.count + 1
+                if not dimension:hasCollisionAt(pos) then
+                    local monster = world:createMonster(monsterType.def:getMetadata("id"), pos, 0)
+                    local charData = monster.SeleneEntity:getRuntimeData(DataKeys.Character)
+                    charData[DataFields.MonsterSpawn] = self.def:getName()
+                    monsterType.count = monsterType.count + 1
+                end
             end
         end
     end
