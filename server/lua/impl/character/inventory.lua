@@ -14,7 +14,7 @@ Character.SeleneMethods.countItem = function(user, itemId)
     local count = 0
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
-        error("Tried to count unknown item id " .. itemId)
+        return 0
     end
     local filter = InventoryManager.ItemMatchesFilter(itemDef)
     count = count + InventoryManager.GetBelt(user):countItem(filter)
@@ -30,7 +30,7 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
     local count = 0
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
-        error("Tried to count unknown item id " .. itemId)
+        return 0
     end
     local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
     if where == "all" or where == "belt" then
@@ -71,7 +71,7 @@ end
 Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
-        error("Tried to create unknown item id " .. itemId)
+        return 0
     end
     local itemData = type(data) == "table" and data or {data = tonumber(data) ~= 0 and tonumber(data) or nil}
     local rest = InventoryManager.GetBelt(user):addItem({
