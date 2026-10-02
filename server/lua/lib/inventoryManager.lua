@@ -32,7 +32,7 @@ function m.ItemFitsEquipmentSlot(item, slotId)
         return (tonumber(item.def:getField("containerSlots")) or 0) > 0
     end
     if slotId == 5 or slotId == 6 then
-        return item.def:getField("weapon") ~= nil
+        return true
     end
 
     local requiredBodyPart = equipmentBodyParts[slotId]
