@@ -173,7 +173,7 @@ end)
 
 Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player, payload)
     local fromX, fromY, fromZ = PayloadValidation.coordinateInRange(player, payload, "from", 1)
-    local toX, toY, toZ = PayloadValidation.coordinateInRange(player, payload, "to", 1)
+    local toX, toY, toZ = PayloadValidation.coordinateInRange(player, payload, "to", 14)
     local requestedCount = validCount(payload.count)
     if not fromX or not toX or not requestedCount then
         return
