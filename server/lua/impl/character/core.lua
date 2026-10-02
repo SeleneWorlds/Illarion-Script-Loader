@@ -1,6 +1,7 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
 local Players = require("selene.players")
+local Grid = require("selene.grid")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -105,8 +106,13 @@ Character.SeleneMethods.move = function(user, direction, activeMove)
 end
 
 Character.SeleneMethods.turn = function(user, direction)
-    local seleneDirection = DirectionUtils.IllaToSelene(direction)
-    if seleneDirection then
+    local directionName = DirectionUtils.IllaToSelene(direction)
+    if not directionName then
+        return
+    end
+
+    local supported, seleneDirection = pcall(Grid.getDirectionByName, directionName)
+    if supported then
         user.SeleneEntity:setFacing(seleneDirection)
     end
 end
