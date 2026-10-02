@@ -10,6 +10,7 @@ local CharacterCreation = require("illarion-script-loader.server.lua.lib.charact
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
 local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
+local MagicManager = require("illarion-script-loader.server.lua.lib.magicManager")
 
 local common = require("base.common")
 local illaReloadOk, illaReload = pcall(require, "server.reload")
@@ -37,6 +38,7 @@ local function finishLogin(player, selectedCharacter)
 
     illaLogin.onLogin(character)
     SkillManager.SendAll(character)
+    MagicManager.SendMagicState(character)
 end
 
 Players.playerQueued:connect(function(entry)
