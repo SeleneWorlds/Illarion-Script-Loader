@@ -122,7 +122,8 @@ local function pickup(player, payload, target)
         count = itemData[DataFields.Count] or 1,
         quality = itemData[DataFields.Quality],
         wear = itemData[DataFields.Wear],
-        data = itemData[DataFields.Data] or {}
+        data = itemData[DataFields.Data] or {},
+        content = itemData[DataFields.Content]
     }
     local user = Character.fromSelenePlayer(player)
     local rest = InventoryManager.GetBelt(user):addItem(item)

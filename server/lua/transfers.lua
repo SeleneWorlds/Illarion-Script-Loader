@@ -42,7 +42,8 @@ local function CreateItemFromEntity(entity)
         count = itemData[DataFields.Count] or 1,
         quality = itemData[DataFields.Quality],
         wear = itemData[DataFields.Wear],
-        data = itemData[DataFields.Data] or {}
+        data = itemData[DataFields.Data] or {},
+        content = itemData[DataFields.Content]
     }
 end
 
@@ -212,6 +213,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
         movedItemData[DataFields.Wear] = itemData[DataFields.Wear]
         movedItemData[DataFields.Data] = itemData[DataFields.Data] or {}
+        movedItemData[DataFields.Content] = itemData[DataFields.Content]
         movedEntity:setCoordinate(toX, toY, toZ)
         movedEntity:spawn(dimension)
     else
@@ -285,6 +287,7 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     entityItemData[DataFields.Quality] = item.quality
     entityItemData[DataFields.Wear] = item.wear
     entityItemData[DataFields.Data] = customData
+    entityItemData[DataFields.Content] = item.content
     entity:setCoordinate(x, y, z)
     entity:spawn(character.SeleneEntity:getDimension())
     closeMovedContainer(character, item)

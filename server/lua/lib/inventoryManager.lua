@@ -1,5 +1,6 @@
 local IllarionInventory = require("illarion-script-loader.server.lua.lib.illarionInventory")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
 
@@ -138,25 +139,35 @@ function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)
 end
 
 function m.GetContentsContainer(item)
+    local itemDef, content
     if item.SeleneItem then
-        local itemDef = item.SeleneItem.def
-        local slotCount = itemDef:getField("containerSlots")
-        if slotCount == nil or slotCount <= 0 then
+        itemDef = item.SeleneItem.def
+        item.SeleneItem.content = item.SeleneItem.content or tablex.observable()
+        content = item.SeleneItem.content
+    elseif item.SeleneEntity then
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        if not itemData then
             return nil
         end
-        item.SeleneItem.content = item.SeleneItem.content or tablex.observable()
-        local slots = {}
-        for i = 1, slotCount do
-            table.insert(slots, i)
-        end
-        return IllarionInventory:new({
-            data = item.SeleneItem.content,
-            slots = slots,
-            isContainer = true,
-            owner = item.owner
-        })
+        local itemId = item.SeleneEntity:getEntityDefinition():getMetadata("itemId")
+        itemDef = require("selene.registries").findByMetadata("illarion:items", "id", itemId)
+        itemData[DataFields.Content] = itemData[DataFields.Content] or tablex.observable()
+        content = itemData[DataFields.Content]
     end
-    return nil
+    local slotCount = itemDef and itemDef:getField("containerSlots")
+    if slotCount == nil or slotCount <= 0 then
+        return nil
+    end
+    local slots = {}
+    for i = 1, slotCount do
+        table.insert(slots, i)
+    end
+    return IllarionInventory:new({
+        data = content,
+        slots = slots,
+        isContainer = true,
+        owner = item.owner
+    })
 end
 
 function m.ItemMatchesFilter(itemDef, data)

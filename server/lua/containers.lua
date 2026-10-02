@@ -81,7 +81,11 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
     for i = #entities, 1, -1 do
         local entity = entities[i]
         if entity:hasTag("illarion:item") then
-            -- TODO entity items
+            local inventory = InventoryManager.GetContentsContainer(Item.fromSeleneEntity(entity))
+            if inventory then
+                openShowcase(player, character, inventory, { x = x, y = y, z = z })
+                return
+            end
         end
     end
     local tiles = dimension:getTilesAt(x, y, z, playerEntity:getCollisionViewer())
