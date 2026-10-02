@@ -9,6 +9,7 @@ local CharacterPersistence = require("illarion-script-loader.server.lua.lib.char
 local CharacterCreation = require("illarion-script-loader.server.lua.lib.characterCreation")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
+local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 
 local common = require("base.common")
 local illaReloadOk, illaReload = pcall(require, "server.reload")
@@ -133,6 +134,10 @@ Schedules.setInterval(CHARACTER_SAVE_INTERVAL_MS, function()
             CharacterPersistence.saveCharacter(player, Character.fromSelenePlayer(player))
         end
     end
+end)
+
+Server.bundleUnloading:connect(function()
+    MonsterManager.RemoveAll()
 end)
 
 Server.serverReloaded:connect(function()

@@ -137,6 +137,24 @@ function m.Remove(entity)
     entity:remove()
 end
 
+function m.RemoveAll()
+    local entities = {}
+    local seen = {}
+    for _, entity in pairs(m.EntitiesById) do
+        entities[#entities + 1] = entity
+        seen[entity] = true
+    end
+    for _, entity in pairs(m.NewMonsters) do
+        if not seen[entity] then
+            entities[#entities + 1] = entity
+        end
+    end
+    for _, entity in ipairs(entities) do
+        m.Remove(entity)
+    end
+    m.NewMonsters = {}
+end
+
 function m.Update()
     m.UpdateTick = m.UpdateTick + 1
 
