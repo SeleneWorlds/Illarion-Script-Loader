@@ -1,4 +1,5 @@
 local IllarionInventory = require("illarion-script-loader.server.lua.lib.illarionInventory")
+local Players = require("selene.players")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
@@ -64,7 +65,7 @@ function m.GetShowcases(user)
 end
 
 function m.FindShowcase(user, inventory)
-    for showcaseId, showcase in pairs(m.GetShowcases(user)) do
+    for showcaseId, showcase in pairs(m.GetShowcases(user) or {}) do
         if showcase.inventory.data == inventory.data then
             return showcaseId, showcase
         end
@@ -93,13 +94,27 @@ function m.CloseShowcasesForItem(user, item)
     end
 
     local closedShowcaseIds = {}
-    for showcaseId, showcase in pairs(m.GetShowcases(user)) do
+    for showcaseId, showcase in pairs(m.GetShowcases(user) or {}) do
         if showcase.inventory.data == item.content then
             m.CloseShowcase(user, showcaseId)
             table.insert(closedShowcaseIds, showcaseId)
         end
     end
     return closedShowcaseIds
+end
+
+function m.CloseShowcasesForWorldItem(item)
+    local closedShowcases = {}
+    for _, player in ipairs(Players.getOnlinePlayers()) do
+        local entity = player:getControlledEntity()
+        if entity then
+            local user = { SeleneEntity = entity }
+            for _, showcaseId in ipairs(m.CloseShowcasesForItem(user, item)) do
+                table.insert(closedShowcases, { player = player, showcaseId = showcaseId })
+            end
+        end
+    end
+    return closedShowcases
 end
 
 function m.GetInventoryAtSlot(user, slotId)

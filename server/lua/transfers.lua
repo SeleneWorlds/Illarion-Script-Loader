@@ -25,6 +25,12 @@ local function closeMovedContainer(character, item)
     end
 end
 
+local function closeWorldContainer(item)
+    for _, showcase in ipairs(InventoryManager.CloseShowcasesForWorldItem(item)) do
+        Network.sendToPlayer(showcase.player, "illarion:close_showcase", { showcaseId = showcase.showcaseId })
+    end
+end
+
 local function CreateItemFromEntity(entity)
     local itemId = entity:getEntityDefinition():getMetadata("itemId")
     if itemId == nil then
@@ -135,6 +141,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     if movedCount <= 0 then
         return
     end
+    closeWorldContainer(item)
 
     if movedCount < sourceCount then
         local itemData = sourceEntity:getRuntimeData(DataKeys.Item)
@@ -219,6 +226,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     else
         sourceEntity:setCoordinate(toX, toY, toZ)
     end
+    closeWorldContainer(sourceItem)
 
     local targetCoordinate = movedEntity:getCoordinate()
 

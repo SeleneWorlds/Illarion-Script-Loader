@@ -139,7 +139,11 @@ local function pickup(player, payload, target)
     end
     if rest == item.count then
         return
-    elseif rest > 0 then
+    end
+    for _, showcase in ipairs(InventoryManager.CloseShowcasesForWorldItem(item)) do
+        Network.sendToPlayer(showcase.player, "illarion:close_showcase", { showcaseId = showcase.showcaseId })
+    end
+    if rest > 0 then
         itemData[DataFields.Count] = rest
         target:updateVisuals()
     else
