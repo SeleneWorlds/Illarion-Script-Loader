@@ -2,6 +2,10 @@ local ObservableMapInventory = require("moonlight-inventory.server.lua.observabl
 
 local IllarionInventory = ObservableMapInventory:new()
 
+local function initialWear(itemDef)
+    return tonumber(itemDef:getField("agingSpeed")) or 255
+end
+
 function IllarionInventory:getItemMaxCount(item)
     return tonumber(item.def:getField("maxStack")) or 1
 end
@@ -24,6 +28,10 @@ function IllarionInventory:mergeItems(item, other)
     local quality = math.min(math.floor(itemQuality / 100), math.floor(otherQuality / 100))
     local durability = math.min(itemQuality % 100, otherQuality % 100)
     merged.quality = quality * 100 + durability
+    merged.wear = math.min(
+        tonumber(item.wear) or initialWear(item.def),
+        tonumber(other.wear) or initialWear(other.def)
+    )
     return merged
 end
 

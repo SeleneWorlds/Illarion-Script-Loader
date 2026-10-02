@@ -78,6 +78,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         def = itemDef,
         count = count,
         quality = quality,
+        wear = InventoryManager.InitialWear(itemDef),
         data = itemData
     })
     if rest <= 0 then
@@ -90,6 +91,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
             def = itemDef,
             count = rest,
             quality = quality,
+            wear = InventoryManager.InitialWear(itemDef),
             data = itemData
         })
     end
@@ -104,7 +106,8 @@ Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     return inventory:addItemAt(slotId, {
         def = itemDef,
-        count = count
+        count = count,
+        wear = InventoryManager.InitialWear(itemDef)
     })
 end
 
@@ -134,13 +137,15 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
     local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
     if item ~= nil then
         item.def = itemDef
+        item.wear = InventoryManager.InitialWear(itemDef)
         if newQuality > 0 then
             illaItem.quality = newQuality
         end
     else
         inventory:setItem(slotId, {
             def = itemDef,
-            count = 1
+            count = 1,
+            wear = InventoryManager.InitialWear(itemDef)
         })
         local newInventoryItem = inventory:getInventoryItem(slotId)
         local newIllaItem = Item.fromSeleneInventoryItem(newInventoryItem)

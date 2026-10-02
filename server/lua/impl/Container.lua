@@ -104,13 +104,15 @@ Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQualit
     local item = inventoryItem and inventoryItem:getItem()
     if item ~= nil then
         item.def = itemDef
+        item.wear = InventoryManager.InitialWear(itemDef)
         if newQuality > 0 then
             Item.fromSeleneInventoryItem(inventoryItem).quality = newQuality
         end
     else
         inventory:setItem(slotId, {
             def = itemDef,
-            count = 1
+            count = 1,
+            wear = InventoryManager.InitialWear(itemDef)
         })
         Item.fromSeleneInventoryItem(inventory:getInventoryItem(slotId)).quality = newQuality
     end

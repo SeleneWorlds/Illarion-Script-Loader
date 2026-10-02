@@ -5,6 +5,10 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
 
+function m.InitialWear(itemDef)
+    return tonumber(itemDef:getField("agingSpeed")) or 255
+end
+
 local equipmentSlotIds = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }
 local beltSlotIds = { 12, 13, 14, 15, 16, 17 }
 
