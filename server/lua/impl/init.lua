@@ -1,4 +1,10 @@
 local Registries = require("selene.registries")
+local Bit32 = require("bit32")
+
+LuaAnd = Bit32.band
+LuaOr = Bit32.bor
+LuaLShift32 = Bit32.lshift
+LuaRShift32 = Bit32.rshift
 
 local allRaces = Registries.findAll("illarion:races")
 for _, race in pairs(allRaces) do
