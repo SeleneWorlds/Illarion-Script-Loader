@@ -13,6 +13,14 @@ local creationAttributes = {
     "agility", "constitution", "dexterity", "essence",
     "intelligence", "perception", "strength", "willpower"
 }
+local raceLanguages = {
+    [0] = "humanLanguage",
+    [1] = "dwarfLanguage",
+    [2] = "halflingLanguage",
+    [3] = "elfLanguage",
+    [4] = "orcLanguage",
+    [5] = "lizardLanguage"
+}
 
 local function getUserId(player)
     local userId = player:getUserId()
@@ -272,6 +280,20 @@ local function starterPackData(pack)
     return skills, { equipment = equipment, belt = belt, depots = {} }
 end
 
+local function addFullSkill(skills, skillName)
+    local definition = Registries.findByName("illarion:skills", skillName)
+    local id = definition and tonumber(definition:getMetadata("id"))
+    if not id then
+        error("Missing character creation skill: " .. skillName)
+    end
+    skills[tostring(id)] = { major = 100, minor = 0 }
+end
+
+local function addLanguageSkills(skills, raceId)
+    addFullSkill(skills, "commonLanguage")
+    addFullSkill(skills, raceLanguages[raceId])
+end
+
 ---Creates a character owned by player. Callers must validate the payload first.
 ---@return integer|nil, string|nil
 function m.create(player, data)
@@ -287,6 +309,7 @@ function m.create(player, data)
         return nil, "The selected starter pack does not exist."
     end
     local skills, items = starterPackData(pack)
+    addLanguageSkills(skills, data.race)
     local now = os.time()
     database:execute(
         [[
