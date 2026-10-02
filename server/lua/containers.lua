@@ -1,5 +1,6 @@
 local Network = require("selene.network")
 local Config = require("selene.config")
+local Entities = require("selene.entities")
 
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
@@ -26,7 +27,7 @@ local function sendShowcase(player, showcaseId, inventory)
     end
 end
 
-local function openShowcase(player, character, inventory)
+local function openShowcase(player, character, inventory, origin)
     if not inventory then
         return
     end
@@ -49,7 +50,7 @@ local function openShowcase(player, character, inventory)
 
     nextShowcaseToken = nextShowcaseToken + 1
     local token = nextShowcaseToken
-    InventoryManager.SetShowcase(character, showcaseId, inventory, token)
+    InventoryManager.SetShowcase(character, showcaseId, inventory, token, origin)
     inventory:subscribe(function(data)
         local current = InventoryManager.GetShowcases(character)[showcaseId]
         if not current or current.token ~= token then
@@ -93,11 +94,11 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
             if isDepot then
                 if illaDepot.onOpenDepot(character, item) then
                     local inventory = InventoryManager.GetDepot(character, tonumber(item:getData("depot")) or 0)
-                    openShowcase(player, character, inventory)
+                    openShowcase(player, character, inventory, { x = x, y = y, z = z })
                 end
             else
                 local inventory = InventoryManager.GetContentsContainer(item)
-                openShowcase(player, character, inventory)
+                openShowcase(player, character, inventory, { x = x, y = y, z = z })
             end
         end
     end
@@ -119,7 +120,31 @@ Network.handlePayload("illarion:open_container_slot", function(player, payload)
     local inventoryItem = inventory:getInventoryItem(slotId)
     if inventoryItem then
         local contents = InventoryManager.GetContentsContainer(Item.fromSeleneInventoryItem(inventoryItem))
-        openShowcase(player, character, contents)
+        local origin
+        local showcaseId = type(viewId) == "string" and tonumber(stringx.removePrefix(viewId, "showcase:"))
+        local parentShowcase = showcaseId and InventoryManager.GetShowcases(character)[showcaseId]
+        if parentShowcase then
+            origin = parentShowcase.origin
+        end
+        openShowcase(player, character, contents, origin)
+    end
+end)
+
+Entities.steppedOnTile:connect(function(entity, coordinate)
+    local character = Character.fromSeleneEntity(entity)
+    local showcases = InventoryManager.GetShowcases(character)
+    if not showcases then
+        return
+    end
+
+    for showcaseId, showcase in pairs(showcases) do
+        local origin = showcase.origin
+        if origin and (coordinate:getZ() ~= origin.z
+                or math.abs(coordinate:getX() - origin.x) > 1
+                or math.abs(coordinate:getY() - origin.y) > 1) then
+            InventoryManager.CloseShowcase(character, showcaseId)
+            Network.sendToEntity(entity, "illarion:close_showcase", { showcaseId = showcaseId })
+        end
     end
 end)
 

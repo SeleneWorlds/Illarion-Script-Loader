@@ -71,10 +71,11 @@ function m.FindShowcase(user, inventory)
     return nil, nil
 end
 
-function m.SetShowcase(user, showcaseId, inventory, token)
+function m.SetShowcase(user, showcaseId, inventory, token, origin)
     m.GetShowcases(user)[showcaseId] = {
         inventory = inventory,
-        token = token
+        token = token,
+        origin = origin
     }
 end
 
