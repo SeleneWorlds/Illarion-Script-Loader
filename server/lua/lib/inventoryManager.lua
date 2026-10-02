@@ -86,6 +86,21 @@ function m.CloseShowcase(user, showcaseId)
     return showcase
 end
 
+function m.CloseShowcasesForItem(user, item)
+    if not item or not item.content then
+        return {}
+    end
+
+    local closedShowcaseIds = {}
+    for showcaseId, showcase in pairs(m.GetShowcases(user)) do
+        if showcase.inventory.data == item.content then
+            m.CloseShowcase(user, showcaseId)
+            table.insert(closedShowcaseIds, showcaseId)
+        end
+    end
+    return closedShowcaseIds
+end
+
 function m.GetInventoryAtSlot(user, slotId)
     if slotId >= 0 and slotId <= 11 then
         return m.GetEquipment(user)

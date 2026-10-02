@@ -19,6 +19,12 @@ local function validCount(value)
     return PayloadValidation.integer(value, 1)
 end
 
+local function closeMovedContainer(character, item)
+    for _, showcaseId in ipairs(InventoryManager.CloseShowcasesForItem(character, item)) do
+        Network.sendToEntity(character.SeleneEntity, "illarion:close_showcase", { showcaseId = showcaseId })
+    end
+end
+
 local function CreateItemFromEntity(entity)
     local itemId = entity:getEntityDefinition():getMetadata("itemId")
     if itemId == nil then
@@ -73,6 +79,8 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             return true
         end,
         afterMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
+            closeMovedContainer(context.character, fromItem)
+            closeMovedContainer(context.character, toItem)
             local scriptName = fromItem.def:getField("script")
             if scriptName then
                 local status, script = pcall(require, scriptName)
@@ -279,6 +287,7 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     entityItemData[DataFields.Data] = customData
     entity:setCoordinate(x, y, z)
     entity:spawn(character.SeleneEntity:getDimension())
+    closeMovedContainer(character, item)
 
     local triggerfieldAnnotation = entity:getDimension():getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
