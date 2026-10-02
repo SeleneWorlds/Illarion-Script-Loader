@@ -14,12 +14,12 @@ local creationAttributes = {
     "intelligence", "perception", "strength", "willpower"
 }
 local raceLanguages = {
-    [0] = "humanLanguage",
-    [1] = "dwarfLanguage",
-    [2] = "halflingLanguage",
-    [3] = "elfLanguage",
-    [4] = "orcLanguage",
-    [5] = "lizardLanguage"
+    [0] = "human language",
+    [1] = "dwarf language",
+    [2] = "halfling language",
+    [3] = "elf language",
+    [4] = "orc language",
+    [5] = "lizard language"
 }
 
 local function getUserId(player)
@@ -281,7 +281,7 @@ local function starterPackData(pack)
 end
 
 local function addFullSkill(skills, skillName)
-    local definition = Registries.findByName("illarion:skills", skillName)
+    local definition = Registries.findByMetadata("illarion:skills", "name", skillName)
     local id = definition and tonumber(definition:getMetadata("id"))
     if not id then
         error("Missing character creation skill: " .. skillName)
@@ -290,7 +290,7 @@ local function addFullSkill(skills, skillName)
 end
 
 local function addLanguageSkills(skills, raceId)
-    addFullSkill(skills, "commonLanguage")
+    addFullSkill(skills, "common language")
     addFullSkill(skills, raceLanguages[raceId])
 end
 

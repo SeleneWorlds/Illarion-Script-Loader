@@ -3,6 +3,7 @@ local Players = require("selene.players")
 local Config = require("selene.config")
 local Network = require("selene.network")
 local Schedules = require("selene.schedules")
+local Logging = require("selene.logging")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
@@ -81,7 +82,11 @@ Network.handlePayload("illarion:create_character", function(player, payload)
     end
     local ok, id, creationError = pcall(CharacterCreation.create, player, data)
     if not ok then
-        Network.sendToPlayer(player, "illarion:character_creation_result", { error = "Character creation failed." })
+        local errorMessage = tostring(id)
+        Logging.error("Character creation failed: " .. errorMessage)
+        Network.sendToPlayer(player, "illarion:character_creation_result", {
+            error = "Character creation failed: " .. errorMessage
+        })
         return
     end
     if not id then
