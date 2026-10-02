@@ -125,8 +125,17 @@ local function pickup(player, payload, target)
         data = itemData[DataFields.Data] or {}
     }
     local user = Character.fromSelenePlayer(player)
-    local inventory = InventoryManager.GetBackpack(user) or InventoryManager.GetBelt(user)
-    local rest = inventory:addItem(item)
+    local rest = InventoryManager.GetBelt(user):addItem(item)
+    local backpack = InventoryManager.GetBackpack(user)
+    if rest > 0 and backpack then
+        rest = backpack:addItem({
+            def = item.def,
+            count = rest,
+            quality = item.quality,
+            wear = item.wear,
+            data = item.data
+        })
+    end
     if rest == item.count then
         return
     elseif rest > 0 then
