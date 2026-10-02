@@ -41,7 +41,6 @@ Network.handlePayload("illarion:use_at", function(player, payload)
     for i = #entities, 1, -1 do
         local entity = entities[i]
         if entity:hasTag("illarion:item") then
-
             local itemId = entity:getEntityDefinition():getMetadata("itemId")
             if itemId then
                 local item = Registries.findByMetadata("illarion:items", "id", itemId)
@@ -98,24 +97,10 @@ Network.handlePayload("illarion:use_at", function(player, payload)
         end
     end
 
-    -- Tiles can be either tiles or static items
+    -- Static items take precedence over the base tile.
     local tiles = dimension:getTilesAt(x, y, z, playerEntity:getCollisionViewer())
     for i = #tiles, 1, -1 do
         local tile = tiles[i]
-        -- If this tile has a script metadata field, we use it as a TileScript.
-        local tileScriptName = tile:getMetadata("script")
-        if tileScriptName then
-            local status, script = pcall(require, tileScriptName)
-            if status and type(script.useTile) == "function" then
-                actionData[DataFields.LastActionScript] = script
-                actionData[DataFields.LastActionFunction] = script.useTile
-                actionData[DataFields.LastActionArgs] = { illaUser, illaPos }
-                script.useTile(illaUser, illaPos)
-                return
-            end
-        end
-
-        -- If this tile has an itemId metadata field, we use it as an ItemScript.
         local itemId = tile:getMetadata("itemId")
         if itemId then
             local item = Registries.findByMetadata("illarion:items", "id", itemId)
@@ -133,6 +118,22 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                     end
                 end
             end
+            -- As with entity items, a static item without a use script still
+            -- covers the base tile.
+            return
+        end
+    end
+
+    -- With no items on top, use the base tile's TileScript.
+    local tile = tiles[1]
+    local tileScriptName = tile and tile:getMetadata("script")
+    if tileScriptName then
+        local status, script = pcall(require, tileScriptName)
+        if status and type(script.useTile) == "function" then
+            actionData[DataFields.LastActionScript] = script
+            actionData[DataFields.LastActionFunction] = script.useTile
+            actionData[DataFields.LastActionArgs] = { illaUser, illaPos }
+            script.useTile(illaUser, illaPos)
         end
     end
 end)

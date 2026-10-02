@@ -48,7 +48,8 @@ local function staticItemDefinition(player, payload)
             return Registries.findByMetadata("illarion:items", "id", itemId), tiles[i]
         end
     end
-    return nil, nil
+    -- The base tile is the use target when there are no static items above it.
+    return nil, tiles[1]
 end
 
 Network.handlePayload("illarion:request_menu_at", function(player, payload)
@@ -97,7 +98,7 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
             table.insert(actions, { id = "pickup", label = "Pick up" })
         end
         if (topItem and topItem:getField("script") and topItem:getField("script") ~= "")
-                or (tile and tile:getMetadata("script")) then
+                or (not topItem and tile and tile:getMetadata("script")) then
             table.insert(actions, { id = "use", label = "Use" })
             table.insert(actions, { id = "useWith", label = "Use with..." })
         end
