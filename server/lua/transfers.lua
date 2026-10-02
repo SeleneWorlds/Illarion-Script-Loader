@@ -71,6 +71,12 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
     if not fromInventory:hasSlot(fromSlotId) or not toInventory:hasSlot(toSlotId) then
         return
     end
+    local fromItem = fromInventory:getItem(fromSlotId)
+    local toItem = toInventory:getItem(toSlotId)
+    if (toViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(fromItem, toSlotId))
+            or (toItem and fromViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(toItem, fromSlotId)) then
+        return
+    end
     fromInventory:moveItemTo(toInventory, fromSlotId, toSlotId, count, {
         character = character,
         beforeMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
@@ -131,6 +137,9 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
 
     local item = CreateItemFromEntity(sourceEntity)
     if not item or ItemMovement.isImmovable(item.def, item.wear) then
+        return
+    end
+    if toViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(item, toSlotId) then
         return
     end
     local sourceCount = item.count

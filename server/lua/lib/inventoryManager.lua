@@ -12,6 +12,37 @@ end
 local equipmentSlotIds = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }
 local beltSlotIds = { 12, 13, 14, 15, 16, 17 }
 
+local equipmentBodyParts = {
+    [1] = 1,   -- head
+    [2] = 2,   -- neck
+    [3] = 4,   -- torso
+    [4] = 8,   -- hands
+    [7] = 32,  -- fingers
+    [8] = 32,  -- fingers
+    [9] = 64,  -- legs
+    [10] = 128, -- feet
+    [11] = 16  -- coat
+}
+
+function m.ItemFitsEquipmentSlot(item, slotId)
+    if not item or not item.def then
+        return false
+    end
+    if slotId == 0 then
+        return (tonumber(item.def:getField("containerSlots")) or 0) > 0
+    end
+    if slotId == 5 or slotId == 6 then
+        return item.def:getField("weapon") ~= nil
+    end
+
+    local requiredBodyPart = equipmentBodyParts[slotId]
+    local armor = item.def:getField("armor")
+    local bodyParts = armor and tonumber(armor.bodyParts)
+    return requiredBodyPart ~= nil
+        and bodyParts ~= nil
+        and math.floor(bodyParts / requiredBodyPart) % 2 == 1
+end
+
 function m.SerializeItem(item)
     return item and {
         visual = item.def:getField("visual"),
