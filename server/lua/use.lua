@@ -25,7 +25,8 @@ end
 
 Network.handlePayload("illarion:use_at", function(player, payload)
     local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 1)
-    if not x then
+    local counter = PayloadValidation.integer(payload.count, 1, 250)
+    if not x or not counter then
         return
     end
     local playerEntity = player:getControlledEntity()
@@ -52,8 +53,8 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                             local illaItem = Item.fromSeleneEntity(entity)
                             actionData[DataFields.LastActionScript] = script
                             actionData[DataFields.LastActionFunction] = script.UseItem
-                            actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, 1)
-                            callUseItem(script, illaUser, illaItem, 1)
+                            actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, counter)
+                            callUseItem(script, illaUser, illaItem, counter)
                             return
                         end
                     end
@@ -126,8 +127,8 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                         local illaItem = Item.fromSeleneTile(tile)
                         actionData[DataFields.LastActionScript] = script
                         actionData[DataFields.LastActionFunction] = script.UseItem
-                        actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, 1)
-                        callUseItem(script, illaUser, illaItem, 1)
+                        actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, counter)
+                        callUseItem(script, illaUser, illaItem, counter)
                         return
                     end
                 end
@@ -137,10 +138,10 @@ Network.handlePayload("illarion:use_at", function(player, payload)
 end)
 
 Network.handlePayload("illarion:use_slot", function(player, payload)
-    -- Payload is viewId, slotId
+    -- Payload is viewId, slotId, count
     local viewId = PayloadValidation.string(payload.viewId, 64)
     local slotId = PayloadValidation.integer(payload.slotId, 0)
-    local counter = payload.count == nil and 1 or PayloadValidation.integer(payload.count, 1, 250)
+    local counter = PayloadValidation.integer(payload.count, 1, 250)
     if not viewId or not slotId or not counter then
         return
     end
