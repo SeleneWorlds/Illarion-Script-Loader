@@ -1,8 +1,11 @@
 local Network = require("selene.network")
 local Schedules = require("selene.schedules")
 local Players = require("selene.players")
+local Config = require("selene.config")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
+
+local useLegacyCombat = Config.getProperty("useLegacyCombat") == "true"
 
 Network.handlePayload("illarion:set_combat_target", function(player, payload)
     local networkId = PayloadValidation.integer(payload.networkId, -1)
@@ -28,7 +31,13 @@ Schedules.setInterval(100, function()
             local user = Character.fromSelenePlayer(player)
             user.movepoints = user.movepoints + 1
             user.fightpoints = user.fightpoints + 1
-            if user.attackmode and user.fightpoints >= 0 then
+            local canAttack
+            if useLegacyCombat then
+                canAttack = user.movepoints >= 21
+            else
+                canAttack = user.fightpoints >= 0
+            end
+            if user.attackmode and canAttack then
                 CombatManager.Attack(user)
             end
         end
