@@ -117,11 +117,16 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
         error("Tried to erase unknown item id " .. itemId)
     end
     local filter = InventoryManager.ItemMatchesFilter(itemDef, data)
-    -- TODO Illarion checks backpack contents too
     local rest = InventoryManager.GetBelt(user):removeItem(filter, count)
     if rest > 0 then
         -- TODO Illarion skips backpack slot here
-        rest = InventoryManager.GetEquipment(user):removeItem(filter, count)
+        rest = InventoryManager.GetEquipment(user):removeItem(filter, rest)
+    end
+    if rest > 0 then
+        local backpack = InventoryManager.GetBackpack(user)
+        if backpack then
+            rest = backpack:removeItem(filter, rest)
+        end
     end
     return rest
 end
