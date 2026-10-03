@@ -59,7 +59,14 @@ Character.SeleneMethods.increaseMentalCapacity = function(user, amount)
 end
 
 Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
-    if attributeName == "sex" then
+    if attributeName == "racetyp" then
+        local race = user:getRace()
+        if value ~= 0 then
+            race = race + value
+            user:setRace(race)
+        end
+        return race
+    elseif attributeName == "sex" then
         local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
         local sex = charData[DataFields.Sex]
         if sex == "female" then
@@ -92,6 +99,9 @@ end
 Character.SeleneMethods.setAttrib = function(user, attributeName, value)
     if attributeName == "faceto" then
         user:turn(value)
+        return
+    elseif attributeName == "racetyp" then
+        user:setRace(value)
         return
     elseif attributeName == "sex" then
         local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
