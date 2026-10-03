@@ -107,7 +107,8 @@ function m.Spawn(monsterDef, pos)
     local entity = Entities.create(race:getIdentifier():withPrefix("races/"):withSuffix("_0"))
     m.IdCounter = m.IdCounter + 1
     local charData = entity:getRuntimeData(DataKeys.Character)
-    charData[DataFields.ID] = (m.IdCounter + Constants.MONSTER_BASE_ID) % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID)
+    charData[DataFields.ID] = Constants.MONSTER_BASE_ID
+        + (m.IdCounter % (Constants.NPC_BASE_ID - Constants.MONSTER_BASE_ID))
     charData[DataFields.CharacterType] = Character.monster
     charData[DataFields.Race] = race:getMetadata("id")
     charData[DataFields.Monster] = monsterDef
