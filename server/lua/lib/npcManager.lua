@@ -110,7 +110,6 @@ function m.Update()
         local charData = entity:getRuntimeData(DataKeys.Character)
         local npc = Character.fromSeleneEntity(entity)
         if not charData[DataFields.Dead] then
-            -- TODO run LTE
             if isActive(npc) then
                 local event = { cancel = false }
                 Events.onNpcCycle:fire(event, entity)
