@@ -19,13 +19,13 @@ end
 
 function m.AddEffect(user, effect)
     local found, existing = user.effects:find(effect.id)
+    local effectScriptName = effect.SeleneEffectDefinition:getField("script")
     if found then
         local status, effectScript = pcall(require, effectScriptName)
         if status and effectScript and type(effectScript.doubleEffect) == "function" then
             effectScript.doubleEffect(existing, user)
         end
     else
-        local effectScriptName = effect.SeleneEffectDefinition:getField("script")
         local status, effectScript = pcall(require, effectScriptName)
         local data = m.EnsureSeleneEffectData(effect)
         if status and effectScript and type(effectScript.addEffect) == "function" and not data.addEffectCalled then
