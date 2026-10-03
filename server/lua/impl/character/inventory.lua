@@ -141,6 +141,7 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
         if newQuality > 0 then
             illaItem.quality = newQuality
         end
+        inventory:slotUpdated(slotId)
     else
         inventory:setItem(slotId, {
             def = itemDef,

@@ -108,6 +108,7 @@ Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQualit
         if newQuality > 0 then
             Item.fromSeleneInventoryItem(inventoryItem).quality = newQuality
         end
+        inventory:slotUpdated(slotId)
     else
         inventory:setItem(slotId, {
             def = itemDef,
