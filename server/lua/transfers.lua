@@ -124,6 +124,33 @@ local function callMoveItemBeforeMove(character, itemDef, sourceItem, targetItem
     return true
 end
 
+Network.handlePayload("illarion:push_character", function(player, payload)
+    local target = PayloadValidation.characterInRange(player, payload.networkId, 1)
+    local x, y, z = PayloadValidation.coordinates(payload)
+    if not target or target:getType() ~= Character.player or not x then
+        return
+    end
+
+    local entity = target.SeleneEntity
+    local source = entity:getCoordinate()
+    if source:getZ() ~= z
+            or math.max(math.abs(source:getX() - x), math.abs(source:getY() - y)) ~= 1 then
+        return
+    end
+
+    local dimension = entity:getDimension()
+    local destination = position(x, y, z)
+    if not dimension or (entity:hasCollisions() and dimension:hasCollisionAt(
+        destination,
+        entity:getCollisionViewer()
+    )) then
+        return
+    end
+
+    Character.fromSelenePlayer(player):abortAction()
+    entity:setCoordinate(destination)
+end)
+
 Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
     local fromViewId, fromSlotId = validViewAndSlot(payload, "fromViewId", "fromSlotId")
     local toViewId, toSlotId = validViewAndSlot(payload, "toViewId", "toSlotId")
