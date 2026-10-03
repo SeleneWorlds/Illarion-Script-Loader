@@ -1,10 +1,9 @@
+local Entities = require("selene.entities")
+
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
-
-m.EntitiesById = {}
-m.CharactersById = {}
 
 function m.AddEntity(entity)
     local charData = entity:getRuntimeData(DataKeys.Character)
@@ -12,17 +11,7 @@ function m.AddEntity(entity)
     if id == nil then
         error("Tried to add an entity without an ID to character manager")
     end
-    m.EntitiesById[id] = entity
-    local character = Character.fromSeleneEntity(entity)
-    m.CharactersById[id] = character
-    return character
-end
-
-function m.RemoveEntity(entity)
-    local charData = entity:getRuntimeData(DataKeys.Character)
-    local id = charData[DataFields.ID]
-    m.EntitiesById[id] = nil
-    m.CharactersById[id] = nil
+    return Character.fromSeleneEntity(entity)
 end
 
 function m.IsDead(character)
@@ -55,7 +44,8 @@ function m.SetDead(character, dead)
 end
 
 function m.GetCharacterById(id)
-    return m.CharactersById[id]
+    local entity = Entities.findByRuntimeData(DataKeys.Character, DataFields.ID, id)
+    return entity and Character.fromSeleneEntity(entity) or nil
 end
 
 return m

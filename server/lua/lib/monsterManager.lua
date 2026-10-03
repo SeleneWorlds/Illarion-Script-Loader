@@ -26,7 +26,6 @@ local DIRECTIONS = {
 }
 
 m.IdCounter = 0
-m.EntitiesById = {}
 m.NewMonsters = {}
 m.UpdateTick = 0
 
@@ -120,11 +119,7 @@ end
 
 function m.Remove(entity)
     local charData = entity:getRuntimeData(DataKeys.Character)
-    local id = charData[DataFields.ID]
     local spawnName = charData[DataFields.MonsterSpawn]
-
-    m.EntitiesById[id] = nil
-    CharacterManager.RemoveEntity(entity)
 
     if spawnName then
         local MonsterSpawn = require("illarion-script-loader.server.lua.lib.monsterSpawn")
@@ -140,15 +135,14 @@ end
 
 function m.RemoveAll()
     local entities = {}
-    local seen = {}
-    for _, entity in pairs(m.EntitiesById) do
-        entities[#entities + 1] = entity
-        seen[entity] = true
-    end
-    for _, entity in pairs(m.NewMonsters) do
-        if not seen[entity] then
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.monster then
             entities[#entities + 1] = entity
         end
+    end
+    for _, entity in pairs(m.NewMonsters) do
+        entities[#entities + 1] = entity
     end
     for _, entity in ipairs(entities) do
         m.Remove(entity)
@@ -162,7 +156,6 @@ function m.Update()
     for _, entity in pairs(m.NewMonsters) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         charData[DataFields.NextRandomMoveTick] = m.UpdateTick + math.random(1, RANDOM_MOVE_INTERVAL_TICKS)
-        m.EntitiesById[charData[DataFields.ID]] = entity
         CharacterManager.AddEntity(entity)
         entity:spawn()
 
@@ -173,9 +166,9 @@ function m.Update()
     end
     m.NewMonsters = {}
 
-    for _, entity in pairs(m.EntitiesById) do
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
-        if not charData[DataFields.Dead] then
+        if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
             local routeStatus = RouteManager.Advance(monster)
             if routeStatus == "complete" or routeStatus == "blocked" then

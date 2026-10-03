@@ -14,8 +14,6 @@ local m = {}
 local ACTIVE_RANGE = 60
 
 m.IdCounter = 0
-m.EntitiesById = {}
-m.EntitiesByNpcId = {}
 m.PendingRemoval = {}
 
 local function isActive(npc)
@@ -65,8 +63,6 @@ function m.Spawn(npc)
         }
     end)
     entity:spawn()
-    m.EntitiesById[id] = entity
-    m.EntitiesByNpcId[npc:getMetadata("id")] = entity
     CharacterManager.AddEntity(entity)
 end
 
@@ -85,32 +81,30 @@ function m.SpawnDynamic(name, race, sex, pos, scriptName)
     charData[DataFields.Race] = raceId
     charData[DataFields.Sex] = sex
     entity:spawn()
-    m.EntitiesById[charData[DataFields.ID]] = entity
     CharacterManager.AddEntity(entity)
 end
 
 function m.Despawn(entity)
+    if not entity then
+        return false
+    end
     table.insert(m.PendingRemoval, entity)
+    return true
 end
 
 function m.Update()
     for _, entity in ipairs(m.PendingRemoval) do
-        local charData = entity:getRuntimeData(DataKeys.Character)
-        local npc = charData[DataFields.NPC]
-        if npc then
-            m.EntitiesByNpcId[npc:getMetadata("id")] = nil
-        end
-        m.EntitiesById[charData[DataFields.ID]] = nil
-        CharacterManager.RemoveEntity(entity)
-        entity:despawn()
+        entity:remove()
     end
     m.PendingRemoval = {}
 
-    for _, entity in pairs(m.EntitiesById) do
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
-        local npc = Character.fromSeleneEntity(entity)
-        if not charData[DataFields.Dead] then
-            if isActive(npc) then
+        if charData[DataFields.CharacterType] == Character.npc then
+            local npc = Character.fromSeleneEntity(entity)
+            if charData[DataFields.Dead] then
+                npc:increaseAttrib("hitpoints", 10000)
+            elseif isActive(npc) then
                 local event = { cancel = false }
                 Events.onNpcCycle:fire(event, entity)
 
@@ -128,8 +122,6 @@ function m.Update()
                     end
                 end
             end
-        else
-            npc:increaseAttrib("hitpoints", 10000)
         end
     end
 end

@@ -145,18 +145,16 @@ function m.Tick()
     local seenInventories = {}
 
     -- getAll returns a snapshot, so replacements can safely spawn during this pass.
-    for _, entity in ipairs(Entities.getAll()) do
-        if entity:hasTag("illarion:item") then
-            local data = entity:getRuntimeData(DataKeys.Item)
-            local itemId = entity:getEntityDefinition():getMetadata("itemId")
-            local itemDef = itemId and Registries.findByMetadata("illarion:items", "id", itemId) or nil
-            if data[DataFields.Content]
-                    and itemDef
-                    and (tonumber(itemDef:getField("containerSlots")) or 0) > 0 then
-                ageInventory(InventoryManager.GetContentsContainer(Item.fromSeleneEntity(entity)), seenInventories)
-            end
-            m.AgeFieldEntity(entity)
+    for _, entity in ipairs(Entities.findAllByTag("illarion:item")) do
+        local data = entity:getRuntimeData(DataKeys.Item)
+        local itemId = entity:getEntityDefinition():getMetadata("itemId")
+        local itemDef = itemId and Registries.findByMetadata("illarion:items", "id", itemId) or nil
+        if data[DataFields.Content]
+                and itemDef
+                and (tonumber(itemDef:getField("containerSlots")) or 0) > 0 then
+            ageInventory(InventoryManager.GetContentsContainer(Item.fromSeleneEntity(entity)), seenInventories)
         end
+        m.AgeFieldEntity(entity)
     end
 
     for _, player in ipairs(Players.getOnlinePlayers()) do

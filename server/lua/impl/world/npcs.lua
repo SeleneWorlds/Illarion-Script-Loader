@@ -1,4 +1,5 @@
 local Dimensions = require("selene.dimensions")
+local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -20,14 +21,17 @@ end
 
 world.SeleneMethods.getNPCS = function(world)
     local npcs = {}
-    for _, npc in pairs(NPCManager.EntitiesByNpcId) do
-        table.insert(npcs, NPCManager.EntitiesByNpcId)
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.npc then
+            table.insert(npcs, Character.fromSeleneEntity(entity))
+        end
     end
     return npcs
 end
 
 world.SeleneMethods.deleteNPC = function(world, npcId)
-    NPCManager.Despawn(NPCManager.EntitiesByNpcId[npcId])
+    return NPCManager.Despawn(Entities.findByRuntimeData(DataKeys.Character, DataFields.ID, npcId))
 end
 
 world.SeleneMethods.createDynamicNPC = function(world, name, raceId, pos, sex, scriptName)
