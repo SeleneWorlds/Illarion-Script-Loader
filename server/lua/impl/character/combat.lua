@@ -61,7 +61,10 @@ Character.SeleneMethods.callAttackScript = function(attacker, defender)
         or { Character.right_tool }
 
     for _, attackPosition in ipairs(attackPositions) do
-        if defender:getType() == Character.player then
+        local defenderIsPlayer = defender:getType() == Character.player
+        local defenderHitpoints = defenderIsPlayer and defender:increaseAttrib("hitpoints", 0)
+
+        if defenderIsPlayer then
             defender:disturbAction(attacker)
         end
 
@@ -72,6 +75,12 @@ Character.SeleneMethods.callAttackScript = function(attacker, defender)
             end
         else
             require("server.standardfighting").onAttack(attacker, defender)
+        end
+
+        if defenderIsPlayer
+                and defenderHitpoints ~= 1
+                and defender:increaseAttrib("hitpoints", 0) == 1 then
+            CombatManager.StopFighting(defender)
         end
 
         if CharacterManager.IsDead(defender) then

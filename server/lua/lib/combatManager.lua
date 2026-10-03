@@ -2,6 +2,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local Network = require("selene.network")
+local Entities = require("selene.entities")
 
 local m = {}
 
@@ -19,6 +20,18 @@ function m.SetAttackTarget(user, target)
     })
 
     m.Attack(user)
+end
+
+function m.StopFighting(user)
+    local targetId = user.SeleneEntity:getNetworkId()
+
+    user:stopAttack()
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local combatData = entity:getRuntimeData(DataKeys.Combat)
+        if combatData[DataFields.TargetId] == targetId then
+            Character.fromSeleneEntity(entity):stopAttack()
+        end
+    end
 end
 
 local function notifyMonsterAttacked(target, attacker)
