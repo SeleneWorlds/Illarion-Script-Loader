@@ -27,7 +27,10 @@ function m.SetDead(character, dead)
         local characterType = charData[DataFields.CharacterType]
         if characterType == Character.player then
             character:abortAction()
-            illaPlayerDeath.playerDeath(character)
+            local illaPlayerDeathStatus, illaPlayerDeath = pcall(require, "server.playerdeath")
+            if illaPlayerDeathStatus and type(illaPlayerDeath.playerDeath) == "function" then
+                illaPlayerDeath.playerDeath(character)
+            end
         elseif characterType == Character.monster then
             local scriptName = charData[DataFields.Script]
             if scriptName then
