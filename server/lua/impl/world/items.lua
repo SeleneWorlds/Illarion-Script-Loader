@@ -276,7 +276,16 @@ world.SeleneMethods.getArmorStruct = function(world, itemId)
             Type = armor.type
         }
     end
-    return false, nil
+    return false, {
+        BodyParts = 0,
+        PunctureArmor = 0,
+        StrokeArmor = 0,
+        ThrustArmor = 0,
+        MagicDisturbance = 0,
+        Absorb = 0,
+        Stiffness = 0,
+        Type = 0
+    }
 end
 
 world.SeleneMethods.getWeaponStruct = function(world, itemId)
@@ -295,7 +304,17 @@ world.SeleneMethods.getWeaponStruct = function(world, itemId)
             PoisonStrength = weapon.poison
         }
     end
-    return false, nil
+    return false, {
+        Attack = 0,
+        Defence = 0,
+        Accuracy = 0,
+        Range = 0,
+        WeaponType = 0,
+        AmmunitionType = 0,
+        ActionPoints = 0,
+        MagicDisturbance = 0,
+        PoisonStrength = 0
+    }
 end
 
 world.SeleneMethods.getItemStats = function(world, item)
