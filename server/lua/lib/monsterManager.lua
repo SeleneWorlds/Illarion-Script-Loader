@@ -25,6 +25,21 @@ local DIRECTIONS = {
     [Character.northwest] = {x = -1, y = -1}
 }
 
+local EQUIPMENT_SLOTS = {
+    backpack = Character.backpack,
+    head = Character.head,
+    neck = Character.neck,
+    breast = Character.breast,
+    hands = Character.hands,
+    ["left hand"] = Character.left_tool,
+    ["right hand"] = Character.right_tool,
+    ["left finger"] = Character.finger_left_hand,
+    ["right finger"] = Character.finger_right_hand,
+    legs = Character.legs,
+    feet = Character.feet,
+    coat = Character.coat
+}
+
 m.IdCounter = 0
 m.NewMonsters = {}
 m.UpdateTick = 0
@@ -43,6 +58,64 @@ local function getRandomDirection()
         return nil
     end
     return directions[math.random(#directions)]
+end
+
+local function randomDefinitionValue(range)
+    local minimum = tonumber(range.min) or 0
+    local maximum = tonumber(range.max) or minimum
+    return math.random(math.min(minimum, maximum), math.max(minimum, maximum))
+end
+
+local function initializeAttributes(monster, monsterDef)
+    local attributes = monsterDef:getField("attributes")
+    if attributes then
+        for name, range in pairs(attributes) do
+            monster:setAttrib(name, randomDefinitionValue(range))
+        end
+    end
+
+    monster:setAttrib("hitpoints", tonumber(monsterDef:getField("hitpoints")) or 0)
+
+    local minSize = tonumber(monsterDef:getField("minSize"))
+    local maxSize = tonumber(monsterDef:getField("maxSize")) or minSize
+    if minSize then
+        monster:setAttrib(
+            "body_height",
+            math.random(math.min(minSize, maxSize), math.max(minSize, maxSize))
+        )
+    end
+end
+
+local function initializeSkills(monster, monsterDef)
+    local skills = monsterDef:getField("skills")
+    if not skills then
+        return
+    end
+    for skillName, range in pairs(skills) do
+        local skillDef = Registries.findByName("illarion:skills", skillName)
+        local skillId = skillDef and tonumber(skillDef:getMetadata("id"))
+        if skillId then
+            monster:setSkill(skillId, randomDefinitionValue(range), 0)
+        end
+    end
+end
+
+local function initializeItems(monster, monsterDef)
+    local items = monsterDef:getField("items")
+    if not items then
+        return
+    end
+    for slotName, itemData in pairs(items) do
+        local slotId = EQUIPMENT_SLOTS[slotName]
+        local itemDef = Registries.findByName("illarion:items", itemData.item)
+        if slotId ~= nil and itemDef then
+            local count = randomDefinitionValue({
+                min = itemData.minCount or 1,
+                max = itemData.maxCount or itemData.minCount or 1
+            })
+            monster:createAtPos(slotId, tonumber(itemDef:getMetadata("id")), count)
+        end
+    end
 end
 
 local function keepDirectionInsideSpawn(monster, direction, spawn)
@@ -113,8 +186,12 @@ function m.Spawn(monsterDef, pos)
     charData[DataFields.Monster] = monsterDef
     charData[DataFields.Script] = monsterDef:getField("script")
     entity:setCoordinate(pos)
+    local monster = Character.fromSeleneEntity(entity)
+    initializeAttributes(monster, monsterDef)
+    initializeSkills(monster, monsterDef)
+    initializeItems(monster, monsterDef)
     table.insert(m.NewMonsters, entity)
-    return Character.fromSeleneEntity(entity)
+    return monster
 end
 
 function m.Remove(entity)
