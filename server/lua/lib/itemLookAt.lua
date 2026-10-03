@@ -1,7 +1,9 @@
 local illaItemLookAtOk, illaItemLookAt = pcall(require, "server.itemlookat")
+local Config = require("selene.config")
 local I18n = require("selene.i18n")
 
 local m = {}
+local useLegacyLookAt = Config.getProperty("useLegacyLookAt") == "true"
 
 function m.Get(character, itemDef, item)
     local result = nil
@@ -10,6 +12,11 @@ function m.Get(character, itemDef, item)
         local status, script = pcall(require, scriptName)
         if status and type(script.LookAtItem) == "function" then
             result = script.LookAtItem(character, item)
+            if useLegacyLookAt then
+                -- Legacy implementations send their tooltip through
+                -- world:itemInform and intentionally return nil.
+                return result
+            end
         end
     end
     if not result and illaItemLookAtOk then

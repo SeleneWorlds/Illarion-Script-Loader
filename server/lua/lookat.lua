@@ -26,10 +26,12 @@ Network.handlePayload("illarion:look_at", function(player, payload)
                 error("Unknown item id " .. itemId .. " at " .. tile:getCoordinate())
             end
             local result = ItemLookAt.Get(Character.fromSelenePlayer(player), itemDef, Item.fromSeleneTile(tile))
-            Network.sendToPlayer(player, "illarion:look_at", {
-                x = x, y = y, z = z,
-                tooltip = result
-            })
+            if result then
+                Network.sendToPlayer(player, "illarion:look_at", {
+                    x = x, y = y, z = z,
+                    tooltip = result
+                })
+            end
             return
         elseif tile:hasTag("illarion:tile") then
             local name = I18n.get("tiles." .. stringx.substringAfter(tile:getName(), "illarion:"), player:getLocale()) or tile:getName()
@@ -59,10 +61,13 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
                 if not itemDef then
                     error("Unknown item id " .. itemId .. " on entity " .. entity:getName())
                 end
-                Network.sendToPlayer(player, "illarion:look_at_entity", {
-                    networkId = entity:getNetworkId(),
-                    tooltip = ItemLookAt.Get(character, itemDef, Item.fromSeleneEntity(entity))
-                })
+                local result = ItemLookAt.Get(character, itemDef, Item.fromSeleneEntity(entity))
+                if result then
+                    Network.sendToPlayer(player, "illarion:look_at_entity", {
+                        networkId = entity:getNetworkId(),
+                        tooltip = result
+                    })
+                end
             end
             return
         end
@@ -126,9 +131,12 @@ Network.handlePayload("illarion:look_at_slot", function(player, payload)
     end
 
     local item = inventoryItem:getItem()
-    Network.sendToPlayer(player, "illarion:look_at_slot", {
-        viewId = viewId,
-        slotId = slotId,
-        tooltip = ItemLookAt.Get(character, item.def, Item.fromSeleneInventoryItem(inventoryItem))
-    })
+    local result = ItemLookAt.Get(character, item.def, Item.fromSeleneInventoryItem(inventoryItem))
+    if result then
+        Network.sendToPlayer(player, "illarion:look_at_slot", {
+            viewId = viewId,
+            slotId = slotId,
+            tooltip = result
+        })
+    end
 end)

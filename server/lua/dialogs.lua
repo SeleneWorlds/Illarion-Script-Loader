@@ -125,12 +125,15 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
         }
     }, Item.SeleneMetatable)
 
-    Network.sendToPlayer(player, "illarion:look_at_menu_item", {
-        id = id,
-        slotIndex = slotIndex,
-        itemId = entry.id,
-        tooltip = ItemLookAt.Get(character, itemDef, item)
-    })
+    local result = ItemLookAt.Get(character, itemDef, item)
+    if result then
+        Network.sendToPlayer(player, "illarion:look_at_menu_item", {
+            id = id,
+            slotIndex = slotIndex,
+            itemId = entry.id,
+            tooltip = result
+        })
+    end
 end)
 
 Network.handlePayload("illarion:merchant_dialog:abort", function(player, payload)
