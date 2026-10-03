@@ -7,13 +7,20 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 
 local m = {}
+
+local ACTIVE_RANGE = 60
 
 m.IdCounter = 0
 m.EntitiesById = {}
 m.EntitiesByNpcId = {}
 m.PendingRemoval = {}
+
+local function isActive(npc)
+    return npc:getOnRoute() or #world:getPlayersInRangeOf(npc.pos, ACTIVE_RANGE) > 0
+end
 
 function m.Spawn(npc)
     local entity = Entities.create(npc:getField("entity"))
@@ -104,18 +111,22 @@ function m.Update()
         local npc = Character.fromSeleneEntity(entity)
         if not charData[DataFields.Dead] then
             -- TODO run LTE
-            -- TODO skip if no player nearby and not on route
-            local status, script = pcall(require, charData[DataFields.Script])
-            if status and type(script.nextCycle) == "function" then
-                thisNPC = npc
-                script.nextCycle(npc)
-            end
+            if isActive(npc) then
+                local event = { cancel = false }
+                Events.onNpcCycle:fire(event, entity)
 
-            local routeStatus = RouteManager.Advance(npc)
-            if routeStatus == "complete" or routeStatus == "blocked" then
-                npc:setOnRoute(false)
-                if status and type(script.abortRoute) == "function" then
-                    script.abortRoute()
+                local status, script = pcall(require, charData[DataFields.Script])
+                if not event.cancel and status and type(script.nextCycle) == "function" then
+                    thisNPC = npc
+                    script.nextCycle(npc)
+                end
+
+                local routeStatus = RouteManager.Advance(npc)
+                if routeStatus == "complete" or routeStatus == "blocked" then
+                    npc:setOnRoute(false)
+                    if status and type(script.abortRoute) == "function" then
+                        script.abortRoute()
+                    end
                 end
             end
         else
