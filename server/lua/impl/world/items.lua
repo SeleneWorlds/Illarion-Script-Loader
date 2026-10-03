@@ -333,7 +333,7 @@ world.SeleneMethods.itemInform = function(world, user, item, text)
         payload.x = coordinate.x
         payload.y = coordinate.y
         payload.z = coordinate.z
-        Network.sendToEntity(user.SeleneEntity, "illarion:look_at_coordinate", payload)
+        Network.sendToEntity(user.SeleneEntity, "illarion:look_at", payload)
     elseif item.SeleneInventoryItem then
         local itemType = item:getType()
         local viewId = itemType == scriptItem.belt and "belt" or itemType == scriptItem.inventory and "equipment" or nil
