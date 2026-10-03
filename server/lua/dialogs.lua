@@ -116,6 +116,11 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
     end
 
     local item = setmetatable({
+        SeleneMenuItem = {
+            dialogId = id,
+            slotIndex = slotIndex,
+            itemId = entry.id
+        },
         SeleneItem = {
             def = itemDef,
             count = 1,

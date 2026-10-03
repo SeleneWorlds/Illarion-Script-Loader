@@ -325,7 +325,12 @@ world.SeleneMethods.itemInform = function(world, user, item, text)
         }
     }
 
-    if item.SeleneEntity then
+    if item.SeleneMenuItem then
+        payload.id = item.SeleneMenuItem.dialogId
+        payload.slotIndex = item.SeleneMenuItem.slotIndex
+        payload.itemId = item.SeleneMenuItem.itemId
+        Network.sendToEntity(user.SeleneEntity, "illarion:look_at_menu_item", payload)
+    elseif item.SeleneEntity then
         payload.networkId = item.SeleneEntity:getNetworkId()
         Network.sendToEntity(user.SeleneEntity, "illarion:look_at_entity", payload)
     elseif item.SeleneTile then
