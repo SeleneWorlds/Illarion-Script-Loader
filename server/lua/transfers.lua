@@ -53,6 +53,77 @@ local function CreateItemFromEntity(entity)
     }
 end
 
+local function CreateItemSnapshot(item)
+    local data = {}
+    local sourceData = item.customData
+    if not sourceData and item.SeleneEntity then
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        sourceData = itemData and itemData[DataFields.Data]
+    elseif not sourceData and item.SeleneItem then
+        sourceData = item.SeleneItem.data
+    end
+    if sourceData and type(sourceData) ~= "table" then
+        sourceData = sourceData:toTable()
+    end
+    for key, value in pairs(sourceData or {}) do
+        data[key] = value
+    end
+
+    local result = {
+        id = item.id,
+        pos = item.pos,
+        owner = item.owner,
+        itempos = item.itempos,
+        inside = item.inside,
+        number = item.number,
+        quality = item.quality,
+        wear = item.wear,
+        durability = item.durability,
+        isLarge = item.isLarge,
+        data = item.data,
+        customData = data
+    }
+    local itemType = item:getType()
+    result.getType = function()
+        return itemType
+    end
+    result.getData = function(self, key)
+        return self.customData[key] or ""
+    end
+    result.setData = function(self, key, value)
+        self.customData[key] = value ~= nil and tostring(value) or nil
+        if key == "data" then
+            self.data = tonumber(value) or 0
+        end
+    end
+    return result
+end
+
+local function callMoveItemAfterMove(character, itemDef, sourceItem, targetItem)
+    local scriptName = itemDef:getField("script")
+    if not scriptName then
+        return
+    end
+
+    local status, script = pcall(require, scriptName)
+    if status and type(script.MoveItemAfterMove) == "function" then
+        script.MoveItemAfterMove(character, sourceItem, targetItem)
+    end
+end
+
+local function callMoveItemBeforeMove(character, itemDef, sourceItem, targetItem)
+    local scriptName = itemDef:getField("script")
+    if not scriptName then
+        return true
+    end
+
+    local status, script = pcall(require, scriptName)
+    if status and type(script.MoveItemBeforeMove) == "function" then
+        return script.MoveItemBeforeMove(character, sourceItem, targetItem)
+    end
+    return true
+end
+
 Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
     local fromViewId, fromSlotId = validViewAndSlot(payload, "fromViewId", "fromSlotId")
     local toViewId, toSlotId = validViewAndSlot(payload, "toViewId", "toSlotId")
@@ -77,16 +148,28 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             or (toItem and fromViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(toItem, fromSlotId)) then
         return
     end
+    local sourceSnapshot
     fromInventory:moveItemTo(toInventory, fromSlotId, toSlotId, count, {
         character = character,
         beforeMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
+            local movedItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, fromItem))
+            sourceSnapshot = CreateItemSnapshot(movedItem)
+            local targetItem = CreateItemSnapshot(movedItem)
+            targetItem.pos = toInventory.owner.pos
+            targetItem.owner = toInventory.owner
+            targetItem.itempos = toSlotId
+            targetItem.inside = toInventory.isContainer and Container.fromSeleneInventory(toInventory) or nil
+            targetItem.getType = function()
+                if toInventory.isContainer then
+                    return scriptItem.container
+                end
+                return toSlotId < 12 and scriptItem.inventory or scriptItem.belt
+            end
             local scriptName = fromItem.def:getField("script")
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.MoveItemBeforeMove) == "function" then
-                    local sourceItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, fromItem))
-                    local targetItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(toInventory, toSlotId, toItem))
-                    return script.MoveItemBeforeMove(context.character, sourceItem, targetItem)
+                    return script.MoveItemBeforeMove(context.character, movedItem, targetItem)
                 end
             end
             return true
@@ -98,9 +181,8 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             if scriptName then
                 local status, script = pcall(require, scriptName)
                 if status and type(script.MoveItemAfterMove) == "function" then
-                    local sourceItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, fromItem))
-                    local targetItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(toInventory, toSlotId, toItem))
-                    script.MoveItemAfterMove(context.character, sourceItem, targetItem)
+                    local targetItem = Item.fromSeleneInventoryItem(toInventory:getInventoryItem(toSlotId))
+                    script.MoveItemAfterMove(context.character, sourceSnapshot, targetItem)
                 end
             end
         end
@@ -142,6 +224,28 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     if toViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(item, toSlotId) then
         return
     end
+    local sourceSnapshot = CreateItemSnapshot(Item.fromSeleneEntity(sourceEntity))
+    sourceSnapshot.pos = position(fromX, fromY, fromZ)
+    sourceSnapshot.owner = character
+    local targetScriptItem = CreateItemSnapshot(sourceSnapshot)
+    targetScriptItem.pos = targetInventory.owner.pos
+    targetScriptItem.owner = targetInventory.owner
+    targetScriptItem.itempos = toSlotId
+    targetScriptItem.inside = targetInventory.isContainer and Container.fromSeleneInventory(targetInventory) or nil
+    targetScriptItem.getType = function()
+        if targetInventory.isContainer then
+            return scriptItem.container
+        end
+        return toSlotId < 12 and scriptItem.inventory or scriptItem.belt
+    end
+    if not callMoveItemBeforeMove(
+        character,
+        item.def,
+        Item.fromSeleneEntity(sourceEntity),
+        targetScriptItem
+    ) then
+        return
+    end
     local sourceCount = item.count
     local count = math.min(sourceCount, requestedCount)
     item.count = count
@@ -169,6 +273,13 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
         end
         sourceEntity:despawn()
     end
+
+    callMoveItemAfterMove(
+        character,
+        item.def,
+        sourceSnapshot,
+        Item.fromSeleneInventoryItem(targetInventory:getInventoryItem(toSlotId))
+    )
 end)
 
 Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player, payload)
@@ -214,28 +325,46 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         return
     end
 
+    local sourceSnapshot = CreateItemSnapshot(Item.fromSeleneEntity(sourceEntity))
+    sourceSnapshot.pos = position.FromSeleneCoordinate(sourceCoordinate)
+    sourceSnapshot.owner = character
     local itemData = sourceEntity:getRuntimeData(DataKeys.Item)
     local sourceCount = itemData[DataFields.Count] or 1
     local count = math.min(sourceCount, requestedCount)
-    local movedEntity = sourceEntity
+    local movedEntity = Entities.create(sourceEntity:getEntityDefinition())
+    local movedItemData = movedEntity:getRuntimeData(DataKeys.Item)
+    movedItemData[DataFields.Count] = count
+    movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
+    movedItemData[DataFields.Wear] = itemData[DataFields.Wear]
+    movedItemData[DataFields.Data] = itemData[DataFields.Data] or {}
+    movedItemData[DataFields.Content] = itemData[DataFields.Content]
+    movedEntity:setCoordinate(toX, toY, toZ)
+    local targetScriptItem = CreateItemSnapshot(Item.fromSeleneEntity(movedEntity))
+    targetScriptItem.owner = character
+    if not callMoveItemBeforeMove(
+        character,
+        sourceItem.def,
+        Item.fromSeleneEntity(sourceEntity),
+        targetScriptItem
+    ) then
+        return
+    end
 
     if count < sourceCount then
         itemData[DataFields.Count] = sourceCount - count
         sourceEntity:updateVisuals()
-
-        movedEntity = Entities.create(sourceEntity:getEntityDefinition())
-        local movedItemData = movedEntity:getRuntimeData(DataKeys.Item)
-        movedItemData[DataFields.Count] = count
-        movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
-        movedItemData[DataFields.Wear] = itemData[DataFields.Wear]
-        movedItemData[DataFields.Data] = itemData[DataFields.Data] or {}
-        movedItemData[DataFields.Content] = itemData[DataFields.Content]
-        movedEntity:setCoordinate(toX, toY, toZ)
-        movedEntity:spawn(dimension)
     else
-        sourceEntity:setCoordinate(toX, toY, toZ)
+        sourceEntity:despawn()
     end
+    movedEntity:spawn(dimension)
     closeWorldContainer(sourceItem)
+
+    callMoveItemAfterMove(
+        character,
+        sourceItem.def,
+        sourceSnapshot,
+        Item.fromSeleneEntity(movedEntity)
+    )
 
     local targetCoordinate = movedEntity:getCoordinate()
 
@@ -288,15 +417,12 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
         error("Unknown item entity for item id " .. tostring(itemId))
     end
 
+    local dimension = character.SeleneEntity:getDimension()
+    local sourceSnapshot = CreateItemSnapshot(
+        Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, item))
+    )
     local sourceCount = fromInventory:getItemCount(item)
     local count = math.min(sourceCount, requestedCount)
-    if count == sourceCount then
-        fromInventory:setItem(fromSlotId, nil)
-    else
-        fromInventory:setItemCount(item, sourceCount - count)
-        fromInventory:slotUpdated(fromSlotId)
-    end
-
     local entity = Entities.create(entityType)
     local entityItemData = entity:getRuntimeData(DataKeys.Item)
     local customData = item.data or {}
@@ -306,8 +432,33 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     entityItemData[DataFields.Data] = customData
     entityItemData[DataFields.Content] = item.content
     entity:setCoordinate(x, y, z)
-    entity:spawn(character.SeleneEntity:getDimension())
+    local targetScriptItem = CreateItemSnapshot(Item.fromSeleneEntity(entity))
+    targetScriptItem.owner = character
+    if not callMoveItemBeforeMove(
+        character,
+        item.def,
+        Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, item)),
+        targetScriptItem
+    ) then
+        return
+    end
+
+    if count == sourceCount then
+        fromInventory:setItem(fromSlotId, nil)
+    else
+        fromInventory:setItemCount(item, sourceCount - count)
+        fromInventory:slotUpdated(fromSlotId)
+    end
+
+    entity:spawn(dimension)
     closeMovedContainer(character, item)
+
+    callMoveItemAfterMove(
+        character,
+        item.def,
+        sourceSnapshot,
+        Item.fromSeleneEntity(entity)
+    )
 
     local triggerfieldAnnotation = entity:getDimension():getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
