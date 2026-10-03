@@ -44,9 +44,9 @@ function m.GetAttribute(user, attributeName)
             attribute:addModifier("clamp", Attributes.clampFilter(0, 255))
             attribute:addConstraint("clamp", Attributes.clampFilter(0, 255))
         elseif attributeName == "actionpoints" then
-            attribute:addConstraint("clamp", Attributes.clampFilter(0, 21))
+            attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
         elseif attributeName == "fightpoints" then
-            attribute:addConstraint("clamp", Attributes.clampFilter(0, 0))
+            attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
         end
     end
     return attribute
