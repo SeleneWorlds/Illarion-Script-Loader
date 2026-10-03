@@ -36,6 +36,9 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
         range = 30
     end
     local dimension = user.SeleneEntity:getDimension()
+    if not dimension then
+        return
+    end
     local entities = dimension:getEntitiesInRange(userEntity:getCoordinate(), range)
     local nonPlayerListeners = {}
     for _, entity in ipairs(entities) do
