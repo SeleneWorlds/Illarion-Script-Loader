@@ -78,6 +78,20 @@ function m.Despawn(entity)
     return true
 end
 
+function m.RemoveAll()
+    local entities = {}
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.npc then
+            entities[#entities + 1] = entity
+        end
+    end
+    for _, entity in ipairs(entities) do
+        entity:remove()
+    end
+    m.PendingRemoval = {}
+end
+
 function m.Update()
     for _, entity in ipairs(m.PendingRemoval) do
         entity:remove()

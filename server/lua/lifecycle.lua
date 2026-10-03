@@ -11,6 +11,7 @@ local CharacterCreation = require("illarion-script-loader.server.lua.lib.charact
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
 local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
+local NPCManager = require("illarion-script-loader.server.lua.lib.npcManager")
 local MagicManager = require("illarion-script-loader.server.lua.lib.magicManager")
 
 local common = require("base.common")
@@ -145,6 +146,7 @@ end)
 
 Server.bundleUnloading:connect(function()
     MonsterManager.RemoveAll()
+    NPCManager.RemoveAll()
 end)
 
 Server.serverReloaded:connect(function()
