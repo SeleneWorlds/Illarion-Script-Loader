@@ -23,6 +23,9 @@ function m.SetDead(character, dead)
     local wasDead = m.IsDead(character)
     local charData = character.SeleneEntity:getRuntimeData(DataKeys.Character)
     charData[DataFields.Dead] = dead
+    if wasDead ~= dead then
+        character.SeleneEntity:updateVisuals()
+    end
     if not wasDead and dead then
         local characterType = charData[DataFields.CharacterType]
         if characterType == Character.player then

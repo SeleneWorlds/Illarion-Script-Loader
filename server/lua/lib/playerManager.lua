@@ -150,6 +150,7 @@ function m.Spawn(player, selectedCharacter)
     for name, value in pairs(scalarAttributes) do
         AttributeManager.GetAttribute(character, name):setValue(value)
     end
+    character:setRace(selectedCharacter.race)
 
     local persistedAttributes = entity:getRuntimeData(DataKeys.PersistedAttributes)
     for _, name in ipairs({
