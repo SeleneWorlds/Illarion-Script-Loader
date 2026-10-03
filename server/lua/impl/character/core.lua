@@ -27,10 +27,13 @@ Character.SeleneMethods.setRace = function(user, raceId)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
     charData[DataFields.Race] = raceId
     local sex = user:increaseAttrib("sex", 0)
-    user.SeleneEntity:addComponent("illarion:body", {
-        type = "visual",
-        visual = "illarion:race_" .. raceId .. "_" .. sex
-    })
+    user.SeleneEntity:addDynamicComponent("illarion:visual", function()
+        return {
+            type = "visual",
+            visual = "illarion:races/race_" .. raceId .. "_" .. sex
+        }
+    end)
+    user.SeleneEntity:updateVisuals()
 end
 
 Character.SeleneMethods.introduce = function(user, other)
