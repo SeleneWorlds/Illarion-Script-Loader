@@ -188,7 +188,7 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
         })
     elseif action == "use" or action == "useWith" then
         Network.sendToPlayer(player, "illarion:perform_menu_action", {
-            action = "use", x = payload.x, y = payload.y, z = payload.z
+            action = action, x = payload.x, y = payload.y, z = payload.z
         })
     elseif action == "pickup" and target then
         pickup(player, payload, target)
