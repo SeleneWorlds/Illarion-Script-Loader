@@ -329,6 +329,9 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     if not dimension then
         return
     end
+    if dimension:hasCollisionAt(toX, toY, toZ) then
+        return
+    end
 
     local sourceEntity = nil
     local sourceEntities = dimension:getEntitiesAt(
@@ -452,6 +455,9 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     end
 
     local dimension = character.SeleneEntity:getDimension()
+    if not dimension or dimension:hasCollisionAt(x, y, z) then
+        return
+    end
     local sourceSnapshot = CreateItemSnapshot(
         Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, item))
     )
