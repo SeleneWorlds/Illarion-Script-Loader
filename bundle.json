@@ -61,6 +61,7 @@
     "server/lua/transfers.lua",
     "server/lua/time_sync.lua",
     "server/lua/weather_sync.lua",
+    "server/lua/environment.lua",
     "server/lua/lifecycle.lua"
   ]
 }

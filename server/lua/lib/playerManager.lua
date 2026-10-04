@@ -118,6 +118,29 @@ function m.Spawn(player, selectedCharacter)
     end)
 
     local equipment = InventoryManager.GetEquipment(character)
+    local belt = InventoryManager.GetBelt(character)
+    entity:addDynamicComponent("illarion:light", function()
+        local brightness = 0
+        for _, slotId in ipairs({ 5, 6, 12, 13, 14, 15, 16, 17 }) do
+            local inventory = slotId < 12 and equipment or belt
+            local item = inventory:getItem(slotId)
+            if item then
+                brightness = math.max(brightness, tonumber(item.def:getField("brightness")) or 0)
+            end
+        end
+        if brightness <= 0 then
+            return nil
+        end
+        return {
+            type = "light",
+            radius = brightness,
+            intensity = 1,
+            red = 1,
+            green = 0.8,
+            blue = 0.55
+        }
+    end)
+
     equipment:subscribe(function(data)
         local slotId = data.dirtySlot
         if slotId then
@@ -127,9 +150,11 @@ function m.Spawn(player, selectedCharacter)
                 slotId = slotId,
                 item = InventoryManager.SerializeItem(item)
             })
+            if slotId == 5 or slotId == 6 then
+                entity:updateVisuals()
+            end
         end
     end)
-    local belt = InventoryManager.GetBelt(character)
     belt:subscribe(function(data)
         local slotId = data.dirtySlot
         if slotId then
@@ -139,10 +164,12 @@ function m.Spawn(player, selectedCharacter)
                 slotId = slotId,
                 item = InventoryManager.SerializeItem(item)
             })
+            entity:updateVisuals()
         end
     end)
 
     CharacterPersistence.restoreCollections(character, selectedCharacter)
+    entity:updateVisuals()
 
     local scalarAttributes = {
         age = selectedCharacter.age,
