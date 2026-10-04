@@ -1,6 +1,6 @@
-local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Sounds = require("selene.sounds")
+local Timelines = require("selene.timelines")
 
 world.SeleneMethods.gfx = function(world, gfxId, pos)
     gfxId = assert(tonumber(gfxId), "gfxId must be a number, was " .. tostring(gfxId))
@@ -10,9 +10,7 @@ world.SeleneMethods.gfx = function(world, gfxId, pos)
         return
     end
 
-    local entity = Entities.createTransient(entityType)
-    entity:setCoordinate(pos)
-    entity:spawn()
+    Timelines.playAt(pos.x, pos.y, pos.z, "illarion:gfx/gfx_" .. gfxId)
 end
 
 world.SeleneMethods.makeSound = function(world, soundId, pos)
