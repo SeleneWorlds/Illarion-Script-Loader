@@ -3,14 +3,11 @@ local Players = require("selene.players")
 local Schedules = require("selene.schedules")
 
 local PAYLOAD_ID = "illarion:time"
-local TIME_FACTOR = 3
-local RESYNC_INTERVAL_MS = 60 * 1000
+local RESYNC_INTERVAL_MS = 20 * 1000
 
 local function createTimePayload()
     local month = world:getTime("month")
     return {
-        illarionTime = world:getTime("illarion"),
-        timeFactor = TIME_FACTOR,
         year = world:getTime("year"),
         month = month,
         day = world:getTime("day"),
