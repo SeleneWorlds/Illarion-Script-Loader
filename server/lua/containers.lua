@@ -77,7 +77,7 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
     character:abortAction()
     local playerEntity = player:getControlledEntity()
     local dimension = playerEntity:getDimension()
-    local entities = dimension:getEntitiesAt(x, y, z, playerEntity:getCollisionViewer())
+    local entities = dimension:getEntitiesAt(x, y, z, playerEntity:getInteractionViewer())
     for i = #entities, 1, -1 do
         local entity = entities[i]
         if entity:hasTag("illarion:item") then
@@ -88,7 +88,7 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
             end
         end
     end
-    local tiles = dimension:getTilesAt(x, y, z, playerEntity:getCollisionViewer())
+    local tiles = dimension:getTilesAt(x, y, z, playerEntity:getInteractionViewer())
     for i = #tiles, 1, -1 do
         local tile = tiles[i]
         local itemId = tile:getMetadata("itemId")

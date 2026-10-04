@@ -30,7 +30,7 @@ local function resolveCast(character, player, payload, script)
         local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
         if x then
             local playerEntity = player:getControlledEntity()
-            local tiles = playerEntity:getDimension():getTilesAt(x, y, z, playerEntity:getCollisionViewer())
+            local tiles = playerEntity:getDimension():getTilesAt(x, y, z, playerEntity:getInteractionViewer())
             if type(script.CastMagicOnItem) == "function" then
                 for index = #tiles, 1, -1 do
                     if tiles[index]:getMetadata("itemId") then

@@ -142,7 +142,7 @@ Network.handlePayload("illarion:push_character", function(player, payload)
     local destination = position(x, y, z)
     if not dimension or (entity:hasCollisions() and dimension:hasCollisionAt(
         destination,
-        entity:getCollisionViewer()
+        entity:getInteractionViewer()
     )) then
         return
     end
@@ -238,7 +238,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     end
 
     local sourceEntity = nil
-    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(fromX, fromY, fromZ, character.SeleneEntity:getCollisionViewer())
+    local sourceEntities = character.SeleneEntity:getDimension():getEntitiesAt(fromX, fromY, fromZ, character.SeleneEntity:getInteractionViewer())
     for i = #sourceEntities, 1, -1 do
         local entity = sourceEntities[i]
         if entity:hasTag("illarion:item") then
@@ -333,7 +333,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     local sourceEntity = nil
     local sourceEntities = dimension:getEntitiesAt(
         fromX, fromY, fromZ,
-        character.SeleneEntity:getCollisionViewer()
+        character.SeleneEntity:getInteractionViewer()
     )
     for i = #sourceEntities, 1, -1 do
         local entity = sourceEntities[i]
