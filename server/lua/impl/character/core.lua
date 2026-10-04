@@ -23,8 +23,9 @@ end
 Character.SeleneMethods.get_race = Character.SeleneMethods.getRace
 
 Character.SeleneMethods.setRace = function(user, raceId)
+    raceId = assert(tonumber(raceId), "raceId must be a number, was " .. tostring(raceId))
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
-    charData[DataFields.Race] = raceId
+    charData[DataFields.Race] = tonumber(raceId) or 0
     user.SeleneEntity:updateVisuals()
 end
 
