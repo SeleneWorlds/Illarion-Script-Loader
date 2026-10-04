@@ -8,17 +8,17 @@ local Events = require("illarion-script-loader.server.lua.lib.events")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
-local function callUseItem(script, user, item, counter)
+local function callUseItem(script, user, item, targetItem, counter)
     if Config.getProperty("useLegacyUseItem") == "true" then
-        script.UseItem(user, item, Item.fromSeleneEmpty(), counter, 0, Action.none)
+        script.UseItem(user, item, targetItem, counter, 0, Action.none)
     else
         script.UseItem(user, item, Action.none)
     end
 end
 
-local function getUseItemArgs(user, item, counter)
+local function getUseItemArgs(user, item, targetItem, counter)
     if Config.getProperty("useLegacyUseItem") == "true" then
-        return { user, item, Item.fromSeleneEmpty(), counter, 0 }
+        return { user, item, targetItem, counter, 0 }
     end
     return { user, item }
 end
@@ -52,8 +52,9 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                             local illaItem = Item.fromSeleneEntity(entity)
                             actionData[DataFields.LastActionScript] = script
                             actionData[DataFields.LastActionFunction] = script.UseItem
-                            actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, counter)
-                            callUseItem(script, illaUser, illaItem, counter)
+                            local targetItem = Item.fromSeleneEmpty()
+                            actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, targetItem, counter)
+                            callUseItem(script, illaUser, illaItem, targetItem, counter)
                             return
                         end
                     end
@@ -112,8 +113,9 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                         local illaItem = Item.fromSeleneTile(tile)
                         actionData[DataFields.LastActionScript] = script
                         actionData[DataFields.LastActionFunction] = script.UseItem
-                        actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, counter)
-                        callUseItem(script, illaUser, illaItem, counter)
+                        local targetItem = Item.fromSeleneEmpty()
+                        actionData[DataFields.LastActionArgs] = getUseItemArgs(illaUser, illaItem, targetItem, counter)
+                        callUseItem(script, illaUser, illaItem, targetItem, counter)
                         return
                     end
                 end
@@ -139,7 +141,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
 end)
 
 Network.handlePayload("illarion:use_slot", function(player, payload)
-    -- Payload is viewId, slotId, count
+    -- Payload is viewId, slotId, optional targetViewId and targetSlotId, count
     local viewId = PayloadValidation.string(payload.viewId, 64)
     local slotId = PayloadValidation.integer(payload.slotId, 0)
     local counter = PayloadValidation.integer(payload.count, 1, 250)
@@ -156,6 +158,23 @@ Network.handlePayload("illarion:use_slot", function(player, payload)
 
     local inventoryItem = inventory:getInventoryItem(slotId)
     if inventoryItem then
+        local targetItem = Item.fromSeleneEmpty()
+        if payload.targetViewId ~= nil or payload.targetSlotId ~= nil then
+            local targetViewId = PayloadValidation.string(payload.targetViewId, 64)
+            local targetSlotId = PayloadValidation.integer(payload.targetSlotId, 0)
+            if not targetViewId or not targetSlotId then
+                return
+            end
+            local targetInventory = InventoryManager.GetInventoryAtView(character, targetViewId)
+            if not targetInventory then
+                return
+            end
+            local targetInventoryItem = targetInventory:getInventoryItem(targetSlotId)
+            if not targetInventoryItem then
+                return
+            end
+            targetItem = Item.fromSeleneInventoryItem(targetInventoryItem)
+        end
         local scriptName = inventoryItem:getItem().def:getField("script")
         if scriptName then
             local status, script = pcall(require, scriptName)
@@ -163,8 +182,8 @@ Network.handlePayload("illarion:use_slot", function(player, payload)
                 local item = Item.fromSeleneInventoryItem(inventoryItem)
                 actionData[DataFields.LastActionScript] = script
                 actionData[DataFields.LastActionFunction] = script.UseItem
-                actionData[DataFields.LastActionArgs] = getUseItemArgs(character, item, counter)
-                callUseItem(script, character, item, counter)
+                actionData[DataFields.LastActionArgs] = getUseItemArgs(character, item, targetItem, counter)
+                callUseItem(script, character, item, targetItem, counter)
             end
         end
     end
