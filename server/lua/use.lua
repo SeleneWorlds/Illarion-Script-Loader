@@ -188,3 +188,43 @@ Network.handlePayload("illarion:use_slot", function(player, payload)
         end
     end
 end)
+
+Network.handlePayload("illarion:use_slot_at", function(player, payload)
+    local viewId = PayloadValidation.string(payload.viewId, 64)
+    local slotId = PayloadValidation.integer(payload.slotId, 0)
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 1)
+    local counter = PayloadValidation.integer(payload.count, 1, 250)
+    if not viewId or not slotId or not x or not counter then
+        return
+    end
+
+    local character = Character.fromSelenePlayer(player)
+    character:abortAction()
+    local inventory = InventoryManager.GetInventoryAtView(character, viewId)
+    if not inventory then
+        return
+    end
+
+    local inventoryItem = inventory:getInventoryItem(slotId)
+    if not inventoryItem then
+        return
+    end
+
+    local scriptName = inventoryItem:getItem().def:getField("script")
+    if not scriptName then
+        return
+    end
+
+    local status, script = pcall(require, scriptName)
+    if not status or type(script.UseItemWithField) ~= "function" then
+        return
+    end
+
+    local item = Item.fromSeleneInventoryItem(inventoryItem)
+    local targetPosition = position(x, y, z)
+    local actionData = character.SeleneEntity:getRuntimeData(DataKeys.LastAction)
+    actionData[DataFields.LastActionScript] = script
+    actionData[DataFields.LastActionFunction] = script.UseItemWithField
+    actionData[DataFields.LastActionArgs] = { character, item, targetPosition, counter, 0 }
+    script.UseItemWithField(character, item, targetPosition, counter, 0, Action.none)
+end)
