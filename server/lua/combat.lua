@@ -13,13 +13,14 @@ Network.handlePayload("illarion:set_combat_target", function(player, payload)
         return
     end
     local user = Character.fromSelenePlayer(player)
-    user:abortAction()
     if networkId == -1 then
+        user:abortAction()
         user:stopAttack()
         return
     end
     local target = PayloadValidation.characterInRange(player, networkId, 14)
-    if target and target.SeleneEntity ~= user.SeleneEntity then
+    if target and target:getType() ~= Character.npc and target.SeleneEntity ~= user.SeleneEntity then
+        user:abortAction()
         CombatManager.SetAttackTarget(user, target)
     end
 end)

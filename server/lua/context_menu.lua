@@ -77,7 +77,7 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
             local combat = userEntity:getRuntimeData(DataKeys.Combat)
             if combat and combat[DataFields.TargetId] == target:getNetworkId() then
                 table.insert(actions, { id = "standDown", label = "Abort attack" })
-            else
+            elseif targetType ~= Character.npc then
                 table.insert(actions, { id = "attack", label = "Attack!" })
             end
             if targetType == Character.player then
@@ -192,7 +192,8 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
         })
     elseif action == "pickup" and target then
         pickup(player, payload, target)
-    elseif action == "attack" and targetType and target ~= player:getControlledEntity() then
+    elseif action == "attack" and targetType and targetType ~= Character.npc
+            and target ~= player:getControlledEntity() then
         user:abortAction()
         require("illarion-script-loader.server.lua.lib.combatManager").SetAttackTarget(user, Character.fromSeleneEntity(target))
     elseif action == "standDown" then
