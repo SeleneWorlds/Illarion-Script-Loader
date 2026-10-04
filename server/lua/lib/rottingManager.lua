@@ -3,6 +3,7 @@ local Players = require("selene.players")
 local Registries = require("selene.registries")
 
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ItemEntity = require("illarion-script-loader.server.lua.lib.itemEntity")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
@@ -91,7 +92,7 @@ function m.AgeFieldEntity(entity)
             error("Unknown item entity for item id " .. tostring(replacementId))
         end
 
-        replacement = Entities.create(entityType)
+        replacement = ItemEntity.Create(entityType)
         local replacementData = replacement:getRuntimeData(DataKeys.Item)
         replacementData[DataFields.Count] = data[DataFields.Count] or 1
         replacementData[DataFields.Quality] = data[DataFields.Quality]

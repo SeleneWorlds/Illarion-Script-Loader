@@ -1,10 +1,10 @@
 local Dimensions = require("selene.dimensions")
-local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
 local I18n = require("selene.i18n")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ItemEntity = require("illarion-script-loader.server.lua.lib.itemEntity")
 
 local PERMANENT_WEAR = 255
 
@@ -191,7 +191,7 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
             local oldEntity = item.SeleneEntity
             local dimension = oldEntity:getDimension()
             local oldData = oldEntity:getRuntimeData(DataKeys.Item)
-            local newEntity = Entities.create(entityDef)
+            local newEntity = ItemEntity.Create(entityDef)
             local newData = newEntity:getRuntimeData(DataKeys.Item)
             newData[DataFields.Count] = oldData[DataFields.Count] or 1
             newData[DataFields.Quality] = tonumber(newQuality) or 333
@@ -230,7 +230,7 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         if not entityType then
             error("Unknown item entity for item id " .. tostring(itemId))
         end
-        local entity = Entities.create(entityType)
+        local entity = ItemEntity.Create(entityType)
         local itemData = entity:getRuntimeData(DataKeys.Item)
         itemData[DataFields.Count] = tonumber(count) or 1
         itemData[DataFields.Quality] = tonumber(quality) or 333

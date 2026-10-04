@@ -1,11 +1,11 @@
 local Network = require("selene.network")
-local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 
 local InventoryItem = require("moonlight-inventory.server.lua.inventory_item")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ItemEntity = require("illarion-script-loader.server.lua.lib.itemEntity")
 local ItemMovement = require("illarion-script-loader.server.lua.lib.itemMovement")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
@@ -365,7 +365,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     local itemData = sourceEntity:getRuntimeData(DataKeys.Item)
     local sourceCount = itemData[DataFields.Count] or 1
     local count = math.min(sourceCount, requestedCount)
-    local movedEntity = Entities.create(sourceEntity:getEntityDefinition())
+    local movedEntity = ItemEntity.Create(sourceEntity:getEntityDefinition())
     local movedItemData = movedEntity:getRuntimeData(DataKeys.Item)
     movedItemData[DataFields.Count] = count
     movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
@@ -457,7 +457,7 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     )
     local sourceCount = fromInventory:getItemCount(item)
     local count = math.min(sourceCount, requestedCount)
-    local entity = Entities.create(entityType)
+    local entity = ItemEntity.Create(entityType)
     local entityItemData = entity:getRuntimeData(DataKeys.Item)
     local customData = item.data or {}
     entityItemData[DataFields.Count] = count
