@@ -11,17 +11,20 @@ end
 
 Character.SeleneMethods.getSkillName = function(skillId)
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
     local skill = Registries.findByMetadata("illarion:skills", "id", skillId)
     return skill:getMetadata("name")
 end
 
 Character.SeleneMethods.getSkill = function(user, skillId)
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
     return SkillManager.GetMajorSkillAttribute(user, skillId):getEffectiveValue()
 end
 
 Character.SeleneMethods.getMinorSkill = function(user, skillId)
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
     return SkillManager.GetMinorSkillAttribute(user, skillId):getEffectiveValue()
 end
 
@@ -29,6 +32,8 @@ Character.SeleneMethods.increaseSkill = function(user, skillGroupOrSkillId, skil
     local amount = type(skillIdOrAmount) == "number" and skillIdOrAmount or amountOrNil
     local skillId = type(skillIdOrAmount) == "number" and skillGroupOrSkillId or skillIdOrAmount
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
     attribute:setValue(attribute:getValue() + amount)
     return attribute:getEffectiveValue()
@@ -36,6 +41,8 @@ end
 
 Character.SeleneMethods.increaseMinorSkill = function(user, skillId, amount)
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local attribute = SkillManager.GetMinorSkillAttribute(user, skillId)
     local newValue = attribute:getValue() + amount
     if newValue >= 10000 then
@@ -48,6 +55,9 @@ end
 
 Character.SeleneMethods.setSkill = function(user, skillId, major, minor)
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
+    major = assert(tonumber(major), "major must be a number, was " .. tostring(major))
+    minor = assert(tonumber(minor), "minor must be a number, was " .. tostring(minor))
     SkillManager.GetMajorSkillAttribute(user, skillId):setValue(major)
     SkillManager.GetMinorSkillAttribute(user, skillId):setValue(minor)
 end
@@ -66,11 +76,15 @@ Character.SeleneMethods.learn = function(user, skillGroupOrSkillId, skillIdOrAct
         learnLimit = actionPointsOrLearnLimit
     end
     skillId = resolveSkillId(skillId)
+    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
+    actionPoints = assert(tonumber(actionPoints), "actionPoints must be a number, was " .. tostring(actionPoints))
+    learnLimit = assert(tonumber(learnLimit), "learnLimit must be a number, was " .. tostring(learnLimit))
     require("server.learn").learn(user, skillId, actionPoints, learnLimit)
 end
 
 Character.SeleneMethods.getSkillValue = function(user, skillId)
      skillId = resolveSkillId(skillId)
+     skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
      return {
          major = user:getSkill(skillId),
          minor = user:getMinorSkill(skillId)

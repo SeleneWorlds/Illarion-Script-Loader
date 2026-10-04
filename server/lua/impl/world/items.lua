@@ -9,6 +9,7 @@ local ItemEntity = require("illarion-script-loader.server.lua.lib.itemEntity")
 local PERMANENT_WEAR = 255
 
 world.SeleneMethods.getItemStatsFromId = function(world, itemId)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if itemDef then
         return {
@@ -71,6 +72,7 @@ world.SeleneMethods.isItemOnField = function(world, position)
 end
 
 world.SeleneMethods.erase = function(world, item, amount)
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     if item:getType() == scriptItem.field then
         if item.SeleneEntity ~= nil then
             local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item) or {}
@@ -111,10 +113,10 @@ world.SeleneMethods.erase = function(world, item, amount)
 end
 
 world.SeleneMethods.changeItem = function(world, item)
-    local newId = tonumber(item.id) or 0
-    local newNumber = tonumber(item.number) or 0
-    local newQuality = tonumber(item.quality) or 0
-    local newWear = tonumber(item.wear) or 0
+    local newId = assert(tonumber(item.id), "item.id must be a number, was " .. tostring(item.id))
+    local newNumber = assert(tonumber(item.number), "item.number must be a number, was " .. tostring(item.number))
+    local newQuality = assert(tonumber(item.quality), "item.quality must be a number, was " .. tostring(item.quality))
+    local newWear = assert(tonumber(item.wear), "item.wear must be a number, was " .. tostring(item.wear))
 
     if item.SeleneTile ~= nil then
         local tile = item.SeleneTile
@@ -159,6 +161,8 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
     if getmetatable(itemId) == Item.SeleneMetatable then
         itemId = itemId.id
     end
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    language = assert(tonumber(language), "language must be a number, was " .. tostring(language))
 
     local item = Registries.findByMetadata("illarion:items", "id", itemId)
     if item then
@@ -173,6 +177,8 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
 end
 
 world.SeleneMethods.swap = function(world, item, newId, newQuality)
+    newId = assert(tonumber(newId), "newId must be a number, was " .. tostring(newId))
+    newQuality = assert(tonumber(newQuality), "newQuality must be a number, was " .. tostring(newQuality))
     if item:getType() == scriptItem.field then
         if item.SeleneTile ~= nil then
             local NewTileDef = Registries.findByMetadata("tiles", "itemId", newId)
@@ -211,6 +217,13 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
 end
 
 world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    if count ~= nil then
+        count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
+    end
+    if quality ~= nil then
+        quality = assert(tonumber(quality), "quality must be a number, was " .. tostring(quality))
+    end
     local dimension = Dimensions.getDefault()
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
@@ -262,6 +275,7 @@ world.SeleneMethods.createItemFromItem = function(world, item, pos, always)
 end
 
 world.SeleneMethods.getArmorStruct = function(world, itemId)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local item = Registries.findByMetadata("illarion:items", "id", itemId)
     local armor = item and item:getField("armor") or nil
     if armor then
@@ -289,6 +303,7 @@ world.SeleneMethods.getArmorStruct = function(world, itemId)
 end
 
 world.SeleneMethods.getWeaponStruct = function(world, itemId)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local item = Registries.findByMetadata("illarion:items", "id", itemId)
     local weapon = item and item:getField("weapon") or nil
     if weapon then
@@ -322,10 +337,12 @@ world.SeleneMethods.getItemStats = function(world, item)
 end
 
 world.SeleneMethods.changeQuality = function(world, item, amount)
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     item.quality = amount + item.durability <= 99 and amount + item.quality or item.quality - item.durability + 99
 end
 
 world.SeleneMethods.increase = function(world, item, count)
+    count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
     if item.SeleneInventoryItem then
         item.SeleneInventoryItem:increase(count)
         return true

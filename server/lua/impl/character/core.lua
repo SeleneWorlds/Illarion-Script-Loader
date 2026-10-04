@@ -25,7 +25,7 @@ Character.SeleneMethods.get_race = Character.SeleneMethods.getRace
 Character.SeleneMethods.setRace = function(user, raceId)
     raceId = assert(tonumber(raceId), "raceId must be a number, was " .. tostring(raceId))
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
-    charData[DataFields.Race] = tonumber(raceId) or 0
+    charData[DataFields.Race] = raceId
     user.SeleneEntity:updateVisuals()
 end
 
@@ -96,12 +96,14 @@ Character.SeleneMethods.forceWarp = function(user, pos)
 end
 
 Character.SeleneMethods.move = function(user, direction, activeMove)
+    direction = assert(tonumber(direction), "direction must be a number, was " .. tostring(direction))
     -- TODO activeMove = false means it should be a "push" (no walk animation)
     local seleneDirection = DirectionUtils.IllaToSelene(direction) or direction
     return user.SeleneEntity:move(seleneDirection)
 end
 
 Character.SeleneMethods.turn = function(user, direction)
+    direction = assert(tonumber(direction), "direction must be a number, was " .. tostring(direction))
     local directionName = DirectionUtils.IllaToSelene(direction)
     if not directionName then
         return
@@ -114,10 +116,12 @@ Character.SeleneMethods.turn = function(user, direction)
 end
 
 Character.SeleneMethods.isInRange = function(user, other, distance)
+    distance = assert(tonumber(distance), "distance must be a number, was " .. tostring(distance))
     return user:isInRangeToPosition(other.pos, distance)
 end
 
 Character.SeleneMethods.isInRangeToPosition = function(user, position, distance)
+    distance = assert(tonumber(distance), "distance must be a number, was " .. tostring(distance))
     local dx = math.abs(user.pos.x - position.x)
     local dy = math.abs(user.pos.y - position.y)
     local dz = math.abs(user.pos.z - position.z)
@@ -164,10 +168,12 @@ Character.SeleneGetters.SeleneEntity = function(user)
 end
 
 Character.SeleneMethods.performAnimation = function(user, animId)
+    animId = assert(tonumber(animId), "animId must be a number, was " .. tostring(animId))
     user.SeleneEntity:playAnimation(tostring(animId))
 end
 
 Character.SeleneMethods.startMusic = function(user, id)
+    id = assert(tonumber(id), "id must be a number, was " .. tostring(id))
     Network.sendToEntity(user.SeleneEntity, "illarion:music", {
         musicId = id
     })

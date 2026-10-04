@@ -3,14 +3,19 @@ local Registries = require("selene.registries")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Character.SeleneMethods.getDepot = function(user, depotId)
+    depotId = assert(tonumber(depotId), "depotId must be a number, was " .. tostring(depotId))
     return Container.fromSeleneInventory(InventoryManager.GetDepot(user, depotId))
 end
 
 Character.SeleneMethods.getBackPack = function(user, itemId)
+    if itemId ~= nil then
+        itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    end
     return Container.fromSeleneInventory(InventoryManager.GetBackpack(user))
 end
 
 Character.SeleneMethods.countItem = function(user, itemId)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local count = 0
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
@@ -27,6 +32,7 @@ Character.SeleneMethods.countItem = function(user, itemId)
 end
 
 Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local count = 0
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
@@ -51,12 +57,15 @@ Character.SeleneMethods.countItemAt = function(user, where, itemId, data)
 end
 
 Character.SeleneMethods.getItemAt = function(user, slotId)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     local inventoryItem = inventory:getInventoryItem(slotId)
     return Item.fromSeleneInventoryItem(inventoryItem)
 end
 
 Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     local inventoryItem = inventory:getInventoryItem(slotId)
     local item = Item.fromSeleneInventoryItem(inventoryItem)
@@ -64,11 +73,16 @@ Character.SeleneMethods.changeQualityAt = function(user, slotId, amount)
 end
 
 Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
     return inventory:increaseCountAt(slotId, amount)
 end
 
 Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
+    quality = assert(tonumber(quality), "quality must be a number, was " .. tostring(quality))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         return 0
@@ -99,6 +113,9 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
 end
 
 Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to create unknown item id " .. itemId)
@@ -112,6 +129,8 @@ Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
 end
 
 Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to erase unknown item id " .. itemId)
@@ -132,6 +151,9 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
 end
 
 Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    newId = assert(tonumber(newId), "newId must be a number, was " .. tostring(newId))
+    newQuality = assert(tonumber(newQuality), "newQuality must be a number, was " .. tostring(newQuality))
     local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)
@@ -161,6 +183,7 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
 end
 
 Character.SeleneMethods.getItemList = function(user, itemId)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to list unknown item id " .. itemId)

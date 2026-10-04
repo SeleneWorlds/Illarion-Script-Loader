@@ -6,6 +6,7 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
+    value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     local raceId = user:getRace()
     local race = Registries.findByMetadata("illarion:races", "id", raceId)
     if not race then
@@ -37,10 +38,12 @@ Character.SeleneMethods.getPoisonValue = function(user)
 end
 
 Character.SeleneMethods.setPoisonValue = function(user, value)
+    value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     AttributeManager.GetAttribute(user, "poisonvalue"):setValue(value)
 end
 
 Character.SeleneMethods.increasePoisonValue = function(user, amount)
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local attribute = AttributeManager.GetAttribute(user, "poisonvalue")
     attribute:setValue(attribute:getValue() + amount)
 end
@@ -50,15 +53,18 @@ Character.SeleneMethods.getMentalCapacity = function(user)
 end
 
 Character.SeleneMethods.setMentalCapacity = function(user, value)
+    value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     AttributeManager.GetAttribute(user, "mentalcapacity"):setValue(value)
 end
 
 Character.SeleneMethods.increaseMentalCapacity = function(user, amount)
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local attribute = AttributeManager.GetAttribute(user, "mentalcapacity")
     attribute:setValue(attribute:getValue() + amount)
 end
 
 Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
+    value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     if attributeName == "racetyp" then
         local race = user:getRace()
         if value ~= 0 then
@@ -97,6 +103,7 @@ Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
 end
 
 Character.SeleneMethods.setAttrib = function(user, attributeName, value)
+    value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     if attributeName == "faceto" then
         user:turn(value)
         return
@@ -156,6 +163,7 @@ Character.SeleneMethods.saveBaseAttributes = function(user)
 end
 
 Character.SeleneMethods.setBaseAttribute = function(user, attributeName, value)
+    value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     if user:isBaseAttributeValid(attributeName, value) then
         local attribute = AttributeManager.GetAttribute(user, attributeName)
         attribute:setValue(value)
@@ -170,6 +178,7 @@ Character.SeleneMethods.getBaseAttribute = function(user, attributeName)
 end
 
 Character.SeleneMethods.increaseBaseAttribute = function(user, attributeName, amount)
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local attribute = AttributeManager.GetAttribute(user, attributeName)
     local prev = attribute:getValue()
     local new = prev + amount

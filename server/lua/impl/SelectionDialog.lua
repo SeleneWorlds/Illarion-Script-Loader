@@ -11,6 +11,7 @@ SelectionDialog.SeleneConstructor = function(title, callback)
 end
 
 SelectionDialog.SeleneMethods.addOption = function(self, id, name)
+    id = assert(tonumber(id), "id must be a number, was " .. tostring(id))
     self.options[id] = name
 end
 

@@ -8,17 +8,21 @@ Character.SeleneMethods.getMagicType = function(user)
 end
 
 Character.SeleneMethods.setMagicType = function(user, magicType)
+    magicType = assert(tonumber(magicType), "magicType must be a number, was " .. tostring(magicType))
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
     charData[DataFields.MagicType] = magicType
     MagicManager.SendMagicState(user)
 end
 
 Character.SeleneMethods.getMagicFlags = function(user, magicType)
+    magicType = assert(tonumber(magicType), "magicType must be a number, was " .. tostring(magicType))
     local magicFlagsData = user.SeleneEntity:getRuntimeData(DataKeys.MagicFlags)
     return magicFlagsData[magicType] or 0
 end
 
 Character.SeleneMethods.teachMagic = function(user, magicType, magicFlag)
+    magicType = assert(tonumber(magicType), "magicType must be a number, was " .. tostring(magicType))
+    magicFlag = assert(tonumber(magicFlag), "magicFlag must be a number, was " .. tostring(magicFlag))
     if magicFlag < 0 or magicFlag > 31 then
         return
     end

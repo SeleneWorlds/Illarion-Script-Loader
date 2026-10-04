@@ -32,6 +32,9 @@ world.SeleneMethods.isPersistentAt = function(world, pos)
 end
 
 world.SeleneMethods.createSavedArea = function(tileId, origin, height, width)
+    tileId = assert(tonumber(tileId), "tileId must be a number, was " .. tostring(tileId))
+    height = assert(tonumber(height), "height must be a number, was " .. tostring(height))
+    width = assert(tonumber(width), "width must be a number, was " .. tostring(width))
     local tileDef = Registries.findByMetadata("illarion:tiles", "tileId", tileId)
     if not tileDef then
         error("Unknown tile id " .. tileId)
@@ -45,6 +48,7 @@ world.SeleneMethods.createSavedArea = function(tileId, origin, height, width)
 end
 
 world.SeleneMethods.changeTile = function(world, tileId, pos)
+    tileId = assert(tonumber(tileId), "tileId must be a number, was " .. tostring(tileId))
     local tileDef = Registries.findByMetadata("tiles", "tileId", tileId)
     if not tileDef then
         error("Unknown tile id " .. tileId)

@@ -6,6 +6,10 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
 
 world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
+    monsterId = assert(tonumber(monsterId), "monsterId must be a number, was " .. tostring(monsterId))
+    if movePoints ~= nil then
+        movePoints = assert(tonumber(movePoints), "movePoints must be a number, was " .. tostring(movePoints))
+    end
     local monsterDef = Registries.findByMetadata("illarion:monsters", "id", monsterId)
     if not monsterDef then
          error("Unknown monster id " .. monsterId)
@@ -15,6 +19,7 @@ world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
 end
 
 world.SeleneMethods.getMonsterAttack = function(world, raceId)
+    raceId = assert(tonumber(raceId), "raceId must be a number, was " .. tostring(raceId))
     local race = Registries.findByMetadata("illarion:races", "id", raceId)
     local monsterAttack = race and race:getField("monsterAttack") or nil
     if monsterAttack then
@@ -28,6 +33,7 @@ world.SeleneMethods.getMonsterAttack = function(world, raceId)
 end
 
 world.SeleneMethods.getMonstersInRangeOf = function(world, pos, range)
+    range = assert(tonumber(range), "range must be a number, was " .. tostring(range))
     local dimension = Dimensions.getDefault()
     local entities = dimension:getEntitiesInRange(pos, range)
     local monsters = {}

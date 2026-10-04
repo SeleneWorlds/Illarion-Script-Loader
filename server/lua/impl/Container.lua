@@ -4,6 +4,7 @@ local Network = require("selene.network")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 Container.SeleneMethods.countItem = function(container, itemId, data)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to count unknown item id " .. itemId)
@@ -28,6 +29,8 @@ Container.SeleneMethods.weight = function(container)
 end
 
 Container.SeleneMethods.takeItemNr = function(container, slotId, amount)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
     if inventoryItem then
         inventoryItem.item:decrease(amount)
@@ -38,6 +41,7 @@ Container.SeleneMethods.takeItemNr = function(container, slotId, amount)
 end
 
 Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
     local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
     if inventoryItem then
         local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
@@ -47,6 +51,8 @@ Container.SeleneMethods.viewItemNr = function(container, slotId, amount)
 end
 
 Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local inventoryItem = container.SeleneInventory:getInventoryItem(slotId)
     if inventoryItem then
         world:changeQuality(Item.fromSeleneInventoryItem(inventoryItem), amount)
@@ -56,6 +62,7 @@ Container.SeleneMethods.changeQualityAt = function(container, slotId, amount)
 end
 
 Container.SeleneMethods.insertContainer = function(container, item, childContainer, slotId)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
     return container:insertItem(item, slotId)
 end
 
@@ -82,6 +89,8 @@ Container.SeleneMethods.insertItem = function(container, item, mergeOrSlotId)
 end
 
 Container.SeleneMethods.eraseItem = function(container, itemId, amount, data)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Tried to erase unknown item id " .. itemId)
@@ -91,10 +100,15 @@ Container.SeleneMethods.eraseItem = function(container, itemId, amount, data)
 end
 
 Container.SeleneMethods.increaseAtPos = function(container, slotId, amount)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     return container.SeleneInventory:increaseCountAt(slotId, amount)
 end
 
 Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQuality)
+    slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
+    newId = assert(tonumber(newId), "newId must be a number, was " .. tostring(newId))
+    newQuality = assert(tonumber(newQuality), "newQuality must be a number, was " .. tostring(newQuality))
     local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
     if not itemDef then
         error("Tried to swap to unknown item id " .. newId)

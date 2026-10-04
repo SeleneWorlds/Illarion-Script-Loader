@@ -22,6 +22,13 @@ CraftingDialog.SeleneMethods.addGroup = function(name)
 end
 
 CraftingDialog.SeleneMethods.addCraftable = function(id, groupId, itemId, name, decisecondsToCraft, craftedStackSize)
+    id = assert(tonumber(id), "id must be a number, was " .. tostring(id))
+    groupId = assert(tonumber(groupId), "groupId must be a number, was " .. tostring(groupId))
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    decisecondsToCraft = assert(tonumber(decisecondsToCraft), "decisecondsToCraft must be a number, was " .. tostring(decisecondsToCraft))
+    if craftedStackSize ~= nil then
+        craftedStackSize = assert(tonumber(craftedStackSize), "craftedStackSize must be a number, was " .. tostring(craftedStackSize))
+    end
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
@@ -40,6 +47,10 @@ CraftingDialog.SeleneMethods.addCraftable = function(id, groupId, itemId, name, 
 end
 
 CraftingDialog.SeleneMethods.addCraftableIngredient = function(itemId, number)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    if number ~= nil then
+        number = assert(tonumber(number), "number must be a number, was " .. tostring(number))
+    end
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)

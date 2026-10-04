@@ -10,6 +10,7 @@ MenuStruct.SeleneConstructor = function(title, callback)
 end
 
 MenuStruct.SeleneMethods.addItem = function(self, itemId)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)

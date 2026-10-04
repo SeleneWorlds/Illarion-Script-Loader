@@ -12,6 +12,9 @@ MerchantDialog.SeleneConstructor = function(title, callback)
 end
 
 MerchantDialog.SeleneMethods.addOffer = function(self, itemId, name, price, buyStack)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    price = assert(tonumber(price), "price must be a number, was " .. tostring(price))
+    buyStack = assert(tonumber(buyStack), "buyStack must be a number, was " .. tostring(buyStack))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
@@ -25,6 +28,8 @@ MerchantDialog.SeleneMethods.addOffer = function(self, itemId, name, price, buyS
 end
 
 MerchantDialog.SeleneMethods.addPrimaryRequest = function(self, itemId, name, price)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    price = assert(tonumber(price), "price must be a number, was " .. tostring(price))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)
@@ -37,6 +42,8 @@ MerchantDialog.SeleneMethods.addPrimaryRequest = function(self, itemId, name, pr
 end
 
 MerchantDialog.SeleneMethods.addSecondaryRequest = function(self, itemId, name, price)
+    itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
+    price = assert(tonumber(price), "price must be a number, was " .. tostring(price))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         error("Unknown item id " .. itemId)

@@ -52,5 +52,6 @@ Character.SeleneMethods.requestCraftingDialog = function(user, dialog)
 end
 
 Character.SeleneMethods.sendBook = function(user, bookId)
+    bookId = assert(tonumber(bookId), "bookId must be a number, was " .. tostring(bookId))
     Network.sendToEntity(user.SeleneEntity, "illarion:book", {id = bookId})
 end

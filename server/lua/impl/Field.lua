@@ -48,6 +48,7 @@ Field.SeleneMethods.countItems = function(field)
 end
 
 Field.SeleneMethods.getStackItem = function(field, index)
+    index = assert(tonumber(index), "index must be a number, was " .. tostring(index))
     local tiles = field.SeleneDimension:getTilesAt(field.SelenePosition)
     local i = -1
     for _, tile in ipairs(tiles) do
@@ -73,6 +74,7 @@ Field.SeleneMethods.getStackItem = function(field, index)
 end
 
 Field.SeleneMethods.getContainer = function(field, index)
+    index = assert(tonumber(index), "index must be a number, was " .. tostring(index))
     -- Illarion has a separate index for containers and abuses the item count to reference it ???
     -- This function unsurprisingly isn't used, so we're going to diverge from the API here to make it sane
     local item = field:getStackItem(index)

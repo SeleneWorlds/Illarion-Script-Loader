@@ -29,6 +29,7 @@ world.SeleneMethods.getPlayersOnline = function(world)
 end
 
 world.SeleneMethods.getPlayersInRangeOf = function(world, pos, range)
+    range = assert(tonumber(range), "range must be a number, was " .. tostring(range))
     local dimension = Dimensions.getDefault()
     local players = Players.getOnlinePlayers()
     local result = {}
@@ -53,6 +54,7 @@ world.SeleneMethods.broadcast = function(world, messageDe, messageEn)
 end
 
 world.SeleneMethods.sendMonitoringMessage = function(world, message, type)
+    type = assert(tonumber(type), "type must be a number, was " .. tostring(type))
     local webhookUrl = Config.getProperty("notifyAdminDiscordWebhook")
     HTTP.post(webhookUrl, { content = message })
 end

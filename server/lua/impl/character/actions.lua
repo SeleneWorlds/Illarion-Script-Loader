@@ -8,6 +8,11 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ActionManager = require("illarion-script-loader.server.lua.lib.actionManager")
 
 Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterval, sfxId, sfxInterval)
+    duration = assert(tonumber(duration), "duration must be a number, was " .. tostring(duration))
+    gfxId = assert(tonumber(gfxId), "gfxId must be a number, was " .. tostring(gfxId))
+    gfxInterval = assert(tonumber(gfxInterval), "gfxInterval must be a number, was " .. tostring(gfxInterval))
+    sfxId = assert(tonumber(sfxId), "sfxId must be a number, was " .. tostring(sfxId))
+    sfxInterval = assert(tonumber(sfxInterval), "sfxInterval must be a number, was " .. tostring(sfxInterval))
     local entity = user.SeleneEntity
     local gfxHandle = nil
     local sfxHandle = nil

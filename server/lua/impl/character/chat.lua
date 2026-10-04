@@ -112,6 +112,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
 end
 
 Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
+    language = assert(tonumber(language), "language must be a number, was " .. tostring(language))
     local userEntity = user.SeleneEntity
     mode, message = ChatMode.parsePrefix(mode, message)
     local range = 0

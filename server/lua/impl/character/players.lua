@@ -9,6 +9,9 @@ local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
+    if priority ~= nil then
+        priority = assert(tonumber(priority), "priority must be a number, was " .. tostring(priority))
+    end
     if not user.SelenePlayer then
         return
     end
@@ -54,6 +57,7 @@ Character.SeleneMethods.logAdmin = function(user, message)
 end
 
 Character.SeleneMethods.sendCharDescription = function(user, id, description)
+    id = assert(tonumber(id), "id must be a number, was " .. tostring(id))
     local target = Entities.findByRuntimeData(DataKeys.Character, DataFields.ID, id)
     if target then
         Network.sendToEntity(user.SeleneEntity, "illarion:look_at_entity", {

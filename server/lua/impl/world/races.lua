@@ -1,6 +1,7 @@
 local Registries = require("selene.registries")
 
 world.SeleneMethods.getNaturalArmor = function(world, raceId)
+    raceId = assert(tonumber(raceId), "raceId must be a number, was " .. tostring(raceId))
      local race = Registries.findByMetadata("illarion:races", "id", raceId)
      local naturalArmor = race and race:getField("naturalArmor") or nil
      if naturalArmor then
