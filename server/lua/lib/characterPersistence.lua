@@ -404,7 +404,7 @@ function m.saveCharacter(player, character)
     local longTimeEffects = Json.encode(serializeEffects(entity))
 
     database:execute("BEGIN IMMEDIATE")
-    local ok, saveError = pcall(database.execute, database,
+    local ok, saveError = xpcall(database.execute, database,
         [[
             UPDATE characters
             SET name = ?, race = ?, sex = ?, x = ?, y = ?, z = ?, facing = ?,
@@ -443,10 +443,11 @@ function m.saveCharacter(player, character)
         }
     )
     if not ok then
+        world:pageGM(character, "Failed to save")
         database:execute("ROLLBACK")
-        error(saveError)
+    else
+        database:execute("COMMIT")
     end
-    database:execute("COMMIT")
 end
 
 return m
