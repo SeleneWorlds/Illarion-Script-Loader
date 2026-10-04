@@ -92,8 +92,8 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                 if not event.cancel then
                     local scriptName = charData[DataFields.Script]
                     if scriptName then
-                        local script = require(scriptName)
-                        if type(script.receiveText) == "function" then
+                        local status, script = xpcall(require, scriptName)
+                        if status and type(script.receiveText) == "function" then
                             local illaNpc = Character.fromSeleneEntity(entity)
                             if Config.getProperty("useLegacyReceiveText") == "true" then
                                 thisNPC = illaNpc
