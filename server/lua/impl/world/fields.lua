@@ -54,5 +54,10 @@ world.SeleneMethods.changeTile = function(world, tileId, pos)
         error("Unknown tile id " .. tileId)
     end
     local dimension = Dimensions.getDefault()
-    dimension:placeTile(pos, tileDef, MapPersistenceManager.getLayerFor(pos))
+    local tiles = dimension:getTilesAt(pos)
+    if #tiles == 0 then
+        dimension:placeTile(pos, tileDef, MapPersistenceManager.getLayerFor(pos))
+    else
+        tiles[1]:swap(tileDef, MapPersistenceManager.getLayerFor(pos))
+    end
 end
