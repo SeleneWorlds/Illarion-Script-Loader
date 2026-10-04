@@ -147,7 +147,14 @@ Network.handlePayload("illarion:push_character", function(player, payload)
         return
     end
 
-    Character.fromSelenePlayer(player):abortAction()
+    local cost = 7
+    local character = Character.fromSelenePlayer(player)
+    if character.movepoints < cost then
+        return
+    end
+
+    character.movepoints = character.movepoints - cost
+    character:abortAction()
     entity:setCoordinate(destination)
 end)
 
