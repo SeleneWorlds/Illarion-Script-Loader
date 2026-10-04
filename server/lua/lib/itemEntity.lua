@@ -19,7 +19,7 @@ function m.Create(entityDef)
     end)
     entity:addDynamicComponent("illarion:item_count", function(itemEntity)
         local itemData = itemEntity:getRuntimeData(DataKeys.Item)
-        local count = itemData and itemData[DataFields.Count] or 1
+        local count = math.floor(tonumber(itemData and itemData[DataFields.Count]) or 1)
         return {
             type = "visual",
             visual = "illarion:labels/character",
@@ -27,7 +27,7 @@ function m.Create(entityDef)
                 origin = "bottom_right"
             },
             overrides = {
-                text = tostring(count)
+                text = count > 1 and string.format("%d", count) or ""
             }
         }
     end)
