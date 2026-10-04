@@ -42,7 +42,7 @@ function m.IsCharacterOnline(characterId)
     return false
 end
 
-local function findRaceEntity(raceId, sex)
+function m.findRaceEntity(raceId, sex)
     local preferredTypeId = sex == "female" and 1 or 0
     local fallback = nil
 
@@ -58,11 +58,11 @@ local function findRaceEntity(raceId, sex)
     if fallback then
         return fallback
     end
-    error("No entity definition found for race " .. raceId)
+    return Registries.findByName("entities", "illarion:races/race_0_0")
 end
 
 function m.Spawn(player, selectedCharacter)
-    local entity = Entities.create(findRaceEntity(selectedCharacter.race, selectedCharacter.sex))
+    local entity = Entities.create(m.findRaceEntity(selectedCharacter.race, selectedCharacter.sex))
     local id = selectedCharacter.id
     entity:setName(selectedCharacter.name)
     local charData = entity:getRuntimeData(DataKeys.Character)
@@ -108,6 +108,14 @@ function m.Spawn(player, selectedCharacter)
     player:setCameraToFollowTarget()
 
     local character = CharacterManager.AddEntity(entity)
+    entity:addDynamicComponent("illarion:visual", function()
+        local raceId = character:increaseAttrib("hitpoints", 0) <= 0 and Character.ghost or character:getRace()
+        local sex = charData[DataFields.Sex] or "male"
+        return {
+            type = "visual",
+            visual = m.findRaceEntity(raceId, sex):getName()
+        }
+    end)
 
     local equipment = InventoryManager.GetEquipment(character)
     equipment:subscribe(function(data)

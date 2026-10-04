@@ -1,5 +1,4 @@
 local Network = require("selene.network")
-local Registries = require("selene.registries")
 local Players = require("selene.players")
 local Grid = require("selene.grid")
 
@@ -9,26 +8,6 @@ local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionU
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
-
-local function findRaceVisual(raceId, sex)
-    local preferredTypeId = sex == Character.female and 1 or 0
-    local fallback = nil
-
-    for _, entityDefinition in pairs(Registries.findAll("entities")) do
-        if entityDefinition:getMetadata("raceId") == raceId then
-            fallback = fallback or entityDefinition
-            if entityDefinition:getMetadata("typeId") == preferredTypeId then
-                return entityDefinition:getName()
-            end
-        end
-    end
-
-    if fallback then
-        return fallback:getName()
-    end
-
-    return "illarion:races/race_0_0"
-end
 
 Character.SeleneMethods.getType = function(user)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
@@ -46,14 +25,6 @@ Character.SeleneMethods.get_race = Character.SeleneMethods.getRace
 Character.SeleneMethods.setRace = function(user, raceId)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
     charData[DataFields.Race] = raceId
-    local sex = user:increaseAttrib("sex", 0)
-    user.SeleneEntity:addDynamicComponent("illarion:visual", function()
-        local visualRaceId = user:increaseAttrib("hitpoints", 0) <= 0 and Character.ghost or raceId
-        return {
-            type = "visual",
-            visual = findRaceVisual(visualRaceId, sex)
-        }
-    end)
     user.SeleneEntity:updateVisuals()
 end
 
