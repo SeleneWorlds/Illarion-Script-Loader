@@ -5,6 +5,7 @@ local I18n = require("selene.i18n")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ItemEntity = require("illarion-script-loader.server.lua.lib.itemEntity")
+local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 local PERMANENT_WEAR = 255
 
@@ -378,6 +379,10 @@ world.SeleneMethods.itemInform = function(world, user, item, text)
     elseif item.SeleneInventoryItem then
         local itemType = item:getType()
         local viewId = itemType == scriptItem.belt and "belt" or itemType == scriptItem.inventory and "equipment" or nil
+        if itemType == scriptItem.container then
+            local showcaseId = InventoryManager.FindShowcase(user, item.SeleneInventory)
+            viewId = showcaseId and "showcase:" .. showcaseId or nil
+        end
         if viewId then
             payload.viewId = viewId
             payload.slotId = item.SeleneInventoryItem.slotId
