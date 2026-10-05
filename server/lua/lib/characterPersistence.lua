@@ -146,6 +146,90 @@ function m.loadCharacterSummaries(player)
     return characters
 end
 
+---Loads the small records for all persisted characters.
+---@return CharacterSummary[]
+function m.loadAllCharacterSummaries()
+    return database:query([[
+        SELECT id, name, race, sex, created_at AS "createdAt"
+        FROM characters
+        ORDER BY id
+    ]])
+end
+
+---Updates the position of a character that is not currently loaded.
+function m.updateOfflineCharacterPosition(characterId, x, y, z)
+    database:execute(
+        "UPDATE characters SET x = ?, y = ?, z = ?, last_saved_at = ? WHERE id = ?",
+        { x, y, z, os.time(), characterId }
+    )
+end
+
+---Updates the race of a character that is not currently loaded.
+function m.updateOfflineCharacterRace(characterId, raceId)
+    database:execute(
+        "UPDATE characters SET race = ?, last_saved_at = ? WHERE id = ?",
+        { raceId, os.time(), characterId }
+    )
+end
+
+---Updates the magic type of a character that is not currently loaded.
+---@return integer oldMagicType
+function m.updateOfflineCharacterMagicType(characterId, magicType)
+    local rows = database:query("SELECT magic_type AS magicType FROM characters WHERE id = ?", characterId)
+    local character = assert(rows[1], "Character no longer exists.")
+    database:execute(
+        "UPDATE characters SET magic_type = ?, last_saved_at = ? WHERE id = ?",
+        { magicType, os.time(), characterId }
+    )
+    return character.magicType
+end
+
+---Updates a skill of a character that is not currently loaded.
+---@return number oldValue
+---@return number newValue
+function m.updateOfflineCharacterSkill(characterId, skillId, value, setExact)
+    local rows = database:query("SELECT json(skills) AS skills FROM characters WHERE id = ?", characterId)
+    local character = assert(rows[1], "Character no longer exists.")
+    local skills = Json.decode(character.skills) or {}
+    local key = tostring(skillId)
+    local savedSkill = skills[key] or { major = 0, minor = 0 }
+    local oldValue = tonumber(savedSkill.major) or 0
+    local newValue = setExact and value or oldValue + value
+    newValue = math.max(0, math.min(100, newValue))
+    savedSkill.major = newValue
+    savedSkill.minor = tonumber(savedSkill.minor) or 0
+    skills[key] = savedSkill
+    database:execute(
+        "UPDATE characters SET skills = jsonb(?), last_saved_at = ? WHERE id = ?",
+        { Json.encode(skills), os.time(), characterId }
+    )
+    return oldValue, newValue
+end
+
+local persistedBaseAttributeColumns = {
+    agility = true,
+    constitution = true,
+    dexterity = true,
+    essence = true,
+    intelligence = true,
+    perception = true,
+    strength = true,
+    willpower = true,
+}
+
+---Updates a base attribute of a character that is not currently loaded.
+---@return number oldValue
+function m.updateOfflineCharacterBaseAttribute(characterId, attribute, value)
+    assert(persistedBaseAttributeColumns[attribute], "Attribute is not a persisted base attribute.")
+    local rows = database:query("SELECT " .. attribute .. " AS value FROM characters WHERE id = ?", characterId)
+    local character = assert(rows[1], "Character no longer exists.")
+    database:execute(
+        "UPDATE characters SET " .. attribute .. " = ?, last_saved_at = ? WHERE id = ?",
+        { value, os.time(), characterId }
+    )
+    return character.value
+end
+
 
 ---Loads the complete scalar record for one character owned by the player.
 ---@return FullCharacter|nil
