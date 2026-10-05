@@ -17,6 +17,11 @@ local m = {}
 ---@field sex string
 ---@field createdAt integer
 
+---@class PersistedCharacterSummary: CharacterSummary
+---@field x integer
+---@field y integer
+---@field z integer
+
 ---@class FullCharacter: CharacterSummary
 ---@field x integer
 ---@field y integer
@@ -147,10 +152,10 @@ function m.loadCharacterSummaries(player)
 end
 
 ---Loads the small records for all persisted characters.
----@return CharacterSummary[]
+---@return PersistedCharacterSummary[]
 function m.loadAllCharacterSummaries()
     return database:query([[
-        SELECT id, name, race, sex, created_at AS "createdAt"
+        SELECT id, name, race, sex, x, y, z, created_at AS "createdAt"
         FROM characters
         ORDER BY id
     ]])
