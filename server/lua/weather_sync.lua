@@ -10,6 +10,9 @@ local RESYNC_INTERVAL_MS = 60 * 1000
 local RAIN_TIMELINE = "illarion:weather/rain"
 local SNOW_TIMELINE = "illarion:weather/snow"
 local WEATHER_TAG = "illarion:weather"
+local LIGHTNING_TIMELINE = "illarion:weather/lightning"
+local LIGHTNING_CHECK_INTERVAL_MS = 1000
+local LIGHTNING_CHANCE_SCALE = 1000
 
 local function getPrecipitationTimeline(weather)
     if (weather.percipitation_strength or 0) <= 0 then
@@ -74,4 +77,14 @@ Events.onWeatherChanged:connect(broadcastWeather)
 
 Schedules.setInterval(RESYNC_INTERVAL_MS, function()
     broadcastWeather(createWeatherPayload())
+end)
+
+Schedules.setInterval(LIGHTNING_CHECK_INTERVAL_MS, function()
+    local thunderstorm = math.min(math.max(world.weather.thunderstorm or 0, 0), 100)
+    if thunderstorm <= 0 or math.random(LIGHTNING_CHANCE_SCALE) > thunderstorm then
+        return
+    end
+    for _, player in ipairs(Players.getOnlinePlayers()) do
+        Timelines.play(player, LIGHTNING_TIMELINE)
+    end
 end)
