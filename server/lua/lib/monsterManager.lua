@@ -20,7 +20,8 @@ local VIEW_RANGE = 11
 local INITIAL_AGGRO_RANGE = 8
 local RETAINED_AGGRO_RANGE = 10
 local PATH_SEARCH_RADIUS = 32
-local PATH_SEARCH_NODE_BUDGET = 512
+local PATH_SEARCH_NODE_BUDGET = 128
+local PATHFINDING_RETRY_TICKS = 100
 
 local EQUIPMENT_SLOTS = {
     backpack = Character.backpack,
@@ -39,6 +40,7 @@ local EQUIPMENT_SLOTS = {
 
 m.IdCounter = 0
 m.NewMonsters = {}
+m.UpdateTick = 0
 
 local function getRandomDirection()
     local directions = {}
@@ -266,12 +268,47 @@ local function getWeaponRanges(monster)
     return attackRange or 1, rangedTargetingRange
 end
 
-local function moveToward(monster, targetPosition)
-    local path = Pathfinding.findPath(
-        monster.SeleneEntity, targetPosition, PATH_SEARCH_RADIUS, PATH_SEARCH_NODE_BUDGET
-    )
+local function samePosition(a, b)
+    return a ~= nil and b ~= nil and a.x == b.x and a.y == b.y and a.z == b.z
+end
+
+local function moveToward(monster, targetPosition, charData)
+    local failedGoal = charData[DataFields.FailedPathfindingGoal]
+    local retryTick = charData[DataFields.PathfindingRetryTick] or 0
+    local pathGoal = charData[DataFields.MonsterPathfindingGoal]
+    local path = samePosition(pathGoal, targetPosition) and charData[DataFields.MonsterPath] or nil
+    if path == nil and (not samePosition(failedGoal, targetPosition) or m.UpdateTick >= retryTick) then
+        path = Pathfinding.findPath(
+            monster.SeleneEntity, targetPosition, PATH_SEARCH_RADIUS, PATH_SEARCH_NODE_BUDGET
+        )
+        if path and #path > 0 then
+            charData[DataFields.FailedPathfindingGoal] = nil
+            charData[DataFields.PathfindingRetryTick] = nil
+            charData[DataFields.MonsterPathfindingGoal] = position(
+                targetPosition.x, targetPosition.y, targetPosition.z
+            )
+            charData[DataFields.MonsterPath] = path
+        else
+            charData[DataFields.MonsterPathfindingGoal] = nil
+            charData[DataFields.MonsterPath] = nil
+            charData[DataFields.FailedPathfindingGoal] = position(
+                targetPosition.x, targetPosition.y, targetPosition.z
+            )
+            charData[DataFields.PathfindingRetryTick] = m.UpdateTick + PATHFINDING_RETRY_TICKS
+        end
+    end
     if path and #path > 0 then
-        monster.SeleneEntity:move(path[1])
+        local moved = monster.SeleneEntity:move(table.remove(path, 1))
+        if not moved or #path == 0 then
+            charData[DataFields.MonsterPathfindingGoal] = nil
+            charData[DataFields.MonsterPath] = nil
+        end
+        if not moved then
+            charData[DataFields.FailedPathfindingGoal] = position(
+                targetPosition.x, targetPosition.y, targetPosition.z
+            )
+            charData[DataFields.PathfindingRetryTick] = m.UpdateTick + PATHFINDING_RETRY_TICKS
+        end
         monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
     else
         local direction = getRandomDirection()
@@ -323,7 +360,7 @@ local function updateAggro(monster, charData)
             visibleTarget.pos.x, visibleTarget.pos.y, visibleTarget.pos.z
         )
         if not callMonsterScript(script, "enemyOnSight", monster, visibleTarget) then
-            moveToward(monster, visibleTarget.pos)
+            moveToward(monster, visibleTarget.pos, charData)
         end
         return true
     end
@@ -334,7 +371,7 @@ local function updateAggro(monster, charData)
             charData[DataFields.LastMonsterTargetId] = nil
             charData[DataFields.LastMonsterTargetPosition] = nil
         else
-            moveToward(monster, lastPosition)
+            moveToward(monster, lastPosition, charData)
             return true
         end
     end
@@ -401,6 +438,8 @@ function m.RemoveAll()
 end
 
 function m.Update()
+    m.UpdateTick = m.UpdateTick + 1
+
     for _, entity in pairs(m.NewMonsters) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         CharacterManager.AddEntity(entity)
