@@ -112,7 +112,8 @@ function m.Spawn(player, selectedCharacter)
         local sex = charData[DataFields.Sex] or "male"
         return {
             type = "visual",
-            visual = m.findRaceEntity(raceId, sex):getName()
+            visual = m.findRaceEntity(raceId, sex):getName(),
+            alpha = character.isinvisible and 0.5 or 1
         }
     end)
 

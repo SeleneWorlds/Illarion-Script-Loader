@@ -70,6 +70,7 @@ Character.SeleneSetters.isinvisible = function(user, enabled)
     else
         user.SeleneEntity:makeVisible()
     end
+    user.SeleneEntity:updateVisuals()
 end
 
 Character.SeleneMethods.updateAppearance = function(user)
