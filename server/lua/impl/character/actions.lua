@@ -187,6 +187,83 @@ Character.SeleneMethods.changeSource = function(user, source)
     end
 end
 
+local function isMagicAction(script, actionFunction)
+    return type(script) == "table" and (
+        actionFunction == script.CastMagic or
+        actionFunction == script.CastMagicOnCharacter or
+        actionFunction == script.CastMagicOnItem or
+        actionFunction == script.CastMagicOnField
+    )
+end
+
+local function changeActionTarget(user, action, target)
+    local script = action.Script or action[DataFields.LastActionScript]
+    local actionFunction = action.Function or action[DataFields.LastActionFunction]
+    local actionArgs = action.Args or action[DataFields.LastActionArgs]
+    if type(script) ~= "table" or type(actionArgs) ~= "table" then
+        return
+    end
+
+    local newFunction
+    local newArgs
+    if isMagicAction(script, actionFunction) then
+        local counter = actionArgs[#actionArgs - 1] or 1
+        local param = actionArgs[#actionArgs] or 0
+        if target == nil and type(script.CastMagic) == "function" then
+            newFunction = script.CastMagic
+            newArgs = { user, counter, param }
+        elseif getmetatable(target) == Character.SeleneMetatable and
+                type(script.CastMagicOnCharacter) == "function" then
+            newFunction = script.CastMagicOnCharacter
+            newArgs = { user, target, counter, param }
+        elseif getmetatable(target) == Item.SeleneMetatable and
+                type(script.CastMagicOnItem) == "function" then
+            newFunction = script.CastMagicOnItem
+            newArgs = { user, target, counter, param }
+        elseif getmetatable(target) == position.SeleneMetatable and
+                type(script.CastMagicOnField) == "function" then
+            newFunction = script.CastMagicOnField
+            newArgs = { user, target, counter, param }
+        else
+            return
+        end
+    elseif getmetatable(target) == Item.SeleneMetatable and actionFunction == script.UseItem and
+            #actionArgs >= 3 then
+        -- Legacy UseItem actions retain their target as the third argument.
+        -- Gobaith crafting uses this to continue work on the newly made item.
+        newFunction = actionFunction
+        newArgs = table.pack(table.unpack(actionArgs, 1, actionArgs.n or #actionArgs))
+        newArgs[3] = target
+    else
+        return
+    end
+
+    if action.Function ~= nil or action.Args ~= nil then
+        action.Function = newFunction
+        action.Args = newArgs
+    else
+        action[DataFields.LastActionFunction] = newFunction
+        action[DataFields.LastActionArgs] = newArgs
+    end
+end
+
+Character.SeleneMethods.changeTarget = function(user, target)
+    local entity = user.SeleneEntity
+    local characterData = entity:getRuntimeData(DataKeys.Character)
+    if not characterData or characterData[DataFields.CharacterType] ~= Character.player then
+        -- These overloads were virtual no-ops for NPCs and monsters.
+        return
+    end
+
+    -- The legacy LTA object retained its target between callbacks. Update the
+    -- action that startAction will copy as well as an already scheduled action.
+    local lastAction = entity:getRuntimeData(DataKeys.LastAction)
+    changeActionTarget(user, lastAction, target)
+    if entity:hasRuntimeData(DataKeys.CurrentAction) then
+        changeActionTarget(user, entity:getRuntimeData(DataKeys.CurrentAction), target)
+    end
+end
+
 Entities.beforeMove:connect(function(entity)
     Character.fromSeleneEntity(entity):abortAction()
 end)
