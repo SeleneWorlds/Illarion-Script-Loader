@@ -108,10 +108,13 @@ function m.Update()
                 local event = { cancel = false }
                 Events.onNpcCycle:fire(event, entity)
 
-                local status, script = xpcall(require, charData[DataFields.Script])
-                if not event.cancel and status and type(script.nextCycle) == "function" then
-                    thisNPC = npc
-                    script.nextCycle(npc)
+                local scriptName = charData[DataFields.Script]
+                if scriptName then
+                    local status, script = xpcall(require, scriptName)
+                    if not event.cancel and status and type(script.nextCycle) == "function" then
+                        thisNPC = npc
+                        script.nextCycle(npc)
+                    end
                 end
 
                 local routeStatus = RouteManager.Advance(npc)
