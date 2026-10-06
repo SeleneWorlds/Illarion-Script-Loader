@@ -14,7 +14,8 @@ local CombatManager = require("illarion-script-loader.server.lua.lib.combatManag
 local m = {}
 
 local ACTIVE_RANGE = 60
-local RANDOM_MOVE_INTERVAL_TICKS = 20
+local MAX_ACTION_POINTS = 21
+local WALK_ACTION_POINT_COST = 20
 local VIEW_RANGE = 11
 local INITIAL_AGGRO_RANGE = 8
 local RETAINED_AGGRO_RANGE = 10
@@ -38,7 +39,6 @@ local EQUIPMENT_SLOTS = {
 
 m.IdCounter = 0
 m.NewMonsters = {}
-m.UpdateTick = 0
 
 local function getRandomDirection()
     local directions = {}
@@ -164,6 +164,7 @@ local function makeRandomMove(monster, charData)
     direction = keepDirectionInsideSpawn(monster, direction, spawn)
     if direction ~= nil then
         monster:move(DirectionUtils.SeleneToIlla(direction:getName()))
+        monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
     end
 end
 
@@ -271,10 +272,12 @@ local function moveToward(monster, targetPosition)
     )
     if path and #path > 0 then
         monster.SeleneEntity:move(path[1])
+        monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
     else
         local direction = getRandomDirection()
         if direction then
             monster:move(DirectionUtils.SeleneToIlla(direction:getName()))
+            monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
         end
     end
 end
@@ -338,7 +341,7 @@ local function updateAggro(monster, charData)
     return false
 end
 
-function m.Spawn(monsterDef, pos)
+function m.Spawn(monsterDef, pos, movePoints)
     local raceName = monsterDef:getField("race")
     local race = Registries.findByName("illarion:races", raceName)
     if not race then
@@ -356,6 +359,7 @@ function m.Spawn(monsterDef, pos)
     charData[DataFields.Script] = monsterDef:getField("script")
     entity:setCoordinate(pos)
     local monster = Character.fromSeleneEntity(entity)
+    monster.movepoints = tonumber(movePoints) or 0
     initializeAttributes(monster, monsterDef)
     initializeSkills(monster, monsterDef)
     initializeItems(monster, monsterDef)
@@ -397,11 +401,8 @@ function m.RemoveAll()
 end
 
 function m.Update()
-    m.UpdateTick = m.UpdateTick + 1
-
     for _, entity in pairs(m.NewMonsters) do
         local charData = entity:getRuntimeData(DataKeys.Character)
-        charData[DataFields.NextRandomMoveTick] = m.UpdateTick + math.random(1, RANDOM_MOVE_INTERVAL_TICKS)
         CharacterManager.AddEntity(entity)
         entity:spawn()
 
@@ -416,20 +417,23 @@ function m.Update()
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
+            monster.movepoints = monster.movepoints + 1
             monster.fightpoints = monster.fightpoints + 1
-            local routeStatus = RouteManager.Advance(monster)
-            if routeStatus == "complete" or routeStatus == "blocked" then
-                monster:setOnRoute(false)
-                local status, script = xpcall(require, charData[DataFields.Script])
-                if status and type(script.abortRoute) == "function" then
-                    script.abortRoute(monster)
+            if monster.movepoints >= MAX_ACTION_POINTS then
+                local routeStatus = RouteManager.Advance(monster)
+                if routeStatus == "moving" then
+                    monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
+                elseif routeStatus == "complete" or routeStatus == "blocked" then
+                    monster:setOnRoute(false)
+                    local status, script = xpcall(require, charData[DataFields.Script])
+                    if status and type(script.abortRoute) == "function" then
+                        script.abortRoute(monster)
+                    end
                 end
-            end
-            local nextRandomMoveTick = charData[DataFields.NextRandomMoveTick] or m.UpdateTick
-            local engaged = routeStatus == "idle" and updateAggro(monster, charData)
-            if routeStatus == "idle" and not engaged and m.UpdateTick >= nextRandomMoveTick then
-                makeRandomMove(monster, charData)
-                charData[DataFields.NextRandomMoveTick] = m.UpdateTick + RANDOM_MOVE_INTERVAL_TICKS
+                local engaged = routeStatus == "idle" and updateAggro(monster, charData)
+                if routeStatus == "idle" and not engaged then
+                    makeRandomMove(monster, charData)
+                end
             end
         end
     end
