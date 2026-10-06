@@ -78,6 +78,7 @@ end
 
 Character.SeleneMethods.setClippingActive = function(user, status)
     user.SeleneEntity:setCollisions(status)
+    user.SeleneEntity:setGravityEnabled(status)
 end
 
 Character.SeleneMethods.getClippingActive = function(user)
