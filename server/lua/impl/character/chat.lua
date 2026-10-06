@@ -15,7 +15,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
         mode = englishMode
     end
     if messageEnglish == nil then
-        local illaPlayerTalkOk, illaPlayerTalk = xpcall(require, "server.playertalk")
+        local illaPlayerTalkOk, illaPlayerTalk = pcall(require, "server.playertalk")
         if illaPlayerTalkOk then
             local lastAction = userEntity:getRuntimeData(DataKeys.LastAction)
             lastAction[DataFields.LastActionScript] = illaPlayerTalk
