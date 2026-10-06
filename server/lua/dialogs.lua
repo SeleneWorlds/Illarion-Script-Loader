@@ -71,23 +71,12 @@ Network.handlePayload("illarion:menu_struct", function(player, payload)
         return
     end
 
-    local itemId = payload.itemId == nil and nil or PayloadValidation.integer(payload.itemId, 0)
-    if payload.itemId ~= nil and not itemId then return end
     local selectedIndex = payload.slotIndex == nil and nil or PayloadValidation.integer(payload.slotIndex, 1)
     if payload.slotIndex ~= nil and not selectedIndex then return end
-    if itemId then
-        if selectedIndex then
-            local entry = dialog.items[selectedIndex]
-            if not entry or entry.id ~= itemId then return end
-        else
-            for index, entry in ipairs(dialog.items) do
-                if entry.id == itemId then selectedIndex = index break end
-            end
-            if not selectedIndex then return end
-        end
-    end
-    dialog.success = itemId ~= nil
-    dialog.selectedItemId = itemId or 0
+    local selectedItem = selectedIndex and dialog.items[selectedIndex] or nil
+    if selectedIndex and not selectedItem then return end
+    dialog.success = selectedItem ~= nil
+    dialog.selectedItemId = selectedItem and selectedItem.id or 0
     dialog.selectedItemIndex = selectedIndex or 0
 
     if dialog.callback then
@@ -99,8 +88,7 @@ end)
 
 Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
     local id = dialogId(payload)
-    local itemId = PayloadValidation.integer(payload.itemId, 0)
-    if not id or not itemId then return end
+    if not id then return end
     local character = Character.fromSelenePlayer(player)
     local dialog = DialogManager.GetDialog(character, id)
     if not dialog or dialog.type ~= "MenuStruct" then
@@ -113,7 +101,7 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
     end
 
     local entry = dialog.items[slotIndex]
-    if not entry or entry.id ~= itemId then
+    if not entry then
         return
     end
 
@@ -142,7 +130,6 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
         Network.sendToPlayer(player, "illarion:look_at_menu_item", {
             id = id,
             slotIndex = slotIndex,
-            itemId = entry.id,
             tooltip = result
         })
     end
