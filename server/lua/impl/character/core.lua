@@ -64,8 +64,12 @@ Character.SeleneGetters.isinvisible = function(user)
     return user.SeleneEntity:isInvisible()
 end
 
-Character.SeleneSetters.isinvisible = function(user)
-    user.SeleneEntity:makeInvisible()
+Character.SeleneSetters.isinvisible = function(user, enabled)
+    if enabled then
+        user.SeleneEntity:makeInvisible()
+    else
+        user.SeleneEntity:makeVisible()
+    end
 end
 
 Character.SeleneMethods.updateAppearance = function(user)
