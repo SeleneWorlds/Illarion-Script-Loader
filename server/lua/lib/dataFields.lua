@@ -29,5 +29,6 @@ m.Count = "count"
 m.Quality = "quality"
 m.Wear = "wear"
 m.TargetId = "targetId"
+m.GodMode = "godMode"
 
 return m
