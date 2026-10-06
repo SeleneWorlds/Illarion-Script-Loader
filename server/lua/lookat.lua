@@ -84,17 +84,20 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
             local event = { cancel = false }
             Events.onLookAtNpc:fire(event, entity, player)
             if not event.cancel then
-                local status, script = xpcall(require, charData[DataFields.Script])
-                if status and type(script.lookAtNpc) == "function" then
-                    script.lookAtNpc(target, character, mode)
-                else
-                    Network.sendToPlayer(player, "illarion:look_at_entity", {
-                        networkId = entity:getNetworkId(),
-                        tooltip = {
-                            name = entity:getName()
-                        }
-                    })
+                local scriptName = charData[DataFields.Script]
+                if scriptName and scriptName ~= nil then
+                    local status, script = xpcall(require, scriptName)
+                    if status and type(script.lookAtNpc) == "function" then
+                        script.lookAtNpc(target, character, mode)
+                        return
+                    end
                 end
+                Network.sendToPlayer(player, "illarion:look_at_entity", {
+                    networkId = entity:getNetworkId(),
+                    tooltip = {
+                        name = entity:getName()
+                    }
+                })
             end
         elseif characterType == Character.monster then
             local status, script = xpcall(require, charData[DataFields.Script])
