@@ -161,6 +161,13 @@ function m.loadAllCharacterSummaries()
     ]])
 end
 
+---Returns the account ID that owns a persisted character.
+---@return string
+function m.getUserIdForCharacter(characterId)
+    local userId = database:scalar("SELECT user_id FROM characters WHERE id = ?", characterId)
+    return assert(userId, "Character no longer exists.")
+end
+
 ---Updates the position of a character that is not currently loaded.
 function m.updateOfflineCharacterPosition(characterId, x, y, z)
     database:execute(

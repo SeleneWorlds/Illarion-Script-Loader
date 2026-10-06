@@ -3,7 +3,6 @@ local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
 local I18n = require("selene.i18n")
-local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -12,12 +11,12 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
+local AdminPersistence = require("illarion-script-loader.server.lua.lib.adminPersistence")
 
 local m = {}
 
 function m.IsAdminUserId(userId)
-    local admins = stringx.split(Config.getProperty("admins"), ",")
-    return tablex.find(admins, userId) ~= nil
+    return AdminPersistence.isAdmin(userId)
 end
 
 function m.IsUserOnline(userId)
