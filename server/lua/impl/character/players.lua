@@ -1,6 +1,7 @@
 local Network = require("selene.network")
 local Entities = require("selene.entities")
 local HTTP = require("selene.http")
+local Json = require("selene.json")
 local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -24,7 +25,55 @@ end
 
 Character.SeleneMethods.pageGM = function(user, message)
     local webhookUrl = Config.getProperty("notifyAdminDiscordWebhook")
-    HTTP.post(webhookUrl, { username = user.name .. " (" .. user.SelenePlayer:getUserId() .. ")", content = message })
+    local player = user.SelenePlayer
+    local now = os.time()
+    local pos = user.pos
+
+    local nearbyPlayers = {}
+    for _, nearbyPlayer in ipairs(world:getPlayersInRangeOf(pos, 20)) do
+        if nearbyPlayer.id ~= user.id then
+            table.insert(nearbyPlayers, string.format("%s (`%s`)", nearbyPlayer.name, nearbyPlayer.id))
+        end
+    end
+    table.sort(nearbyPlayers)
+
+    local nearbyLines = {}
+    local nearbyLength = 0
+    for index, line in ipairs(nearbyPlayers) do
+        local separatorLength = index > 1 and 1 or 0
+        if nearbyLength + separatorLength + #line > 990 then
+            table.insert(nearbyLines, string.format("... and %d more", #nearbyPlayers - index + 1))
+            break
+        end
+        table.insert(nearbyLines, line)
+        nearbyLength = nearbyLength + separatorLength + #line
+    end
+    local nearbyValue = #nearbyLines > 0 and table.concat(nearbyLines, "\n") or "None"
+
+    local payload = {
+        username = "Illarion GM Help",
+        embeds = {{
+            title = user.name .. " has requested a GM",
+            description = message,
+            color = 0xE6A23C,
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ", now),
+            fields = {
+                { name = "Character", value = user.name, inline = true },
+                { name = "Character ID", value = tostring(user.id), inline = true },
+                { name = "Account ID", value = tostring(player:getUserId() or "Unknown"), inline = true },
+                { name = "Coordinates", value = string.format("`%d, %d, %d`", pos.x, pos.y, pos.z), inline = true },
+                { name = "Language", value = player:getLanguage() or "Unknown", inline = true },
+                { name = "Players nearby", value = nearbyValue, inline = false },
+            },
+            footer = { text = "Server: " .. (Config.getProperty("serverVersion") or Config.getProperty("version") or "Selene") },
+        }},
+    }
+    local result = HTTP.post(webhookUrl, Json.encode(payload))
+
+    if not result.success then
+        print("[GM Help] Failed to deliver report for", user.name, "(" .. user.id .. "):", result.status, result.body)
+    end
+    return result.success
 end
 
 Character.SeleneMethods.isAdmin = function(user)
