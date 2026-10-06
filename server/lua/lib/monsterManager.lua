@@ -1,6 +1,7 @@
 local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Grid = require("selene.grid")
+local Pathfinding = require("selene.pathfinding")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -8,11 +9,16 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
+local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
 local m = {}
 
 local ACTIVE_RANGE = 60
 local RANDOM_MOVE_INTERVAL_TICKS = 20
+local VIEW_RANGE = 11
+local INITIAL_AGGRO_RANGE = 8
+local RETAINED_AGGRO_RANGE = 10
+local PATH_SEARCH_RADIUS = 32
 
 local EQUIPMENT_SLOTS = {
     backpack = Character.backpack,
@@ -160,6 +166,175 @@ local function makeRandomMove(monster, charData)
     end
 end
 
+local function loadMonsterScript(charData)
+    local scriptName = charData[DataFields.Script]
+    if scriptName == nil or scriptName == "" then
+        return nil
+    end
+    local status, script = xpcall(require, scriptName)
+    return status and script or nil
+end
+
+local function callMonsterScript(script, entrypoint, ...)
+    if script == nil or type(script[entrypoint]) ~= "function" then
+        return false
+    end
+    local status, result = pcall(script[entrypoint], ...)
+    return status and result == true
+end
+
+local function isValidPlayerTarget(monster, candidate, charData, rangedTargetingRange)
+    if candidate:getType() ~= Character.player or CharacterManager.IsDead(candidate) then
+        return false
+    end
+    if monster.SeleneEntity:getDimension() ~= candidate.SeleneEntity:getDimension() then
+        return false
+    end
+    local retained = charData[DataFields.LastMonsterTargetId] == candidate.id
+    local range = rangedTargetingRange or (retained and RETAINED_AGGRO_RANGE or INITIAL_AGGRO_RANGE)
+    if not monster:isInRange(candidate, range) then
+        return false
+    end
+    if rangedTargetingRange then
+        return next(world:LoS(monster.pos, candidate.pos)) == nil
+    end
+    return true
+end
+
+local function getCandidates(monster, range)
+    local candidates = {}
+    for _, candidate in ipairs(world:getPlayersInRangeOf(monster.pos, range)) do
+        if not CharacterManager.IsDead(candidate) then
+            candidates[#candidates + 1] = candidate
+        end
+    end
+    for _, candidate in ipairs(world:getMonstersInRangeOf(monster.pos, range)) do
+        if candidate.SeleneEntity ~= monster.SeleneEntity and not CharacterManager.IsDead(candidate) then
+            candidates[#candidates + 1] = candidate
+        end
+    end
+    return candidates
+end
+
+local function selectTarget(monster, candidates, charData, script, rangedTargetingRange)
+    if #candidates == 0 then
+        return nil
+    end
+    if script and type(script.setTarget) == "function" then
+        local status, index = pcall(script.setTarget, monster, candidates)
+        if status then
+            index = tonumber(index)
+            if index and index >= 1 and index <= #candidates then
+                return candidates[index]
+            end
+            return nil
+        end
+    end
+
+    local target
+    local targetHitpoints
+    for index = 1, #candidates do
+        local candidate = candidates[index]
+        if isValidPlayerTarget(monster, candidate, charData, rangedTargetingRange) then
+            local hitpoints = candidate:increaseAttrib("hitpoints", 0)
+            if target == nil or hitpoints < targetHitpoints then
+                target = candidate
+                targetHitpoints = hitpoints
+            end
+        end
+    end
+    return target
+end
+
+local function getWeaponRanges(monster)
+    local attackRange
+    local rangedTargetingRange
+    for _, slot in ipairs({Character.right_tool, Character.left_tool}) do
+        local item = monster:getItemAt(slot)
+        local itemDef = item.id ~= 0 and Registries.findByMetadata("illarion:items", "id", item.id) or nil
+        local weapon = itemDef and itemDef:getField("weapon") or nil
+        local range = weapon and tonumber(weapon.range)
+        if range and attackRange == nil then
+            attackRange = range
+        end
+        if range and tonumber(weapon.weaponType) == 7 then
+            rangedTargetingRange = math.max(rangedTargetingRange or 0, range)
+        end
+    end
+    return attackRange or 1, rangedTargetingRange
+end
+
+local function moveToward(monster, targetPosition)
+    local path = Pathfinding.findPath(monster.SeleneEntity, targetPosition, PATH_SEARCH_RADIUS)
+    if path and #path > 0 then
+        monster.SeleneEntity:move(path[1])
+    else
+        local direction = getRandomDirection()
+        if direction then
+            monster:move(DirectionUtils.SeleneToIlla(direction:getName()))
+        end
+    end
+end
+
+local function attackTarget(monster, target, charData, script)
+    charData[DataFields.LastMonsterTargetId] = target.id
+    charData[DataFields.LastMonsterTargetPosition] = position(target.pos.x, target.pos.y, target.pos.z)
+
+    if callMonsterScript(script, "enemyNear", monster, target) then
+        return true
+    end
+
+    local combatData = monster.SeleneEntity:getRuntimeData(DataKeys.Combat)
+    combatData[DataFields.TargetId] = target.SeleneEntity:getNetworkId()
+    if monster.fightpoints >= 0 then
+        callMonsterScript(script, "onAttack", monster, target)
+        CombatManager.Attack(monster)
+    end
+    return true
+end
+
+local function updateAggro(monster, charData)
+    local monsterDef = charData[DataFields.Monster]
+    if not monsterDef or monsterDef:getField("canAttack") ~= true then
+        return false
+    end
+
+    local script = loadMonsterScript(charData)
+    local attackRange, rangedTargetingRange = getWeaponRanges(monster)
+    local attackTargetCandidate = selectTarget(
+        monster, getCandidates(monster, attackRange), charData, script, rangedTargetingRange
+    )
+    if attackTargetCandidate then
+        return attackTarget(monster, attackTargetCandidate, charData, script)
+    end
+
+    local visibleTarget = selectTarget(
+        monster, getCandidates(monster, VIEW_RANGE), charData, script, rangedTargetingRange
+    )
+    if visibleTarget then
+        charData[DataFields.LastMonsterTargetId] = visibleTarget.id
+        charData[DataFields.LastMonsterTargetPosition] = position(
+            visibleTarget.pos.x, visibleTarget.pos.y, visibleTarget.pos.z
+        )
+        if not callMonsterScript(script, "enemyOnSight", monster, visibleTarget) then
+            moveToward(monster, visibleTarget.pos)
+        end
+        return true
+    end
+
+    local lastPosition = charData[DataFields.LastMonsterTargetPosition]
+    if lastPosition then
+        if monster:isInRangeToPosition(lastPosition, 0) then
+            charData[DataFields.LastMonsterTargetId] = nil
+            charData[DataFields.LastMonsterTargetPosition] = nil
+        else
+            moveToward(monster, lastPosition)
+            return true
+        end
+    end
+    return false
+end
+
 function m.Spawn(monsterDef, pos)
     local raceName = monsterDef:getField("race")
     local race = Registries.findByName("illarion:races", raceName)
@@ -238,6 +413,7 @@ function m.Update()
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
+            monster.fightpoints = monster.fightpoints + 1
             local routeStatus = RouteManager.Advance(monster)
             if routeStatus == "complete" or routeStatus == "blocked" then
                 monster:setOnRoute(false)
@@ -247,7 +423,8 @@ function m.Update()
                 end
             end
             local nextRandomMoveTick = charData[DataFields.NextRandomMoveTick] or m.UpdateTick
-            if routeStatus == "idle" and m.UpdateTick >= nextRandomMoveTick then
+            local engaged = routeStatus == "idle" and updateAggro(monster, charData)
+            if routeStatus == "idle" and not engaged and m.UpdateTick >= nextRandomMoveTick then
                 makeRandomMove(monster, charData)
                 charData[DataFields.NextRandomMoveTick] = m.UpdateTick + RANDOM_MOVE_INTERVAL_TICKS
             end
