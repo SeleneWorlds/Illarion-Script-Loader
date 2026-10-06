@@ -65,13 +65,17 @@ function m.setGodMode(character, enabled)
 
     local attributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
     local attribute = attributeManager.GetAttribute(character, "hitpointsOffset")
-    attribute:addConstraint("godmode", function(attribute, value)
-        local entity = attribute:getOwner()
-        if m.isGodMode(Character.fromSeleneEntity(entity)) then
-            return attribute:getValue()
-        end
-        return value
-    end)
+    if enabled then
+        attribute:addConstraint("godmode", function(attribute, value)
+            local entity = attribute:getOwner()
+            if m.isGodMode(Character.fromSeleneEntity(entity)) then
+                return attribute:getValue()
+            end
+            return value
+        end)
+    else
+        attribute:removeConstraint("godmode")
+    end
 end
 
 return m
