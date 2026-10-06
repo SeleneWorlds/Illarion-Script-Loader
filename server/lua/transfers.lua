@@ -430,7 +430,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     end
 end)
 
-Network.handlePayload("illarion:move_slot_to_coordinate", function(player, payload)
+local function moveSlotToCoordinate(player, payload)
     local fromViewId, fromSlotId = validViewAndSlot(payload, "fromViewId", "fromSlotId")
     local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
     local requestedCount = validCount(payload.count)
@@ -510,4 +510,24 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
             end
         end
     end
+end
+
+Network.handlePayload("illarion:move_slot_to_coordinate", moveSlotToCoordinate)
+
+Network.handlePayload("illarion:drop_slot_in_front", function(player, payload)
+    local entity = player:getControlledEntity()
+    local facing = entity and entity:getFacing()
+    if not facing then
+        return
+    end
+
+    local target = entity:getCoordinate():offset(facing)
+    moveSlotToCoordinate(player, {
+        fromViewId = payload.viewId,
+        fromSlotId = payload.slotId,
+        x = target:getX(),
+        y = target:getY(),
+        z = target:getZ(),
+        count = payload.count
+    })
 end)
