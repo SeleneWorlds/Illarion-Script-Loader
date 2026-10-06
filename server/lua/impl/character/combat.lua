@@ -40,7 +40,7 @@ local function callWeaponScript(attacker, defender, attackPosition)
     local itemDef = Registries.findByMetadata("illarion:items", "id", weaponId)
     if itemDef then
         local weapon = itemDef:getField("weapon")
-        if weapon and weapon.fightingScript then
+        if weapon and weapon.fightingScript and weapon.fightingScript ~= "" then
             local status, script = xpcall(require, weapon.fightingScript)
             if status and type(script.onAttack) == "function" then
                 if useLegacyDualHandCombat then
