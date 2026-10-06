@@ -177,6 +177,15 @@ function m.updateOfflineCharacterRace(characterId, raceId)
     )
 end
 
+---Updates the sex of a character that is not currently loaded.
+function m.updateOfflineCharacterSex(characterId, sex)
+    assert(sex == "male" or sex == "female", "Sex must be male or female.")
+    database:execute(
+        "UPDATE characters SET sex = ?, last_saved_at = ? WHERE id = ?",
+        { sex, os.time(), characterId }
+    )
+end
+
 ---Updates a character's name, provided it is not already used by another character.
 function m.updateCharacterName(characterId, name)
     local duplicate = database:query(
