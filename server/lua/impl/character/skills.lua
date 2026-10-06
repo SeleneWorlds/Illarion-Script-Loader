@@ -1,4 +1,5 @@
 local Registries = require("selene.registries")
+local Timelines = require("selene.timelines")
 
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
 
@@ -36,6 +37,20 @@ Character.SeleneMethods.increaseSkill = function(user, skillGroupOrSkillId, skil
     amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
     attribute:setValue(attribute:getValue() + amount)
+    if amount > 0 then
+        -- TODO This needs a better API to target all of the entity's controllers more easily
+        local entity = user.SeleneEntity
+        local players = entity:getControllingPlayers()
+        for _, player in ipairs(players) do
+            Timelines.play(player, "illarion:gfx/gfx_41", {
+                position = {
+                    x = user.pos.x,
+                    y = user.pos.y,
+                    z = user.pos.z,
+                }
+            })
+        end
+    end
     return attribute:getEffectiveValue()
 end
 
