@@ -51,7 +51,7 @@ Character.SeleneMethods.pageGM = function(user, message)
     local nearbyValue = #nearbyLines > 0 and table.concat(nearbyLines, "\n") or "None"
 
     local payload = {
-        username = "Illarion GM Help",
+        username = Server.getName(),
         embeds = {{
             title = user.name .. " has requested a GM",
             description = message,
@@ -64,8 +64,7 @@ Character.SeleneMethods.pageGM = function(user, message)
                 { name = "Coordinates", value = string.format("`%d, %d, %d`", pos.x, pos.y, pos.z), inline = true },
                 { name = "Language", value = player:getLanguage() or "Unknown", inline = true },
                 { name = "Players nearby", value = nearbyValue, inline = false },
-            },
-            footer = { text = "Server: " .. (Config.getProperty("serverVersion") or Config.getProperty("version") or "Selene") },
+            }
         }},
     }
     local result = HTTP.post(webhookUrl, Json.encode(payload))
