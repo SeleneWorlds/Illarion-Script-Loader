@@ -177,6 +177,20 @@ function m.updateOfflineCharacterRace(characterId, raceId)
     )
 end
 
+---Updates a character's name, provided it is not already used by another character.
+function m.updateCharacterName(characterId, name)
+    local duplicate = database:query(
+        "SELECT id FROM characters WHERE lower(name) = lower(?) AND id <> ?",
+        name,
+        characterId
+    )
+    assert(#duplicate == 0, "That name is already in use.")
+    database:execute(
+        "UPDATE characters SET name = ?, last_saved_at = ? WHERE id = ?",
+        { name, os.time(), characterId }
+    )
+end
+
 ---Updates the magic type of a character that is not currently loaded.
 ---@return integer oldMagicType
 function m.updateOfflineCharacterMagicType(characterId, magicType)
