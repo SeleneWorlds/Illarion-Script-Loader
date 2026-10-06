@@ -1,4 +1,4 @@
-local illaItemLookAtOk, illaItemLookAt = xpcall(require, "server.itemlookat")
+local illaItemLookAtOk, illaItemLookAt = pcall(require, "server.itemlookat")
 local Config = require("selene.config")
 local I18n = require("selene.i18n")
 
