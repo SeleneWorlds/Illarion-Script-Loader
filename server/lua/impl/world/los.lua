@@ -53,7 +53,7 @@ world.SeleneMethods.LoS = function(world, startPos, endPos)
                 if entity:hasTag("illarion:character") then
                     local blockingObject = {
                         TYPE = "CHARACTER",
-                        OBJECT = Character.fromSeleneEntity(characterEntity)
+                        OBJECT = Character.fromSeleneEntity(entity)
                     }
                     if swapped then
                         table.insert(result, blockingObject)
