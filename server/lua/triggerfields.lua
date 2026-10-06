@@ -22,7 +22,7 @@ local function notifyItemCharacterOnField(itemId, character)
     end
 
     local scriptName = item:getField("script")
-    if scriptName then
+    if scriptName and scriptName ~= "" then
         local status, script = xpcall(require, scriptName)
         if status and type(script.CharacterOnField) == "function" then
             script.CharacterOnField(character)
@@ -63,7 +63,7 @@ Entities.steppedOnTile:connect(function(entity, coordinate)
     local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
-        if scriptName then
+        if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.MoveToField) == "function" then
                 script.MoveToField(character)
@@ -82,7 +82,7 @@ Entities.steppedOffTile:connect(function(entity, coordinate)
     local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity:getCollisionViewer())
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
-        if scriptName then
+        if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.MoveFromField) == "function" then
                 script.MoveFromField(Character.fromSeleneEntity(entity))

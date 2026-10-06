@@ -200,7 +200,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
                 return toSlotId < 12 and scriptItem.inventory or scriptItem.belt
             end
             local scriptName = fromItem.def:getField("script")
-            if scriptName then
+            if scriptName and scriptName ~= "" then
                 local status, script = xpcall(require, scriptName)
                 if status and type(script.MoveItemBeforeMove) == "function" then
                     return script.MoveItemBeforeMove(context.character, movedItem, targetItem)
@@ -212,7 +212,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             closeMovedContainer(context.character, fromItem)
             closeMovedContainer(context.character, toItem)
             local scriptName = fromItem.def:getField("script")
-            if scriptName then
+            if scriptName and scriptName ~= "" then
                 local status, script = xpcall(require, scriptName)
                 if status and type(script.MoveItemAfterMove) == "function" then
                     local targetItem = Item.fromSeleneInventoryItem(toInventory:getInventoryItem(toSlotId))
@@ -298,7 +298,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
         local triggerfieldAnnotation = sourceEntity:getDimension():getAnnotationAt(sourceEntity:getCoordinate(), "illarion:triggerfield", sourceEntity.Collision)
         if triggerfieldAnnotation then
             local scriptName = triggerfieldAnnotation.script
-            if scriptName then
+            if scriptName and scriptName ~= "" then
                 local status, script = xpcall(require, scriptName)
                 if status and type(script.TakeItemFromField) == "function" then
                     script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character)
@@ -503,7 +503,7 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     local triggerfieldAnnotation = entity:getDimension():getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
-        if scriptName then
+        if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.PutItemOnField) == "function" then
                 script.PutItemOnField(Item.fromSeleneEntity(entity), Character.fromSeleneEntity(entity))

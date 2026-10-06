@@ -36,7 +36,7 @@ function m.SetDead(character, dead)
             end
         elseif characterType == Character.monster then
             local scriptName = charData[DataFields.Script]
-            if scriptName then
+            if scriptName and scriptName ~= "" then
                 local status, script = xpcall(require, scriptName)
                 if status and type(script.onDeath) == "function" then
                     local illaMonster = Character.fromSeleneEntity(character.SeleneEntity)

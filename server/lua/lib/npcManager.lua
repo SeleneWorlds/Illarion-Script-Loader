@@ -109,7 +109,7 @@ function m.Update()
                 Events.onNpcCycle:fire(event, entity)
 
                 local scriptName = charData[DataFields.Script]
-                if scriptName then
+                if scriptName and scriptName ~= "" then
                     local status, script = xpcall(require, scriptName)
                     if not event.cancel and status and type(script.nextCycle) == "function" then
                         thisNPC = npc

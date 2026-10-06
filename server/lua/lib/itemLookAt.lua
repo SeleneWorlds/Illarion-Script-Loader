@@ -8,13 +8,12 @@ local useLegacyLookAt = Config.getProperty("useLegacyLookAt") == "true"
 function m.Get(character, itemDef, item)
     local result = nil
     local scriptName = itemDef:getField("script")
-    if scriptName then
+    if scriptName and scriptName ~= "" then
         local status, script = xpcall(require, scriptName)
         if status and type(script.LookAtItem) == "function" then
             result = script.LookAtItem(character, item)
             if useLegacyLookAt then
-                -- Legacy implementations send their tooltip through
-                -- world:itemInform and intentionally return nil.
+                -- Legacy implementations send their tooltip through world:itemInform and intentionally return nil.
                 return result
             end
         end

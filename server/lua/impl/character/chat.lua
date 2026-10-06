@@ -74,7 +74,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
             local characterType = charData[DataFields.CharacterType]
             if characterType == Character.monster then
                 local scriptName = charData[DataFields.Script]
-                if scriptName then
+                if scriptName and scriptName ~= "" then
                     local status, script = xpcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
                         local illaMonster = Character.fromSeleneEntity(entity)
@@ -91,7 +91,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                 Events.onTalkToNpc:fire(event, entity, user.SelenePlayer, mode, messageEnglish or message)
                 if not event.cancel then
                     local scriptName = charData[DataFields.Script]
-                    if scriptName then
+                    if scriptName and scriptName ~= "" then
                         local status, script = xpcall(require, scriptName)
                         if status and type(script.receiveText) == "function" then
                             local illaNpc = Character.fromSeleneEntity(entity)
