@@ -5,6 +5,125 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
 
+local LEFT_TOOL = 5
+local RIGHT_TOOL = 6
+local BLOCKED_ITEM_ID = 228
+local twoHandedWeaponTypes = {
+    [4] = true,  -- slashingTwoHand
+    [5] = true,  -- concussionTwoHand
+    [6] = true,  -- punctureTwoHand
+    [13] = true  -- stave
+}
+
+function m.IsBlockedHandItem(item)
+    return item ~= nil and item.def:getMetadata("id") == BLOCKED_ITEM_ID
+end
+
+function m.IsTwoHandedItem(item)
+    local weapon = item and item.def and item.def:getField("weapon")
+    return weapon ~= nil and twoHandedWeaponTypes[tonumber(weapon.weaponType)] == true
+end
+
+local function otherHand(slotId)
+    if slotId == LEFT_TOOL then
+        return RIGHT_TOOL
+    elseif slotId == RIGHT_TOOL then
+        return LEFT_TOOL
+    end
+end
+
+-- Check the resulting hand state before an inventory move is performed. The
+-- blocked item is an implementation detail and must never be moved by a user.
+function m.CanMoveWithHands(fromInventory, fromSlotId, toInventory, toSlotId)
+    local equipment = fromInventory.isEquipment and fromInventory
+        or toInventory.isEquipment and toInventory
+    if not equipment then
+        return true
+    end
+
+    local fromItem = fromInventory:getItem(fromSlotId)
+    local toItem = toInventory:getItem(toSlotId)
+    if m.IsBlockedHandItem(fromItem) or m.IsBlockedHandItem(toItem) then
+        return false
+    end
+
+    local hands = {
+        [LEFT_TOOL] = equipment:getItem(LEFT_TOOL),
+        [RIGHT_TOOL] = equipment:getItem(RIGHT_TOOL)
+    }
+    if fromInventory == equipment then
+        hands[fromSlotId] = toInventory == equipment and toItem or nil
+    end
+    if toInventory == equipment then
+        hands[toSlotId] = fromItem
+    end
+
+    for _, slotId in ipairs({ LEFT_TOOL, RIGHT_TOOL }) do
+        local item = hands[slotId]
+        if m.IsTwoHandedItem(item) then
+            local opposite = hands[otherHand(slotId)]
+            if opposite ~= nil and not m.IsBlockedHandItem(opposite) then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+function m.CanEquipInHand(equipment, item, slotId)
+    local oppositeSlot = otherHand(slotId)
+    if not oppositeSlot then
+        return true
+    end
+    if m.IsBlockedHandItem(item) then
+        return false
+    end
+    local current = equipment:getItem(slotId)
+    if m.IsBlockedHandItem(current) then
+        return false
+    end
+    if m.IsTwoHandedItem(item) then
+        local opposite = equipment:getItem(oppositeSlot)
+        return opposite == nil or m.IsBlockedHandItem(opposite)
+    end
+    local opposite = equipment:getItem(oppositeSlot)
+    return not m.IsTwoHandedItem(opposite)
+end
+
+-- Keep the legacy placeholder in sync after a successful move. Item 228 has permanent wear.
+function m.UpdateBlockedHand(equipment)
+    if not equipment or not equipment.isEquipment then
+        return
+    end
+    for _, slotId in ipairs({ LEFT_TOOL, RIGHT_TOOL }) do
+        local item = equipment:getItem(slotId)
+        if m.IsTwoHandedItem(item) then
+            local oppositeSlot = otherHand(slotId)
+            local opposite = equipment:getItem(oppositeSlot)
+            if opposite == nil then
+                local itemDef = require("selene.registries").findByMetadata(
+                    "illarion:items", "id", BLOCKED_ITEM_ID
+                )
+                if itemDef then
+                    equipment:setItem(oppositeSlot, {
+                        def = itemDef,
+                        count = 1,
+                        quality = 333,
+                        wear = 255,
+                        data = {}
+                    })
+                end
+            end
+            return
+        end
+    end
+    for _, slotId in ipairs({ LEFT_TOOL, RIGHT_TOOL }) do
+        if m.IsBlockedHandItem(equipment:getItem(slotId)) then
+            equipment:setItem(slotId, nil)
+        end
+    end
+end
+
 function m.InitialWear(itemDef)
     return tonumber(itemDef:getField("agingSpeed")) or 255
 end
@@ -166,7 +285,9 @@ function m.GetBelt(user)
 end
 
 function m.GetEquipment(user)
-    return m.GetRuntimeDataBasedInventory(user, "equipment", equipmentSlotIds)
+    return m.GetRuntimeDataBasedInventory(user, "equipment", equipmentSlotIds, {
+        isEquipment = true
+    })
 end
 
 function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)

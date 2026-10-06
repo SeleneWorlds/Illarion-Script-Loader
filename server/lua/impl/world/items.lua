@@ -99,14 +99,7 @@ world.SeleneMethods.erase = function(world, item, amount)
             return true
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
-        local blockedItemId = 228
-        if item.itempos == Character.right_tool and (item.owner:getItemAt(Character.left_tool)).id == blockedItemId then
-            item.owner:increaseAtPos(Character.left_tool, -250);
-        elseif item.itempos == Character.left_tool and (item.owner:getItemAt(Character.right_tool)).id == blockedItemId then
-            item.owner:increaseAtPos(Character.right_tool, -250);
-        end
-
-        item.owner:increaseAtPos(item.itempos, -amount);
+        item.owner:increaseAtPos(item.itempos, -amount)
         return true
     elseif item:getType() == scriptItem.container then
         item.inside:increaseAtPos(item.itempos, -amount)

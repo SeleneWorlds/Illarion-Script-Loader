@@ -510,7 +510,9 @@ function m.restoreCollections(character, saved)
 
     local items = saved.items or {}
     restoreSafely("equipment", function()
-        restoreInventory(InventoryManager.GetEquipment(character), items.equipment, "equipment")
+        local equipment = InventoryManager.GetEquipment(character)
+        restoreInventory(equipment, items.equipment, "equipment")
+        InventoryManager.UpdateBlockedHand(equipment)
     end)
     restoreSafely("belt", function()
         restoreInventory(InventoryManager.GetBelt(character), items.belt, "belt")

@@ -182,6 +182,9 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             or (toItem and fromViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(toItem, fromSlotId)) then
         return
     end
+    if not InventoryManager.CanMoveWithHands(fromInventory, fromSlotId, toInventory, toSlotId) then
+        return
+    end
     local sourceSnapshot
     fromInventory:moveItemTo(toInventory, fromSlotId, toSlotId, count, {
         character = character,
@@ -209,6 +212,10 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             return true
         end,
         afterMove = function(context, fromInventory, fromSlotId, fromItem, toInventory, toSlotId, toItem)
+            InventoryManager.UpdateBlockedHand(fromInventory)
+            if toInventory ~= fromInventory then
+                InventoryManager.UpdateBlockedHand(toInventory)
+            end
             closeMovedContainer(context.character, fromItem)
             closeMovedContainer(context.character, toItem)
             local scriptName = fromItem.def:getField("script")
@@ -258,6 +265,10 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     if toViewId == "equipment" and not InventoryManager.ItemFitsEquipmentSlot(item, toSlotId) then
         return
     end
+    if toViewId == "equipment"
+            and not InventoryManager.CanEquipInHand(targetInventory, item, toSlotId) then
+        return
+    end
     local sourceSnapshot = CreateItemSnapshot(Item.fromSeleneEntity(sourceEntity))
     sourceSnapshot.pos = position(fromX, fromY, fromZ)
     sourceSnapshot.owner = character
@@ -288,6 +299,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     if movedCount <= 0 then
         return
     end
+    InventoryManager.UpdateBlockedHand(targetInventory)
     closeWorldContainer(item)
 
     if movedCount < sourceCount then
@@ -445,7 +457,7 @@ local function moveSlotToCoordinate(player, payload)
     end
 
     local item = fromInventory:getItem(fromSlotId)
-    if not item then
+    if not item or InventoryManager.IsBlockedHandItem(item) then
         return
     end
     local itemId = item.def:getMetadata("id")
@@ -489,6 +501,7 @@ local function moveSlotToCoordinate(player, payload)
         fromInventory:setItemCount(item, sourceCount - count)
         fromInventory:slotUpdated(fromSlotId)
     end
+    InventoryManager.UpdateBlockedHand(fromInventory)
 
     entity:spawn(dimension)
     closeMovedContainer(character, item)

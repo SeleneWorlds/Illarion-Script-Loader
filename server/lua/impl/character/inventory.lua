@@ -76,7 +76,9 @@ Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
     slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
     amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
-    return inventory:increaseCountAt(slotId, amount)
+    local rest = inventory:increaseCountAt(slotId, amount)
+    InventoryManager.UpdateBlockedHand(inventory)
+    return rest
 end
 
 Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
@@ -121,11 +123,19 @@ Character.SeleneMethods.createAtPos = function(user, slotId, itemId, count)
         error("Tried to create unknown item id " .. itemId)
     end
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
-    return inventory:addItemAt(slotId, {
+    local item = {
         def = itemDef,
         count = count,
         wear = InventoryManager.InitialWear(itemDef)
-    })
+    }
+    if inventory.isEquipment
+            and (not InventoryManager.CanEquipInHand(inventory, item, slotId)
+                or (InventoryManager.IsTwoHandedItem(item) and count ~= 1)) then
+        return count
+    end
+    local rest = inventory:addItemAt(slotId, item)
+    InventoryManager.UpdateBlockedHand(inventory)
+    return rest
 end
 
 Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
@@ -139,7 +149,9 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
     local rest = InventoryManager.GetBelt(user):removeItem(filter, count)
     if rest > 0 then
         -- TODO Illarion skips backpack slot here
-        rest = InventoryManager.GetEquipment(user):removeItem(filter, rest)
+        local equipment = InventoryManager.GetEquipment(user)
+        rest = equipment:removeItem(filter, rest)
+        InventoryManager.UpdateBlockedHand(equipment)
     end
     if rest > 0 then
         local backpack = InventoryManager.GetBackpack(user)
@@ -159,6 +171,10 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
         error("Tried to swap to unknown item id " .. newId)
     end
     local inventory = InventoryManager.GetInventoryAtSlot(user, slotId)
+    local replacement = { def = itemDef }
+    if inventory.isEquipment and not InventoryManager.CanEquipInHand(inventory, replacement, slotId) then
+        return false
+    end
     local inventoryItem = inventory:getInventoryItem(slotId)
     local item = inventoryItem and inventoryItem:getItem()
     local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
@@ -179,6 +195,7 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
         local newIllaItem = Item.fromSeleneInventoryItem(newInventoryItem)
         newIllaItem.quality = newQuality
     end
+    InventoryManager.UpdateBlockedHand(inventory)
     return true
 end
 
