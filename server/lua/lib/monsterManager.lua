@@ -14,17 +14,6 @@ local m = {}
 local ACTIVE_RANGE = 60
 local RANDOM_MOVE_INTERVAL_TICKS = 20
 
-local DIRECTIONS = {
-    [Character.north] = {x = 0, y = -1},
-    [Character.northeast] = {x = 1, y = -1},
-    [Character.east] = {x = 1, y = 0},
-    [Character.southeast] = {x = 1, y = 1},
-    [Character.south] = {x = 0, y = 1},
-    [Character.southwest] = {x = -1, y = 1},
-    [Character.west] = {x = -1, y = 0},
-    [Character.northwest] = {x = -1, y = -1}
-}
-
 local EQUIPMENT_SLOTS = {
     backpack = Character.backpack,
     head = Character.head,
@@ -46,10 +35,8 @@ m.UpdateTick = 0
 
 local function getRandomDirection()
     local directions = {}
-    for direction in pairs(DIRECTIONS) do
-        local name = DirectionUtils.IllaToSelene(direction)
-        local supported = name and xpcall(Grid.getDirectionByName, name)
-        if supported then
+    for _, direction in ipairs(Grid.getDirections()) do
+        if DirectionUtils.SeleneToIlla(direction:getName()) ~= nil then
             directions[#directions + 1] = direction
         end
     end
@@ -128,7 +115,8 @@ local function keepDirectionInsideSpawn(monster, direction, spawn)
         return direction
     end
 
-    local offset = DIRECTIONS[direction]
+    local vector = direction:getVector()
+    local offset = {x = vector:getX(), y = vector:getY()}
     local x = monster.pos.x + offset.x
     local y = monster.pos.y + offset.y
     local centerX = spawn.def:getField("x")
@@ -141,12 +129,13 @@ local function keepDirectionInsideSpawn(monster, direction, spawn)
         offset = {x = offset.x, y = -offset.y}
     end
 
-    for candidate, candidateOffset in pairs(DIRECTIONS) do
-        if candidateOffset.x == offset.x and candidateOffset.y == offset.y then
+    for _, candidate in ipairs(Grid.getDirections()) do
+        local candidateVector = candidate:getVector()
+        if candidateVector:getX() == offset.x and candidateVector:getY() == offset.y then
             return candidate
         end
     end
-    return direction
+    return nil
 end
 
 local function makeRandomMove(monster, charData)
@@ -166,7 +155,9 @@ local function makeRandomMove(monster, charData)
         return
     end
     direction = keepDirectionInsideSpawn(monster, direction, spawn)
-    monster:move(direction)
+    if direction ~= nil then
+        monster:move(DirectionUtils.SeleneToIlla(direction:getName()))
+    end
 end
 
 function m.Spawn(monsterDef, pos)
