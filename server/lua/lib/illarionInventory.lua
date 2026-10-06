@@ -24,9 +24,20 @@ end
 
 function IllarionInventory:moveItemTo(targetInventory, fromSlotId, toSlotId, count, context)
     if targetInventory ~= self and useLegacyContainerCompaction and targetInventory.isContainer then
-        toSlotId = firstFreeSlot(targetInventory)
-        if toSlotId == nil then
-            return false
+        local sourceItem = self:getItem(fromSlotId)
+        local targetItem = targetInventory:getItem(toSlotId)
+        local canMergeAtTarget = sourceItem ~= nil
+            and targetItem ~= nil
+            and targetInventory:canMergeItem(targetItem, sourceItem)
+            and targetInventory:getItemCount(targetItem) < math.min(
+                targetInventory:getItemMaxCount(targetItem),
+                targetInventory:getSlotMaxCount(toSlotId)
+            )
+        if not canMergeAtTarget then
+            toSlotId = firstFreeSlot(targetInventory)
+            if toSlotId == nil then
+                return false
+            end
         end
     end
     return ObservableMapInventory.moveItemTo(self, targetInventory, fromSlotId, toSlotId, count, context)
