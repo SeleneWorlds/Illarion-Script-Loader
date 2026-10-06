@@ -1,7 +1,18 @@
 local Registries = require("selene.registries")
 local Timelines = require("selene.timelines")
+local Logging = require("selene.logging")
 
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
+
+local function catchSkillError(methodName, callback)
+    local ok, result = xpcall(callback, debug.traceback)
+    if not ok then
+        -- Error reporting must not defeat the boundary if the logger itself fails.
+        pcall(Logging.error, "Character:" .. methodName .. " failed: " .. tostring(result))
+        return nil
+    end
+    return result
+end
 
 local function resolveSkillId(skillIdOrName)
     if type(skillIdOrName) == "string" then
@@ -30,42 +41,46 @@ Character.SeleneMethods.getMinorSkill = function(user, skillId)
 end
 
 Character.SeleneMethods.increaseSkill = function(user, skillGroupOrSkillId, skillIdOrAmount, amountOrNil)
-    local amount = type(skillIdOrAmount) == "number" and skillIdOrAmount or amountOrNil
-    local skillId = type(skillIdOrAmount) == "number" and skillGroupOrSkillId or skillIdOrAmount
-    skillId = resolveSkillId(skillId)
-    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
-    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
-    local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
-    attribute:setValue(attribute:getValue() + amount)
-    if amount > 0 then
-        -- TODO This needs a better API to target all of the entity's controllers more easily
-        local entity = user.SeleneEntity
-        local players = entity:getControllingPlayers()
-        for _, player in ipairs(players) do
-            Timelines.play(player, "illarion:gfx/gfx_41", {
-                position = {
-                    x = user.pos.x,
-                    y = user.pos.y,
-                    z = user.pos.z,
-                }
-            })
+    return catchSkillError("increaseSkill", function()
+        local amount = type(skillIdOrAmount) == "number" and skillIdOrAmount or amountOrNil
+        local skillId = type(skillIdOrAmount) == "number" and skillGroupOrSkillId or skillIdOrAmount
+        skillId = resolveSkillId(skillId)
+        skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
+        amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
+        local attribute = SkillManager.GetMajorSkillAttribute(user, skillId)
+        attribute:setValue(attribute:getValue() + amount)
+        if amount > 0 then
+            -- TODO This needs a better API to target all of the entity's controllers more easily
+            local entity = user.SeleneEntity
+            local players = entity:getControllingPlayers()
+            for _, player in ipairs(players) do
+                Timelines.play(player, "illarion:gfx/gfx_41", {
+                    position = {
+                        x = user.pos.x,
+                        y = user.pos.y,
+                        z = user.pos.z,
+                    }
+                })
+            end
         end
-    end
-    return attribute:getEffectiveValue()
+        return attribute:getEffectiveValue()
+    end)
 end
 
 Character.SeleneMethods.increaseMinorSkill = function(user, skillId, amount)
-    skillId = resolveSkillId(skillId)
-    skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
-    amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
-    local attribute = SkillManager.GetMinorSkillAttribute(user, skillId)
-    local newValue = attribute:getValue() + amount
-    if newValue >= 10000 then
-        user:increaseSkill(skillId, 1)
-        newValue = newValue - 10000
-    end
-    attribute:setValue(newValue)
-    return user:getSkill(skillId)
+    return catchSkillError("increaseMinorSkill", function()
+        skillId = resolveSkillId(skillId)
+        skillId = assert(tonumber(skillId), "skillId must be a number, was " .. tostring(skillId))
+        amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
+        local attribute = SkillManager.GetMinorSkillAttribute(user, skillId)
+        local newValue = attribute:getValue() + amount
+        if newValue >= 10000 then
+            user:increaseSkill(skillId, 1)
+            newValue = newValue - 10000
+        end
+        attribute:setValue(newValue)
+        return user:getSkill(skillId)
+    end)
 end
 
 Character.SeleneMethods.setSkill = function(user, skillId, major, minor)
