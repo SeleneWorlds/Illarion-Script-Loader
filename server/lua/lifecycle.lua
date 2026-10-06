@@ -15,9 +15,9 @@ local NPCManager = require("illarion-script-loader.server.lua.lib.npcManager")
 local MagicManager = require("illarion-script-loader.server.lua.lib.magicManager")
 
 local common = require("base.common")
-local illaReloadOk, illaReload = pcall(require, "server.reload")
-local illaReloadDefsOk, illaReloadDefs = pcall(require, "server.reload_defs")
-local illaReloadTablesOk, illaReloadTables = pcall(require, "server.reload_tables")
+local illaReloadOk, illaReload = xpcall(require, "server.reload")
+local illaReloadDefsOk, illaReloadDefs = xpcall(require, "server.reload_defs")
+local illaReloadTablesOk, illaReloadTables = xpcall(require, "server.reload_tables")
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 

@@ -41,7 +41,7 @@ local function callWeaponScript(attacker, defender, attackPosition)
     if itemDef then
         local weapon = itemDef:getField("weapon")
         if weapon and weapon.fightingScript then
-            local status, script = pcall(require, weapon.fightingScript)
+            local status, script = xpcall(require, weapon.fightingScript)
             if status and type(script.onAttack) == "function" then
                 if useLegacyDualHandCombat then
                     script.onAttack(attacker, defender, attackPosition)

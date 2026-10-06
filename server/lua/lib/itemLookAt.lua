@@ -1,4 +1,4 @@
-local illaItemLookAtOk, illaItemLookAt = pcall(require, "server.itemlookat")
+local illaItemLookAtOk, illaItemLookAt = xpcall(require, "server.itemlookat")
 local Config = require("selene.config")
 local I18n = require("selene.i18n")
 
@@ -9,7 +9,7 @@ function m.Get(character, itemDef, item)
     local result = nil
     local scriptName = itemDef:getField("script")
     if scriptName then
-        local status, script = pcall(require, scriptName)
+        local status, script = xpcall(require, scriptName)
         if status and type(script.LookAtItem) == "function" then
             result = script.LookAtItem(character, item)
             if useLegacyLookAt then

@@ -119,7 +119,7 @@ Character.SeleneMethods.changeSource = function(user, source)
         if scriptName == nil then
             return
         end
-        local status, script = pcall(require, scriptName)
+        local status, script = xpcall(require, scriptName)
         if not status then
             return
         end
@@ -158,7 +158,7 @@ Character.SeleneMethods.changeSource = function(user, source)
         if scriptName == nil then
             return
         end
-        local status, script = pcall(require, scriptName)
+        local status, script = xpcall(require, scriptName)
         if not status then
             return
         end

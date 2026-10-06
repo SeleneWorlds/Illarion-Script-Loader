@@ -108,7 +108,7 @@ function m.Update()
                 local event = { cancel = false }
                 Events.onNpcCycle:fire(event, entity)
 
-                local status, script = pcall(require, charData[DataFields.Script])
+                local status, script = xpcall(require, charData[DataFields.Script])
                 if not event.cancel and status and type(script.nextCycle) == "function" then
                     thisNPC = npc
                     script.nextCycle(npc)

@@ -109,7 +109,7 @@ Character.SeleneMethods.turn = function(user, direction)
         return
     end
 
-    local supported, seleneDirection = pcall(Grid.getDirectionByName, directionName)
+    local supported, seleneDirection = xpcall(Grid.getDirectionByName, directionName)
     if supported then
         user.SeleneEntity:setFacing(seleneDirection)
     end

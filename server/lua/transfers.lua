@@ -105,7 +105,7 @@ local function callMoveItemAfterMove(character, itemDef, sourceItem, targetItem)
         return
     end
 
-    local status, script = pcall(require, scriptName)
+    local status, script = xpcall(require, scriptName)
     if status and type(script.MoveItemAfterMove) == "function" then
         script.MoveItemAfterMove(character, sourceItem, targetItem)
     end
@@ -117,7 +117,7 @@ local function callMoveItemBeforeMove(character, itemDef, sourceItem, targetItem
         return true
     end
 
-    local status, script = pcall(require, scriptName)
+    local status, script = xpcall(require, scriptName)
     if status and type(script.MoveItemBeforeMove) == "function" then
         return script.MoveItemBeforeMove(character, sourceItem, targetItem)
     end
@@ -201,7 +201,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             end
             local scriptName = fromItem.def:getField("script")
             if scriptName then
-                local status, script = pcall(require, scriptName)
+                local status, script = xpcall(require, scriptName)
                 if status and type(script.MoveItemBeforeMove) == "function" then
                     return script.MoveItemBeforeMove(context.character, movedItem, targetItem)
                 end
@@ -213,7 +213,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             closeMovedContainer(context.character, toItem)
             local scriptName = fromItem.def:getField("script")
             if scriptName then
-                local status, script = pcall(require, scriptName)
+                local status, script = xpcall(require, scriptName)
                 if status and type(script.MoveItemAfterMove) == "function" then
                     local targetItem = Item.fromSeleneInventoryItem(toInventory:getInventoryItem(toSlotId))
                     script.MoveItemAfterMove(context.character, sourceSnapshot, targetItem)
@@ -299,7 +299,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
         if triggerfieldAnnotation then
             local scriptName = triggerfieldAnnotation.script
             if scriptName then
-                local status, script = pcall(require, scriptName)
+                local status, script = xpcall(require, scriptName)
                 if status and type(script.TakeItemFromField) == "function" then
                     script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character)
                 end
@@ -411,7 +411,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         sourceEntity.Collision
     )
     if sourceTriggerfield and sourceTriggerfield.script then
-        local status, script = pcall(require, sourceTriggerfield.script)
+        local status, script = xpcall(require, sourceTriggerfield.script)
         if status and type(script.TakeItemFromField) == "function" then
             script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character)
         end
@@ -423,7 +423,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         movedEntity.Collision
     )
     if targetTriggerfield and targetTriggerfield.script then
-        local status, script = pcall(require, targetTriggerfield.script)
+        local status, script = xpcall(require, targetTriggerfield.script)
         if status and type(script.PutItemOnField) == "function" then
             script.PutItemOnField(Item.fromSeleneEntity(movedEntity), character)
         end
@@ -504,7 +504,7 @@ Network.handlePayload("illarion:move_slot_to_coordinate", function(player, paylo
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName then
-            local status, script = pcall(require, scriptName)
+            local status, script = xpcall(require, scriptName)
             if status and type(script.PutItemOnField) == "function" then
                 script.PutItemOnField(Item.fromSeleneEntity(entity), Character.fromSeleneEntity(entity))
             end

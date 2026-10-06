@@ -47,7 +47,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                 if item then
                     local scriptName = item:getField("script")
                     if scriptName then
-                        local status, script = pcall(require, scriptName)
+                        local status, script = xpcall(require, scriptName)
                         if status and type(script.UseItem) == "function" then
                             local illaItem = Item.fromSeleneEntity(entity)
                             actionData[DataFields.LastActionScript] = script
@@ -67,7 +67,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
         if characterType == Character.monster then
             local scriptName = charData[DataFields.Script]
             if scriptName then
-                local status, script = pcall(require, scriptName)
+                local status, script = xpcall(require, scriptName)
                 if status and type(script.useMonster) == "function" then
                     actionData[DataFields.LastActionScript] = script
                     actionData[DataFields.LastActionFunction] = script.useMonster
@@ -85,7 +85,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
 
             local scriptName = charData[DataFields.Script]
             if scriptName then
-                local status, script = pcall(require, scriptName)
+                local status, script = xpcall(require, scriptName)
                 if status and type(script.useNPC) == "function" then
                     local illaNpc = Character.fromSeleneEntity(entity)
                     actionData[DataFields.LastActionScript] = script
@@ -108,7 +108,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
             if item then
                 local scriptName = item:getField("script")
                 if scriptName then
-                    local status, script = pcall(require, scriptName)
+                    local status, script = xpcall(require, scriptName)
                     if status and type(script.UseItem) == "function" then
                         local illaItem = Item.fromSeleneTile(tile)
                         actionData[DataFields.LastActionScript] = script
@@ -130,7 +130,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
     local tile = tiles[1]
     local tileScriptName = tile and tile:getMetadata("script")
     if tileScriptName then
-        local status, script = pcall(require, tileScriptName)
+        local status, script = xpcall(require, tileScriptName)
         if status and type(script.useTile) == "function" then
             actionData[DataFields.LastActionScript] = script
             actionData[DataFields.LastActionFunction] = script.useTile
@@ -177,7 +177,7 @@ Network.handlePayload("illarion:use_slot", function(player, payload)
         end
         local scriptName = inventoryItem:getItem().def:getField("script")
         if scriptName then
-            local status, script = pcall(require, scriptName)
+            local status, script = xpcall(require, scriptName)
             if status and type(script.UseItem) == "function" then
                 local item = Item.fromSeleneInventoryItem(inventoryItem)
                 actionData[DataFields.LastActionScript] = script
@@ -215,7 +215,7 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
         return
     end
 
-    local status, script = pcall(require, scriptName)
+    local status, script = xpcall(require, scriptName)
     if not status or type(script.UseItemWithField) ~= "function" then
         return
     end

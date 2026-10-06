@@ -21,12 +21,12 @@ function m.AddEffect(user, effect)
     local found, existing = user.effects:find(effect.id)
     local effectScriptName = effect.SeleneEffectDefinition:getField("script")
     if found then
-        local status, effectScript = pcall(require, effectScriptName)
+        local status, effectScript = xpcall(require, effectScriptName)
         if status and effectScript and type(effectScript.doubleEffect) == "function" then
             effectScript.doubleEffect(existing, user)
         end
     else
-        local status, effectScript = pcall(require, effectScriptName)
+        local status, effectScript = xpcall(require, effectScriptName)
         local data = m.EnsureSeleneEffectData(effect)
         if status and effectScript and type(effectScript.addEffect) == "function" and not data.addEffectCalled then
             effectScript.addEffect(effect, user)
@@ -48,7 +48,7 @@ function m.Tick(user)
             local effectDef = Registries.findByName("illarion:effects", tostring(effectName))
             if effectDef then
                 local effectScriptName = effectDef:getField("script")
-                local status, effectScript = pcall(require, effectScriptName)
+                local status, effectScript = xpcall(require, effectScriptName)
                 if status and effectScript and type(effectScript.callEffect) == "function" then
                     local effect = m.WrapLongTimeEffect(effectDef, entity, effectData)
                     if not effectScript.callEffect(effect, user) then
@@ -88,7 +88,7 @@ function m.RemoveEffect(user, effect)
    local effectDef = Registries.findByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
        local effectScriptName = effectDef:getField("script")
-       local status, effectScript = pcall(require, effectScriptName)
+       local status, effectScript = xpcall(require, effectScriptName)
        if status and effectScript and type(effectScript.removeEffect) == "function" then
            effectScript.removeEffect(effect, user)
        end

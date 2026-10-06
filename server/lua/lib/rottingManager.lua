@@ -51,7 +51,7 @@ local function notifyRotOnField(entity, replacement)
         return
     end
 
-    local status, script = pcall(require, annotation.script)
+    local status, script = xpcall(require, annotation.script)
     if status and type(script.ItemRotsOnField) == "function" then
         script.ItemRotsOnField(
             Item.fromSeleneEntity(entity),

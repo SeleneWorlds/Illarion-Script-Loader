@@ -15,7 +15,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
         mode = englishMode
     end
     if messageEnglish == nil then
-        local illaPlayerTalkOk, illaPlayerTalk = pcall(require, "server.playertalk")
+        local illaPlayerTalkOk, illaPlayerTalk = xpcall(require, "server.playertalk")
         if illaPlayerTalkOk then
             local lastAction = userEntity:getRuntimeData(DataKeys.LastAction)
             lastAction[DataFields.LastActionScript] = illaPlayerTalk
@@ -75,7 +75,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
             if characterType == Character.monster then
                 local scriptName = charData[DataFields.Script]
                 if scriptName then
-                    local status, script = pcall(require, scriptName)
+                    local status, script = xpcall(require, scriptName)
                     if status and type(script.receiveText) == "function" then
                         local illaMonster = Character.fromSeleneEntity(entity)
                         if Config.getProperty("useLegacyReceiveText") == "true" then

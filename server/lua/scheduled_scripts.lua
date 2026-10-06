@@ -13,7 +13,7 @@ for _, scheduledScript in pairs(allScheduledScripts) do
     scheduledCallbacks[scheduledScript:getName()] = function()
        local scriptName = scheduledScript:getField("script")
        local functionName = scheduledScript:getField("function")
-       local status, script = pcall(require, scriptName)
+       local status, script = xpcall(require, scriptName)
        if status and type(script[functionName]) == "function" then
            script[functionName]()
            scheduleNext(scheduledScript)

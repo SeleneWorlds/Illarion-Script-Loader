@@ -48,7 +48,7 @@ local function getRandomDirection()
     local directions = {}
     for direction in pairs(DIRECTIONS) do
         local name = DirectionUtils.IllaToSelene(direction)
-        local supported = name and pcall(Grid.getDirectionByName, name)
+        local supported = name and xpcall(Grid.getDirectionByName, name)
         if supported then
             directions[#directions + 1] = direction
         end
@@ -236,7 +236,7 @@ function m.Update()
         CharacterManager.AddEntity(entity)
         entity:spawn()
 
-        local status, script = pcall(require, charData[DataFields.Script])
+        local status, script = xpcall(require, charData[DataFields.Script])
         if status and type(script.onSpawn) == "function" then
             script.onSpawn(Character.fromSeleneEntity(entity))
         end
@@ -250,7 +250,7 @@ function m.Update()
             local routeStatus = RouteManager.Advance(monster)
             if routeStatus == "complete" or routeStatus == "blocked" then
                 monster:setOnRoute(false)
-                local status, script = pcall(require, charData[DataFields.Script])
+                local status, script = xpcall(require, charData[DataFields.Script])
                 if status and type(script.abortRoute) == "function" then
                     script.abortRoute(monster)
                 end
