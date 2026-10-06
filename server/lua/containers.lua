@@ -97,7 +97,9 @@ Network.handlePayload("illarion:open_container_at", function(player, payload)
             local item = Item.fromSeleneTile(tile)
             if isDepot then
                 if illaDepot.onOpenDepot(character, item) then
-                    local inventory = InventoryManager.GetDepot(character, tonumber(item:getData("depot")) or 0)
+                    -- VBU stores depot ids under the named "depot" key, while Gobaith uses the legacy item data value.
+                    local depotId = tonumber(item:getData("depot")) or item.data
+                    local inventory = InventoryManager.GetDepot(character, depotId)
                     openShowcase(player, character, inventory, { x = x, y = y, z = z })
                 end
             else
