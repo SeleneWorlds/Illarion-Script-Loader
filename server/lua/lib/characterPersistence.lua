@@ -1,6 +1,7 @@
 local SQLite = require("selene.sqlite")
 local Json = require("selene.json")
 local Registries = require("selene.registries")
+local Logging = require("selene.logging")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -435,21 +436,30 @@ local function deserializeItem(saved)
     }
 end
 
-local function restoreInventory(inventory, savedItems)
+local function restoreSafely(description, restore)
+    local ok, restoreError = pcall(restore)
+    if not ok then
+        Logging.error("Failed to restore character " .. description .. ": " .. tostring(restoreError))
+    end
+end
+
+local function restoreInventory(inventory, savedItems, inventoryName)
     for _, entry in ipairs(savedItems or {}) do
-        local slotId = tonumber(entry.slot)
-        if not slotId or not inventory:hasSlot(slotId) then
-            error("Cannot restore item into invalid slot " .. tostring(entry.slot))
-        end
-        local item = deserializeItem(entry.item)
-        if entry.item.content then
-            local contents = InventoryManager.GetContentsContainer({ SeleneItem = item })
-            if not contents then
-                error("Persisted contents belong to non-container item " .. tostring(entry.item.id))
+        restoreSafely("item in " .. inventoryName .. " slot " .. tostring(entry.slot), function()
+            local slotId = tonumber(entry.slot)
+            if not slotId or not inventory:hasSlot(slotId) then
+                error("Cannot restore item into invalid slot " .. tostring(entry.slot))
             end
-            restoreInventory(contents, entry.item.content)
-        end
-        inventory:setItem(slotId, item)
+            local item = deserializeItem(entry.item)
+            if entry.item.content then
+                local contents = InventoryManager.GetContentsContainer({ SeleneItem = item })
+                if not contents then
+                    error("Persisted contents belong to non-container item " .. tostring(entry.item.id))
+                end
+                restoreInventory(contents, entry.item.content, inventoryName .. " container in slot " .. tostring(slotId))
+            end
+            inventory:setItem(slotId, item)
+        end)
     end
 end
 
@@ -457,49 +467,67 @@ function m.restoreCollections(character, saved)
     local entity = character.SeleneEntity
 
     for skillId, value in pairs(saved.skills or {}) do
-        character:setSkill(tonumber(skillId), tonumber(value.major) or 0, tonumber(value.minor) or 0)
+        restoreSafely("skill " .. tostring(skillId), function()
+            character:setSkill(tonumber(skillId), tonumber(value.major) or 0, tonumber(value.minor) or 0)
+        end)
     end
 
     local introductions = entity:getRuntimeData(DataKeys.Introductions)
     for characterId, relationship in pairs(saved.introductions or {}) do
-        introductions[tonumber(characterId) or characterId] = {
-            introduced = relationship.introduced == true,
-            customName = relationship.customName
-        }
+        restoreSafely("introduction " .. tostring(characterId), function()
+            introductions[tonumber(characterId) or characterId] = {
+                introduced = relationship.introduced == true,
+                customName = relationship.customName
+            }
+        end)
     end
 
     local quests = entity:getRuntimeData(DataKeys.Quests)
     for questId, value in pairs(saved.quests or {}) do
-        local id = tonumber(questId) or questId
-        quests[id] = {
-            progress = tonumber(value.progress) or 0,
-            time = tonumber(value.time) or 0
-        }
+        restoreSafely("quest " .. tostring(questId), function()
+            local id = tonumber(questId) or questId
+            quests[id] = {
+                progress = tonumber(value.progress) or 0,
+                time = tonumber(value.time) or 0
+            }
+        end)
     end
 
     local effects = entity:getRuntimeData(DataKeys.Effects)
     for effectName, value in pairs(saved.longTimeEffects or {}) do
-        local effectDef = Registries.findByName("illarion:effects", effectName)
-        if effectDef then
+        restoreSafely("long-time effect " .. tostring(effectName), function()
+            if not Registries.findByName("illarion:effects", effectName) then
+                error("Cannot restore unknown long-time effect " .. tostring(effectName))
+            end
             effects[effectName] = tablex.observable({
                 nextCalled = tonumber(value.nextCalled) or 0,
                 numberCalled = tonumber(value.numberCalled) or 0,
                 values = tablex.observable(copyStringMap(value.values)),
                 addEffectCalled = true
             })
-        end
+        end)
     end
 
     local items = saved.items or {}
-    restoreInventory(InventoryManager.GetEquipment(character), items.equipment)
-    restoreInventory(InventoryManager.GetBelt(character), items.belt)
+    restoreSafely("equipment", function()
+        restoreInventory(InventoryManager.GetEquipment(character), items.equipment, "equipment")
+    end)
+    restoreSafely("belt", function()
+        restoreInventory(InventoryManager.GetBelt(character), items.belt, "belt")
+    end)
     for _, depot in ipairs(items.depots or {}) do
-        local numericDepotId = tonumber(depot.id)
-        local depotId = numericDepotId and math.tointeger(numericDepotId) or nil
-        if not depotId then
-            error("Cannot restore invalid depot " .. tostring(depot.id))
-        end
-        restoreInventory(InventoryManager.GetDepot(character, depotId), depot.items)
+        restoreSafely("depot " .. tostring(depot.id), function()
+            local numericDepotId = tonumber(depot.id)
+            local depotId = numericDepotId and math.tointeger(numericDepotId) or nil
+            if not depotId then
+                error("Cannot restore invalid depot " .. tostring(depot.id))
+            end
+            restoreInventory(
+                InventoryManager.GetDepot(character, depotId),
+                depot.items,
+                "depot " .. tostring(depotId)
+            )
+        end)
     end
 end
 
@@ -562,7 +590,7 @@ function m.saveCharacter(player, character)
         }
     )
     if not ok then
-        world:pageGM(character, "Failed to save")
+        character:pageGM(character, "Failed to save")
         database:execute("ROLLBACK")
     else
         database:execute("COMMIT")
