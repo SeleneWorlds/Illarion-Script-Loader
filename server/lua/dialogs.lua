@@ -73,15 +73,22 @@ Network.handlePayload("illarion:menu_struct", function(player, payload)
 
     local itemId = payload.itemId == nil and nil or PayloadValidation.integer(payload.itemId, 0)
     if payload.itemId ~= nil and not itemId then return end
+    local selectedIndex = payload.slotIndex == nil and nil or PayloadValidation.integer(payload.slotIndex, 1)
+    if payload.slotIndex ~= nil and not selectedIndex then return end
     if itemId then
-        local found = false
-        for _, entry in ipairs(dialog.items) do
-            if entry.id == itemId then found = true break end
+        if selectedIndex then
+            local entry = dialog.items[selectedIndex]
+            if not entry or entry.id ~= itemId then return end
+        else
+            for index, entry in ipairs(dialog.items) do
+                if entry.id == itemId then selectedIndex = index break end
+            end
+            if not selectedIndex then return end
         end
-        if not found then return end
     end
     dialog.success = itemId ~= nil
     dialog.selectedItemId = itemId or 0
+    dialog.selectedItemIndex = selectedIndex or 0
 
     if dialog.callback then
         dialog.callback(dialog)
@@ -124,9 +131,9 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
         SeleneItem = {
             def = itemDef,
             count = 1,
-            quality = 333,
+            quality = entry.quality or 333,
             wear = 0,
-            data = {}
+            data = entry.data and entry.data ~= 0 and { data = tostring(entry.data) } or {}
         }
     }, Item.SeleneMetatable)
 
