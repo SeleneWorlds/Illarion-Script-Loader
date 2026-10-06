@@ -19,6 +19,7 @@ local VIEW_RANGE = 11
 local INITIAL_AGGRO_RANGE = 8
 local RETAINED_AGGRO_RANGE = 10
 local PATH_SEARCH_RADIUS = 32
+local PATH_SEARCH_NODE_BUDGET = 512
 
 local EQUIPMENT_SLOTS = {
     backpack = Character.backpack,
@@ -265,7 +266,9 @@ local function getWeaponRanges(monster)
 end
 
 local function moveToward(monster, targetPosition)
-    local path = Pathfinding.findPath(monster.SeleneEntity, targetPosition, PATH_SEARCH_RADIUS)
+    local path = Pathfinding.findPath(
+        monster.SeleneEntity, targetPosition, PATH_SEARCH_RADIUS, PATH_SEARCH_NODE_BUDGET
+    )
     if path and #path > 0 then
         monster.SeleneEntity:move(path[1])
     else
