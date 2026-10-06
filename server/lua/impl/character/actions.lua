@@ -17,14 +17,24 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     local gfxHandle = nil
     local sfxHandle = nil
     if gfxId ~= 0 then
-        gfxHandle = Schedules.setInterval(100, function()
+        local playGfx = function()
             world:gfx(gfxId, user)
-        end, { immediate = true })
+        end
+        if gfxInterval > 0 then
+            gfxHandle = Schedules.setInterval(gfxInterval * 100, playGfx, { immediate = true })
+        else
+            playGfx()
+        end
     end
     if sfxId ~= 0 then
-        sfxHandle = Schedules.setInterval(100, function()
+        local playSfx = function()
             world:makeSound(sfxId, user.pos)
-        end, { immediate = true })
+        end
+        if sfxInterval > 0 then
+            sfxHandle = Schedules.setInterval(sfxInterval * 100, playSfx, { immediate = true })
+        else
+            playSfx()
+        end
     end
 
     -- Duration is in deciseconds for whatever reason
