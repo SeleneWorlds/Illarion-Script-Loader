@@ -30,7 +30,7 @@ function m.SetDead(character, dead)
         local characterType = charData[DataFields.CharacterType]
         if characterType == Character.player then
             character:abortAction()
-            local illaPlayerDeathStatus, illaPlayerDeath = xpcall(require, "server.playerdeath")
+            local illaPlayerDeathStatus, illaPlayerDeath = pcall(require, "server.playerdeath")
             if illaPlayerDeathStatus and type(illaPlayerDeath.playerDeath) == "function" then
                 illaPlayerDeath.playerDeath(character)
             end
