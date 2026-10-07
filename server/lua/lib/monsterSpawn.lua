@@ -18,11 +18,7 @@ function MonsterSpawn:new(o)
     local monsters = o.def:getField("monsters")
     if monsters then
         for monsterName, monsterCount in pairs(monsters) do
-            local monsterDef = Registries.findByName("illarion:monsters", monsterName)
-            if not monsterDef then
-                error("Unknown monster " .. monsterName .. " in spawn " .. o.def:getName())
-            end
-            table.insert(o.monsterTypes, {def = monsterDef, count = 0, maxCount = monsterCount})
+            table.insert(o.monsterTypes, {name = monsterName, count = 0, maxCount = monsterCount})
         end
     end
     setmetatable(o, self)
@@ -68,7 +64,7 @@ end
 
 function MonsterSpawn:monsterRemoved(monsterDef)
     for _, monsterType in ipairs(self.monsterTypes) do
-        if monsterType.def:getName() == monsterDef:getName() then
+        if monsterType.name == monsterDef:getName() then
             monsterType.count = math.max(0, monsterType.count - 1)
             return
         end
@@ -78,11 +74,11 @@ end
 function MonsterSpawn:spawn()
     if self.stopped then return end
     -- TODO check if spawn is enabled
-    local monsters = self.def:getField("monsters")
     local dimension = Dimensions.getDefault()
     for _, monsterType in ipairs(self.monsterTypes) do
         local num = monsterType.maxCount - monsterType.count
-        if num > 0 then
+        local monsterDef = Registries.findByName("illarion:monsters", monsterType.name)
+        if monsterDef and num > 0 then
             if not self.def:getField("spawnAll") then
                 num = math.random(1, num)
             end
@@ -95,7 +91,7 @@ function MonsterSpawn:spawn()
                 local y = centerY + math.random(-spawnRange, spawnRange)
                 local pos = position(x, y, z)
                 if not dimension:hasCollisionAt(pos) then
-                    local monster = world:createMonster(monsterType.def:getMetadata("id"), pos, 0)
+                    local monster = world:createMonster(monsterDef:getMetadata("id"), pos, 0)
                     local charData = monster.SeleneEntity:getRuntimeData(DataKeys.Character)
                     charData[DataFields.MonsterSpawn] = self.def:getName()
                     monsterType.count = monsterType.count + 1
