@@ -78,6 +78,37 @@ function m.Despawn(entity)
     return true
 end
 
+function m.FindStatic(identifier)
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        local definition = charData[DataFields.NPC]
+        if charData[DataFields.CharacterType] == Character.npc
+                and definition and definition:getName() == identifier then
+            return entity
+        end
+    end
+end
+
+function m.RemoveStatic(identifier)
+    local entity = m.FindStatic(identifier)
+    if entity then
+        entity:remove()
+    end
+end
+
+function m.RemoveAllStatic()
+    local entities = {}
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.npc and charData[DataFields.NPC] then
+            entities[#entities + 1] = entity
+        end
+    end
+    for _, entity in ipairs(entities) do
+        entity:remove()
+    end
+end
+
 function m.RemoveAll()
     local entities = {}
     for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
