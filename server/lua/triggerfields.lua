@@ -2,14 +2,28 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Dimensions = require("selene.dimensions")
 
--- On startup, we annotate all locations that have registered trigger fields
-local allTriggerFields = Registries.findAll("illarion:triggerfields")
-for _, field in pairs(allTriggerFields) do
-    local dimension = Dimensions.getDefault()
-    dimension:getMap():annotateTile(field:getField("x"), field:getField("y"), field:getField("z"), "illarion:triggerfield", {
-        script = field:getField("script")
-    })
+local annotatedCoordinates = {}
+
+local function reloadTriggerFields()
+    local map = Dimensions.getDefault():getMap()
+    for _, coordinate in ipairs(annotatedCoordinates) do
+        map:annotateTile(coordinate.x, coordinate.y, coordinate.z, "illarion:triggerfield", nil)
+    end
+    annotatedCoordinates = {}
+    for _, field in pairs(Registries.findAll("illarion:triggerfields")) do
+        local coordinate = { x = field:getField("x"), y = field:getField("y"), z = field:getField("z") }
+        map:annotateTile(coordinate.x, coordinate.y, coordinate.z, "illarion:triggerfield", {
+            script = field:getField("script")
+        })
+        annotatedCoordinates[#annotatedCoordinates + 1] = coordinate
+    end
 end
+
+reloadTriggerFields()
+Registries.entryAdded("illarion:triggerfields"):connect(reloadTriggerFields)
+Registries.entryChanged("illarion:triggerfields"):connect(reloadTriggerFields)
+Registries.entryRemoved("illarion:triggerfields"):connect(reloadTriggerFields)
+Registries.reloaded("illarion:triggerfields"):connect(reloadTriggerFields)
 
 local function notifyItemCharacterOnField(itemId, character)
     if not itemId then
