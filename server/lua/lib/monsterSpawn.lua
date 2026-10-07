@@ -53,9 +53,8 @@ end
 
 function MonsterSpawn:scheduleNext()
     if self.stopped then return end
-    local minSpawnTime = self.def:getField("minSpawnTime")
-    local maxSpawnTime = self.def:getField("maxSpawnTime")
-    local interval = math.random(minSpawnTime, maxSpawnTime)
+    local spawnTime = self.def:getField("spawnTime")
+    local interval = math.random(spawnTime.min, spawnTime.max)
     self.timeoutId = Schedules.setTimeout(interval * 1000, function()
         self.timeoutId = nil
         self:spawn()
@@ -82,14 +81,12 @@ function MonsterSpawn:spawn()
             if not self.def:getField("spawnAll") then
                 num = math.random(1, num)
             end
-            local centerX = self.def:getField("x")
-            local centerY = self.def:getField("y")
-            local z = self.def:getField("z")
+            local coordinate = self.def:getField("coordinate")
             local spawnRange = self.def:getField("spawnRange")
             for i = 1, num do
-                local x = centerX + math.random(-spawnRange, spawnRange)
-                local y = centerY + math.random(-spawnRange, spawnRange)
-                local pos = position(x, y, z)
+                local x = coordinate.x + math.random(-spawnRange, spawnRange)
+                local y = coordinate.y + math.random(-spawnRange, spawnRange)
+                local pos = position(x, y, coordinate.z)
                 if not dimension:hasCollisionAt(pos) then
                     local monster = world:createMonster(monsterDef:getMetadata("id"), pos, 0)
                     local charData = monster.SeleneEntity:getRuntimeData(DataKeys.Character)

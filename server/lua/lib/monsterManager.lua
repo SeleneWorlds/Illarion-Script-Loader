@@ -121,8 +121,9 @@ local function keepDirectionInsideSpawn(monster, direction, spawn)
     local offset = {x = vector:getX(), y = vector:getY()}
     local x = monster.pos.x + offset.x
     local y = monster.pos.y + offset.y
-    local centerX = spawn.def:getField("x")
-    local centerY = spawn.def:getField("y")
+    local coordinate = spawn.def:getField("coordinate")
+    local centerX = coordinate.x
+    local centerY = coordinate.y
 
     if math.abs(centerX - x) > spawnRange then
         offset = {x = -offset.x, y = offset.y}
