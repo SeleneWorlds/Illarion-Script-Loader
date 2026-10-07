@@ -14,7 +14,6 @@ function MonsterSpawn:new(o)
     if not o.def then
         error("Missing def field in MonsterSpawn")
     end
-    MonsterSpawn.ByName[o.def:getName()] = o
     o.monsterTypes = {}
     local monsters = o.def:getField("monsters")
     if monsters then
@@ -28,14 +27,41 @@ function MonsterSpawn:new(o)
     end
     setmetatable(o, self)
     self.__index = self
+    MonsterSpawn.ByName[o.def:getName()] = o
     return o
 end
 
+function MonsterSpawn.Remove(identifier)
+    local spawn = MonsterSpawn.ByName[identifier]
+    if spawn then
+        spawn.stopped = true
+        if spawn.timeoutId then
+            Schedules.clearTimeout(spawn.timeoutId)
+            spawn.timeoutId = nil
+        end
+        MonsterSpawn.ByName[identifier] = nil
+    end
+    local MonsterManager = require("illarion-script-loader.server.lua.lib.monsterManager")
+    MonsterManager.RemoveBySpawn(identifier)
+end
+
+function MonsterSpawn.RemoveAll()
+    local identifiers = {}
+    for identifier in pairs(MonsterSpawn.ByName) do
+        identifiers[#identifiers + 1] = identifier
+    end
+    for _, identifier in ipairs(identifiers) do
+        MonsterSpawn.Remove(identifier)
+    end
+end
+
 function MonsterSpawn:scheduleNext()
+    if self.stopped then return end
     local minSpawnTime = self.def:getField("minSpawnTime")
     local maxSpawnTime = self.def:getField("maxSpawnTime")
     local interval = math.random(minSpawnTime, maxSpawnTime)
-    Schedules.setTimeout(interval * 1000, function()
+    self.timeoutId = Schedules.setTimeout(interval * 1000, function()
+        self.timeoutId = nil
         self:spawn()
     end)
 end
@@ -50,6 +76,7 @@ function MonsterSpawn:monsterRemoved(monsterDef)
 end
 
 function MonsterSpawn:spawn()
+    if self.stopped then return end
     -- TODO check if spawn is enabled
     local monsters = self.def:getField("monsters")
     local dimension = Dimensions.getDefault()

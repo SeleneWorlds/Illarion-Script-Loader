@@ -420,6 +420,27 @@ function m.Remove(entity)
     entity:remove()
 end
 
+function m.RemoveBySpawn(identifier)
+    local entities = {}
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.MonsterSpawn] == identifier then
+            entities[#entities + 1] = entity
+        end
+    end
+    for index = #m.NewMonsters, 1, -1 do
+        local entity = m.NewMonsters[index]
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.MonsterSpawn] == identifier then
+            table.remove(m.NewMonsters, index)
+            entities[#entities + 1] = entity
+        end
+    end
+    for _, entity in ipairs(entities) do
+        m.Remove(entity)
+    end
+end
+
 function m.RemoveAll()
     local entities = {}
     for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
