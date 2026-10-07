@@ -23,7 +23,8 @@ end
 function m.Spawn(npc)
     local entity = Entities.create(npc:getField("entity"))
     entity:setName(npc:getField("name"))
-    entity:setCoordinate(npc:getField("x"), npc:getField("y"), npc:getField("z"))
+    local coordinate = npc:getField("coordinate")
+    entity:setCoordinate(coordinate.x, coordinate.y, coordinate.z)
     entity:setFacing(DirectionUtils.IllaToSelene(npc:getField("facing")))
     local id = npc:getMetadata("id") + Constants.NPC_BASE_ID
     local charData = entity:getRuntimeData(DataKeys.Character)
