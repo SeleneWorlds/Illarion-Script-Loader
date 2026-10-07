@@ -101,10 +101,7 @@ local function initializeItems(monster, monsterDef)
         local slotId = EQUIPMENT_SLOTS[slotName]
         local itemDef = Registries.findByName("illarion:items", itemData.item)
         if slotId ~= nil and itemDef then
-            local count = randomDefinitionValue({
-                min = itemData.minCount or 1,
-                max = itemData.maxCount or itemData.minCount or 1
-            })
+            local count = randomDefinitionValue(itemData.count)
             monster:createAtPos(slotId, tonumber(itemDef:getMetadata("id")), count)
         end
     end
