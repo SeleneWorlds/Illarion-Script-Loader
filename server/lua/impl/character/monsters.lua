@@ -32,10 +32,10 @@ Character.SeleneMethods.getLoot = function(user)
                 itemTable.itemId = itemDef:getMetadata("id")
                 itemTable.minAmount = item.count.min
                 itemTable.maxAmount = item.count.max
-                itemTable.minQuality = item.minQuality
-                itemTable.maxQuality = item.maxQuality
-                itemTable.minDurability = item.minDurability
-                itemTable.maxDurability = item.maxDurability
+                itemTable.minQuality = item.quality.min
+                itemTable.maxQuality = item.quality.max
+                itemTable.minDurability = item.durability.min
+                itemTable.maxDurability = item.durability.max
                 itemTable.data = item.data
                 category[tonumber(lootId)] = itemTable
             end
