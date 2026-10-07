@@ -21,6 +21,7 @@ local function isActive(npc)
 end
 
 function m.Spawn(npc)
+    if npc:getField("enabled") ~= true then return end
     local entity = Entities.create(npc:getField("entity"))
     entity:setName(npc:getField("name"))
     local coordinate = npc:getField("coordinate")
