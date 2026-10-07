@@ -72,13 +72,9 @@ local function initializeAttributes(monster, monsterDef)
 
     monster:setAttrib("hitpoints", tonumber(monsterDef:getField("hitpoints")) or 0)
 
-    local minSize = tonumber(monsterDef:getField("minSize"))
-    local maxSize = tonumber(monsterDef:getField("maxSize")) or minSize
-    if minSize then
-        monster:setAttrib(
-            "body_height",
-            math.random(math.min(minSize, maxSize), math.max(minSize, maxSize))
-        )
+    local size = monsterDef:getField("size")
+    if size then
+        monster:setAttrib("body_height", randomDefinitionValue(size))
     end
 end
 
