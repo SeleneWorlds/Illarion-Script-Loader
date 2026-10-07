@@ -52,7 +52,7 @@ function MonsterSpawn.RemoveAll()
 end
 
 function MonsterSpawn:scheduleNext()
-    if self.stopped then return end
+    if self.stopped or self.def:getField("enabled") ~= true then return end
     local spawnTime = self.def:getField("spawnTime")
     local interval = math.random(spawnTime.min, spawnTime.max)
     self.timeoutId = Schedules.setTimeout(interval * 1000, function()
@@ -71,8 +71,7 @@ function MonsterSpawn:monsterRemoved(monsterDef)
 end
 
 function MonsterSpawn:spawn()
-    if self.stopped then return end
-    -- TODO check if spawn is enabled
+    if self.stopped or self.def:getField("enabled") ~= true then return end
     local dimension = Dimensions.getDefault()
     for _, monsterType in ipairs(self.monsterTypes) do
         local num = monsterType.maxCount - monsterType.count
