@@ -441,6 +441,49 @@ function m.RemoveBySpawn(identifier)
     end
 end
 
+-- Recreate monsters so copied stats, equipment, race and script all use the new definition.
+function m.ReloadDefinitions(identifier)
+    local entities, seen = {}, {}
+    local function collect(entity)
+        if seen[entity] then return false end
+        local data = entity:getRuntimeData(DataKeys.Character)
+        local definition = data[DataFields.Monster]
+        if definition and (not identifier or definition:getName() == identifier) then
+            seen[entity] = true
+            entities[#entities + 1] = entity
+            return true
+        end
+        return false
+    end
+    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do collect(entity) end
+    for index = #m.NewMonsters, 1, -1 do
+        local entity = m.NewMonsters[index]
+        if collect(entity) or seen[entity] then table.remove(m.NewMonsters, index) end
+    end
+    local MonsterSpawn = require("illarion-script-loader.server.lua.lib.monsterSpawn")
+    for _, entity in ipairs(entities) do
+        local data = entity:getRuntimeData(DataKeys.Character)
+        local name = data[DataFields.Monster]:getName()
+        local spawnName = data[DataFields.MonsterSpawn]
+        local coordinate = position.FromSeleneCoordinate(entity:getCoordinate())
+        m.Remove(entity)
+        local definition = Registries.findByName("illarion:monsters", name)
+        if definition then
+            local monster = m.Spawn(definition, coordinate, 0)
+            monster.SeleneEntity:getRuntimeData(DataKeys.Character)[DataFields.MonsterSpawn] = spawnName
+            local spawn = spawnName and MonsterSpawn.ByName[spawnName]
+            if spawn then
+                for _, monsterType in ipairs(spawn.monsterTypes) do
+                    if monsterType.name == name then
+                        monsterType.count = monsterType.count + 1
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
+
 function m.RemoveAll()
     local entities = {}
     for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
