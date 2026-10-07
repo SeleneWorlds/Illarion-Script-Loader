@@ -37,7 +37,7 @@ Character.SeleneMethods.getLoot = function(user)
                 itemTable.minDurability = item.minDurability
                 itemTable.maxDurability = item.maxDurability
                 itemTable.data = item.data
-                category[item.lootId] = itemTable
+                category[tonumber(lootId)] = itemTable
             end
             loot[tonumber(categoryId)] = category
         end
