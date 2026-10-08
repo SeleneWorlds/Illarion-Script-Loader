@@ -17,6 +17,7 @@ end
 local function addSchedule(definition)
     local identifier = definition:getName()
     removeSchedule(identifier)
+    if definition:getField("enabled") ~= true then return end
     local schedule = { definition = definition }
     schedules[identifier] = schedule
     local function scheduleNext()
