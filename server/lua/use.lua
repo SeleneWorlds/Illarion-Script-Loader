@@ -216,15 +216,31 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
     end
 
     local status, script = xpcall(require, scriptName)
-    if not status or type(script.UseItemWithField) ~= "function" then
+    if not status then
+        return
+    end
+
+    local target = position(x, y, z)
+    local actionFunction = script.UseItemWithField
+    local entity = character.SeleneEntity
+    local entities = entity:getDimension():getEntitiesAt(x, y, z, entity:getInteractionViewer())
+    for i = #entities, 1, -1 do
+        local targetEntity = entities[i]
+        local characterData = targetEntity:getRuntimeData(DataKeys.Character)
+        if characterData and characterData[DataFields.CharacterType] then
+            target = Character.fromSeleneEntity(targetEntity)
+            actionFunction = script.UseItemWithCharacter
+            break
+        end
+    end
+    if type(actionFunction) ~= "function" then
         return
     end
 
     local item = Item.fromSeleneInventoryItem(inventoryItem)
-    local targetPosition = position(x, y, z)
     local actionData = character.SeleneEntity:getRuntimeData(DataKeys.LastAction)
     actionData[DataFields.LastActionScript] = script
-    actionData[DataFields.LastActionFunction] = script.UseItemWithField
-    actionData[DataFields.LastActionArgs] = { character, item, targetPosition, counter, 0 }
-    script.UseItemWithField(character, item, targetPosition, counter, 0, Action.none)
+    actionData[DataFields.LastActionFunction] = actionFunction
+    actionData[DataFields.LastActionArgs] = { character, item, target, counter, 0 }
+    actionFunction(character, item, target, counter, 0, Action.none)
 end)
