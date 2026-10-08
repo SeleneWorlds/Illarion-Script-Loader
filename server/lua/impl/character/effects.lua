@@ -11,7 +11,8 @@ Character.SeleneGetters.effects = function(user)
         removeEffect = function(self, idOrNameOrEffect)
             local effect = idOrNameOrEffect
             if type(idOrNameOrEffect) == "number" or type(idOrNameOrEffect) == "string" then
-                effect = self:find(idOrNameOrEffect)
+                local _, existing = self:find(idOrNameOrEffect)
+                effect = existing
             end
             if not effect then
                 return false
