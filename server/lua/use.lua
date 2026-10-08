@@ -211,7 +211,7 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
     end
 
     local scriptName = inventoryItem:getItem().def:getField("script")
-    if not scriptName then
+    if not scriptName or scriptName == "" then
         return
     end
 

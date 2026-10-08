@@ -101,7 +101,7 @@ end
 
 local function callMoveItemAfterMove(character, itemDef, sourceItem, targetItem)
     local scriptName = itemDef:getField("script")
-    if not scriptName then
+    if not scriptName or scriptName == "" then
         return
     end
 
@@ -113,7 +113,7 @@ end
 
 local function callMoveItemBeforeMove(character, itemDef, sourceItem, targetItem)
     local scriptName = itemDef:getField("script")
-    if not scriptName then
+    if not scriptName or scriptName == "" then
         return true
     end
 
