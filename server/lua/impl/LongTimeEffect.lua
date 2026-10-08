@@ -3,7 +3,7 @@ local Registries = require("selene.registries")
 local EffectManager = require("illarion-script-loader.server.lua.lib.effectManager")
 
 LongTimeEffect.SeleneConstructor = function(id, nextCalled)
-    local effectDef = Registries.findByMetadata("illarion:effects", "id", id)
+    local effectDef = Registries.findByMetadata("illarion:ltes", "id", id)
     if effectDef == nil then
         error("No such effect " .. id)
     end

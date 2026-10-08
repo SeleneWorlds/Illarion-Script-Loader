@@ -496,7 +496,7 @@ function m.restoreCollections(character, saved)
     local effects = entity:getRuntimeData(DataKeys.Effects)
     for effectName, value in pairs(saved.longTimeEffects or {}) do
         restoreSafely("long-time effect " .. tostring(effectName), function()
-            if not Registries.findByName("illarion:effects", effectName) then
+            if not Registries.findByName("illarion:ltes", effectName) then
                 error("Cannot restore unknown long-time effect " .. tostring(effectName))
             end
             effects[effectName] = tablex.observable({

@@ -51,7 +51,7 @@ function m.Tick(user)
         effectData.nextCalled = (effectData.nextCalled or 0) - 1
         if effectData.nextCalled <= 0 then
             effectData.numberCalled = (effectData.numberCalled or 0) + 1
-            local effectDef = Registries.findByName("illarion:effects", tostring(effectName))
+            local effectDef = Registries.findByName("illarion:ltes", tostring(effectName))
             if effectDef and effectDef:getField("enabled") == false then
                 -- Keep disabled effects without invoking their scripts.
             elseif effectDef then
@@ -80,9 +80,9 @@ function m.FindEffect(user, idOrName)
     local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
     local effectDef = nil
     if type(idOrName) == "number" then
-        effectDef = Registries.findByMetadata("illarion:effects", "id", idOrName)
+        effectDef = Registries.findByMetadata("illarion:ltes", "id", idOrName)
     elseif type(idOrName) == "string" then
-        effectDef = Registries.findByMetadata("illarion:effects", "name", idOrName)
+        effectDef = Registries.findByMetadata("illarion:ltes", "name", idOrName)
     end
     if effectDef and effects[effectDef:getName()] then
         return true, m.WrapLongTimeEffect(effectDef, user.SeleneEntity, effects[effectDef:getName()])
@@ -92,7 +92,7 @@ end
 
 function m.RemoveEffect(user, effect)
    local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
-   local effectDef = Registries.findByMetadata("illarion:effects", "id", effect.id)
+   local effectDef = Registries.findByMetadata("illarion:ltes", "id", effect.id)
    if effectDef then
        local status, effectScript = loadEffectScript(effectDef)
        if status and effectScript and type(effectScript.removeEffect) == "function" then
