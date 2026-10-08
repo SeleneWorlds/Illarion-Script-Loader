@@ -4,6 +4,13 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 
 local m = {}
 
+local function loadEffectScript(def)
+    if def:getField("enabled") == false then
+        return false, nil
+    end
+    return xpcall(require, def:getField("script"))
+end
+
 function m.WrapLongTimeEffect(def, entity, data)
     return setmetatable({SeleneEffectDefinition = def, SeleneEntity = entity, SeleneEffectData = data}, LongTimeEffect.SeleneMetatable)
 end
@@ -19,14 +26,13 @@ end
 
 function m.AddEffect(user, effect)
     local found, existing = user.effects:find(effect.id)
-    local effectScriptName = effect.SeleneEffectDefinition:getField("script")
     if found then
-        local status, effectScript = xpcall(require, effectScriptName)
+        local status, effectScript = loadEffectScript(effect.SeleneEffectDefinition)
         if status and effectScript and type(effectScript.doubleEffect) == "function" then
             effectScript.doubleEffect(existing, user)
         end
     else
-        local status, effectScript = xpcall(require, effectScriptName)
+        local status, effectScript = loadEffectScript(effect.SeleneEffectDefinition)
         local data = m.EnsureSeleneEffectData(effect)
         if status and effectScript and type(effectScript.addEffect) == "function" and not data.addEffectCalled then
             effectScript.addEffect(effect, user)
@@ -46,9 +52,10 @@ function m.Tick(user)
         if effectData.nextCalled <= 0 then
             effectData.numberCalled = (effectData.numberCalled or 0) + 1
             local effectDef = Registries.findByName("illarion:effects", tostring(effectName))
-            if effectDef then
-                local effectScriptName = effectDef:getField("script")
-                local status, effectScript = xpcall(require, effectScriptName)
+            if effectDef and effectDef:getField("enabled") == false then
+                -- Keep disabled effects without invoking their scripts.
+            elseif effectDef then
+                local status, effectScript = loadEffectScript(effectDef)
                 if status and effectScript and type(effectScript.callEffect) == "function" then
                     local effect = m.WrapLongTimeEffect(effectDef, entity, effectData)
                     if not effectScript.callEffect(effect, user) then
@@ -87,8 +94,7 @@ function m.RemoveEffect(user, effect)
    local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
    local effectDef = Registries.findByMetadata("illarion:effects", "id", effect.id)
    if effectDef then
-       local effectScriptName = effectDef:getField("script")
-       local status, effectScript = xpcall(require, effectScriptName)
+       local status, effectScript = loadEffectScript(effectDef)
        if status and effectScript and type(effectScript.removeEffect) == "function" then
            effectScript.removeEffect(effect, user)
        end
