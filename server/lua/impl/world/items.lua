@@ -167,7 +167,7 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
         end
     end
 
-    error("Unknown item id " .. itemId)
+    return ""
 end
 
 world.SeleneMethods.swap = function(world, item, newId, newQuality)
