@@ -4,6 +4,7 @@ local Config = require("selene.config")
 local Network = require("selene.network")
 local Schedules = require("selene.schedules")
 local Logging = require("selene.logging")
+local Permissions = require("selene.permissions")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
@@ -22,6 +23,10 @@ local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
 local CHARACTER_SAVE_INTERVAL_MS = 5 * 60 * 1000
+
+Permissions.setHandler(function(player, permission, context)
+    return PlayerManager.IsAdminUserId(player:getUserId())
+end)
 
 local function sendCharacters(player)
     Network.sendToPlayer(player, "illarion:characters", {
