@@ -14,8 +14,9 @@ Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
     end
 
     local titlecaseAttribute = attribute:gsub("^%l", string.upper, 1)
-    local minValue = race:getField("min" .. titlecaseAttribute)
-    local maxValue = race:getField("max" .. titlecaseAttribute)
+    local range = race:getField(attribute)
+    local minValue = range and range.min or race:getField("min" .. titlecaseAttribute)
+    local maxValue = range and range.max or race:getField("max" .. titlecaseAttribute)
     if not minValue or not maxValue then
         return false
     end

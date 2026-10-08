@@ -49,6 +49,15 @@ local function colourPayload(colour)
     }
 end
 
+local function raceAttributeRange(race, name)
+    local range = race:getField(name)
+    if range ~= nil then
+        return plainTable(range)
+    end
+    local title = name:gsub("^%l", string.upper, 1)
+    return { min = race:getField("min" .. title), max = race:getField("max" .. title) }
+end
+
 local function idPayload(entry, key)
     return { id = tonumber(entry[key]) }
 end
@@ -69,17 +78,13 @@ function m.getOptions(compactColours, locale)
         local raceId = tonumber(race:getMetadata("id"))
         if raceId and raceId >= 0 and raceId <= 5 then
             local attributes = {
-                age = { min = race:getField("minAge"), max = race:getField("maxAge") },
-                height = { min = race:getField("minHeight"), max = race:getField("maxHeight") },
-                weight = { min = race:getField("minWeight"), max = race:getField("maxWeight") },
+                age = raceAttributeRange(race, "age"),
+                height = raceAttributeRange(race, "height"),
+                weight = raceAttributeRange(race, "weight"),
                 total = race:getField("maxAttributePoints")
             }
             for _, name in ipairs(creationAttributes) do
-                local title = name:gsub("^%l", string.upper, 1)
-                attributes[name] = {
-                    min = race:getField("min" .. title),
-                    max = race:getField("max" .. title)
-                }
+                attributes[name] = raceAttributeRange(race, name)
             end
 
             local types = {}
