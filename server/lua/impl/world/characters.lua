@@ -22,12 +22,12 @@ world.SeleneMethods.getCharacterOnField = function(world, pos)
     return nil
 end
 
-world.SeleneMethods.getCharactersInRangeOf = function(world)
+world.SeleneMethods.getCharactersInRangeOf = function(world, pos, range)
     local dimension = Dimensions.getDefault()
     local entities = dimension:getEntitiesInRange(pos, range)
     local characters = {}
     for _, entity in ipairs(entities) do
-        if entity.hasTag("illarion:character") then
+        if entity:hasTag("illarion:character") then
             table.insert(characters, Character.fromSeleneEntity(entity))
         end
     end
