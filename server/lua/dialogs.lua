@@ -105,6 +105,16 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
         return
     end
 
+    if dialog.lookAt then
+        local tooltip = dialog.lookAt(slotIndex)
+        if tooltip then
+            Network.sendToPlayer(player, "illarion:look_at_menu_item", {
+                id = id, slotIndex = slotIndex, tooltip = tooltip
+            })
+        end
+        return
+    end
+
     local itemDef = Registries.findByMetadata("illarion:items", "id", entry.id)
     if not itemDef then
         return
