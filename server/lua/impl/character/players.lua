@@ -1,3 +1,4 @@
+local Server = require("selene.server")
 local Network = require("selene.network")
 local Entities = require("selene.entities")
 local HTTP = require("selene.http")
