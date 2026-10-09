@@ -380,6 +380,7 @@ function m.Spawn(monsterDef, pos, movePoints)
     end
 
     local entity = Entities.create(race:getIdentifier():withPrefix("races/"):withSuffix("_0"))
+    entity:setName(race:getField("name"))
     m.IdCounter = m.IdCounter + 1
     local charData = entity:getRuntimeData(DataKeys.Character)
     charData[DataFields.ID] = Constants.MONSTER_BASE_ID
