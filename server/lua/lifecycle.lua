@@ -8,6 +8,7 @@ local Permissions = require("selene.permissions")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
+local BanManager = require("illarion-script-loader.server.lua.lib.banManager")
 local CharacterCreation = require("illarion-script-loader.server.lua.lib.characterCreation")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 local SkillManager = require("illarion-script-loader.server.lua.lib.skillManager")
@@ -50,7 +51,10 @@ end
 
 Players.playerQueued:connect(function(entry)
     local userId = entry:getUserId()
-    if not PlayerManager.IsAdminUserId(userId) and PlayerManager.IsUserOnline(userId) then
+    local ban = BanManager.getAccountBan(userId)
+    if ban then
+        entry:reject(BanManager.message("account", ban))
+    elseif not PlayerManager.IsAdminUserId(userId) and PlayerManager.IsUserOnline(userId) then
         entry:reject("This account is already logged in.")
     else
         entry:accept()
@@ -58,6 +62,11 @@ Players.playerQueued:connect(function(entry)
 end)
 
 Players.playerJoined:connect(function(player)
+    local ban = BanManager.getAccountBan(player:getUserId())
+    if ban then
+        player:kick(BanManager.message("account", ban))
+        return
+    end
     sendCharacters(player)
 end)
 
@@ -114,6 +123,12 @@ Network.handlePayload("illarion:select_character", function(player, payload)
     end
     for _, ownedCharacter in ipairs(CharacterPersistence.loadCharacterSummaries(player)) do
         if ownedCharacter.id == selectedId then
+            local accountBan = BanManager.getAccountBan(player:getUserId())
+            local characterBan = BanManager.getCharacterBan(selectedId)
+            if accountBan or characterBan then
+                player:kick(BanManager.message(accountBan and "account" or "character", accountBan or characterBan))
+                return
+            end
             if PlayerManager.IsCharacterOnline(selectedId) then
                 player:kick("This character is already logged in.")
                 return
