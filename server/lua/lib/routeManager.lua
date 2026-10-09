@@ -121,6 +121,9 @@ function m.Advance(character)
     if not state.onRoute then
         return "idle"
     end
+    if character.SeleneEntity:isMoving() then
+        return "moving"
+    end
 
     local ready, status = ensurePath(character, state)
     if not ready then
