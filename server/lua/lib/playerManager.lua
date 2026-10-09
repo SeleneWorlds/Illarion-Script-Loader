@@ -104,6 +104,9 @@ function m.Spawn(player, selectedCharacter)
     entity:setCoordinate(selectedCharacter.x, selectedCharacter.y, selectedCharacter.z)
     entity:setFacing(DirectionUtils.IllaToSelene(selectedCharacter.facing) or "south")
     entity:addDynamicComponent("illarion:name", function(entity, forPlayer)
+        if forPlayer == player then
+            return nil
+        end
         return {
             type = "visual",
             visual = "illarion:labels/character",
