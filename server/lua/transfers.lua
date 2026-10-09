@@ -513,13 +513,19 @@ local function moveSlotToCoordinate(player, payload)
         Item.fromSeleneEntity(entity)
     )
 
-    local triggerfieldAnnotation = entity:getDimension():getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
+    local targetDimension = entity:getDimension()
+    if not targetDimension then
+        -- If we despawned in a move callback, abort here
+        return
+    end
+
+    local triggerfieldAnnotation = targetDimension:getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
         local scriptName = triggerfieldAnnotation.script
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.PutItemOnField) == "function" then
-                script.PutItemOnField(Item.fromSeleneEntity(entity), Character.fromSeleneEntity(entity))
+                script.PutItemOnField(Item.fromSeleneEntity(entity), character)
             end
         end
     end
