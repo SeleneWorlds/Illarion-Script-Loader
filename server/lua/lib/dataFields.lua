@@ -30,5 +30,6 @@ m.Quality = "quality"
 m.Wear = "wear"
 m.TargetId = "targetId"
 m.GodMode = "godMode"
+m.Frozen = "frozen"
 
 return m

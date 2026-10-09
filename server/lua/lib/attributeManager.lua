@@ -2,14 +2,18 @@ local Attributes = require("selene.attributes")
 local Network = require("selene.network")
 
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
 
 local function updateActionPointControls(attribute)
     local points = attribute:getEffectiveValue()
-    for _, player in ipairs(attribute:getOwner():getControllingPlayers()) do
+    local owner = attribute:getOwner()
+    local frozen = owner:getRuntimeData(DataKeys.Character)[DataFields.Frozen]
+    for _, player in ipairs(owner:getControllingPlayers()) do
         -- Illarion requires 7 action points to move and 1 to turn.
-        player:setCanMove(points >= 7)
+        player:setCanMove(not frozen and points >= 7)
         player:setCanTurn(points >= 1)
     end
 end
