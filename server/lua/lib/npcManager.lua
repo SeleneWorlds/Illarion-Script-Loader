@@ -1,5 +1,6 @@
 local Config = require("selene.config")
 local Entities = require("selene.entities")
+local Registries = require("selene.registries")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -21,6 +22,11 @@ end
 
 function m.Spawn(npc)
     if npc:getField("enabled") ~= true then return end
+    local raceName = npc:getField("race")
+    local race = Registries.findByName("illarion:races", raceName)
+    if not race then
+        error("Unknown NPC race " .. tostring(raceName))
+    end
     local entity = Entities.create(npc:getField("entity"))
     entity:setName(npc:getField("name"))
     local coordinate = npc:getField("coordinate")
@@ -32,7 +38,7 @@ function m.Spawn(npc)
     charData[DataFields.CharacterType] = Character.npc
     charData[DataFields.NPC] = npc
     charData[DataFields.Script] = npc:getField("script")
-    charData[DataFields.Race] = npc:getField("race")
+    charData[DataFields.Race] = race:getMetadata("id")
     charData[DataFields.Sex] = npc:getField("sex") == 1 and "female" or "male"
     if Config.getProperty("showNpcNameTags") == "true" then
         entity:addDynamicComponent("illarion:name", function(entity)
