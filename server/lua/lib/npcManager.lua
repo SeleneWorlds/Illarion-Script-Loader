@@ -39,7 +39,7 @@ function m.Spawn(npc)
     charData[DataFields.NPC] = npc
     charData[DataFields.Script] = npc:getField("script")
     charData[DataFields.Race] = race:getMetadata("id")
-    charData[DataFields.Sex] = npc:getField("sex") == 1 and "female" or "male"
+    charData[DataFields.Sex] = npc:getField("sex")
     local character = Character.fromSeleneEntity(entity)
     for skillName, value in pairs(npc:getField("skills") or {}) do
         local skill = Registries.findByName("illarion:skills", skillName)
