@@ -6,6 +6,9 @@ local Schedules = require("selene.schedules")
 local Logging = require("selene.logging")
 local Permissions = require("selene.permissions")
 
+local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 local BanManager = require("illarion-script-loader.server.lua.lib.banManager")
@@ -23,6 +26,8 @@ local illaReloadTablesOk, illaReloadTables = pcall(require, "server.reload_table
 local illaLogin = require("server.login")
 local illaLogout = require("server.logout")
 
+-- Persisted character IDs start at 1; 0 is reserved for the headless selection button.
+local HEADLESS_CHARACTER_ID = 0
 local CHARACTER_SAVE_INTERVAL_MS = 5 * 60 * 1000
 
 Permissions.setHandler(function(player, permission, context)
@@ -30,9 +35,11 @@ Permissions.setHandler(function(player, permission, context)
 end)
 
 local function sendCharacters(player)
-    Network.sendToPlayer(player, "illarion:characters", {
-        characters = CharacterPersistence.loadCharacterSummaries(player)
-    })
+    local characters = CharacterPersistence.loadCharacterSummaries(player)
+    if PlayerManager.IsAdminUserId(player:getUserId()) then
+        table.insert(characters, { id = HEADLESS_CHARACTER_ID, name = "Headless Login" })
+    end
+    Network.sendToPlayer(player, "illarion:characters", { characters = characters })
 end
 
 local function finishLogin(player, selectedCharacter)
@@ -44,7 +51,9 @@ local function finishLogin(player, selectedCharacter)
         common.InformNLS(character, welcomeMessageDe, welcomeMessageEn)
     end
 
-    illaLogin.onLogin(character)
+    if not selectedCharacter.headless then
+        illaLogin.onLogin(character)
+    end
     SkillManager.SendAll(character)
     MagicManager.SendMagicState(character)
 end
@@ -121,6 +130,23 @@ Network.handlePayload("illarion:select_character", function(player, payload)
     if not selectedId then
         return
     end
+    if selectedId == HEADLESS_CHARACTER_ID then
+        if not PlayerManager.IsAdminUserId(player:getUserId()) then
+            return
+        end
+        local ban = BanManager.getAccountBan(player:getUserId())
+        if ban then
+            player:kick(BanManager.message("account", ban))
+            return
+        end
+        finishLogin(player, PlayerManager.CreateHeadlessCharacter())
+        Network.sendToPlayer(player, "illarion:character_selected", { id = selectedId })
+        local editorOk, editor = pcall(require, "moonlight-editor.server.lua.editor")
+        if editorOk and not editor.isEnabled(player) then
+            editor.toggle(player)
+        end
+        return
+    end
     for _, ownedCharacter in ipairs(CharacterPersistence.loadCharacterSummaries(player)) do
         if ownedCharacter.id == selectedId then
             local accountBan = BanManager.getAccountBan(player:getUserId())
@@ -150,7 +176,9 @@ Players.playerLeft:connect(function(player)
     if player:getControlledEntity() then
         local character = Character.fromSelenePlayer(player)
         character:abortAction()
-        illaLogout.onLogout(character)
+        if not player:getControlledEntity():getRuntimeData(DataKeys.Character)[DataFields.Headless] then
+            illaLogout.onLogout(character)
+        end
         CharacterPersistence.saveCharacter(player, character)
     end
     PlayerManager.Despawn(player)

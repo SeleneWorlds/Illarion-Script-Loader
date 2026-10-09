@@ -60,12 +60,44 @@ function m.findRaceEntity(raceId, sex)
     return Registries.findByName("entities", "illarion:races/race_0_0")
 end
 
+---Builds an in-memory character; negative IDs cannot collide with persisted players or NPCs.
+function m.CreateHeadlessCharacter()
+    local id = -1
+    while CharacterManager.GetCharacterById(id) do
+        id = id - 1
+    end
+    local selected = {
+        id = id, name = "Admin", headless = true, race = 26, sex = "male",
+        x = -465, y = -465, z = 0,
+        facing = 4, age = 18, weight = 0, bodyHeight = 0,
+        hitpoints = 10000, mana = 0, foodlevel = 30000, attitude = 0, luck = 0,
+        poison = 0, mentalCapacity = 10000, magicType = 0,
+        magicFlagsMage = 0, magicFlagsPriest = 0, magicFlagsBard = 0, magicFlagsDruid = 0,
+        alive = true, hair = 0, beard = 0, totalOnlineTime = 0,
+        hairRed = 255, hairGreen = 255, hairBlue = 255, hairAlpha = 255,
+        skinRed = 255, skinGreen = 255, skinBlue = 255, skinAlpha = 255
+    }
+    for _, name in ipairs({
+        "strength", "dexterity", "constitution", "agility",
+        "intelligence", "perception", "willpower", "essence"
+    }) do
+        selected[name] = 10
+    end
+    return selected
+end
+
 function m.Spawn(player, selectedCharacter)
     local entity = Entities.create(m.findRaceEntity(selectedCharacter.race, selectedCharacter.sex))
     local id = selectedCharacter.id
     entity:setName(selectedCharacter.name)
     local charData = entity:getRuntimeData(DataKeys.Character)
     charData[DataFields.ID] = id
+    charData[DataFields.Headless] = selectedCharacter.headless == true
+    if selectedCharacter.headless then
+        entity:makeInvisible()
+        entity:setCollisions(false)
+        entity:setGravityEnabled(false)
+    end
     charData[DataFields.CharacterType] = Character.player
     charData[DataFields.Race] = selectedCharacter.race
     charData[DataFields.Sex] = selectedCharacter.sex

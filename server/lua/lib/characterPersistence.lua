@@ -534,6 +534,9 @@ function m.restoreCollections(character, saved)
 end
 
 function m.saveCharacter(player, character)
+    if character.SeleneEntity:getRuntimeData(DataKeys.Character)[DataFields.Headless] then
+        return
+    end
     local userId = getUserId(player)
     local entity = character.SeleneEntity
     local characterData = entity:getRuntimeData(DataKeys.Character)

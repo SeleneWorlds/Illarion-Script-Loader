@@ -1,6 +1,7 @@
 local m = {}
 
 m.ID = "id"
+m.Headless = "headless"
 m.CharacterType = "characterType"
 m.Race = "race"
 m.Sex = "sex"
