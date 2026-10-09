@@ -8,6 +8,7 @@ local Events = require("illarion-script-loader.server.lua.lib.events")
 local PAYLOAD_ID = "illarion:weather"
 local RESYNC_INTERVAL_MS = 60 * 1000
 local RAIN_TIMELINE = "illarion:weather/rain"
+local FOG_TIMELINE = "illarion:weather/fog"
 local SNOW_TIMELINE = "illarion:weather/snow"
 local WEATHER_TAG = "illarion:weather"
 local LIGHTNING_TIMELINE = "illarion:weather/lightning"
@@ -27,7 +28,7 @@ local function getPrecipitationTimeline(weather)
     return nil
 end
 
-local function updatePrecipitationEffect(player, weather)
+local function updateWeatherEffects(player, weather)
     local timeline = getPrecipitationTimeline(weather)
     local precipitationStrength = math.min(math.max((weather.percipitation_strength or 0) / 100, 0), 1)
     Timelines.stopTag(player, WEATHER_TAG)
@@ -38,6 +39,10 @@ local function updatePrecipitationEffect(player, weather)
             { precipitationStrength = precipitationStrength },
             { WEATHER_TAG }
         )
+    end
+    local fogDensity = math.min(math.max((weather.fog_density or 0) / 100, 0), 1)
+    if fogDensity > 0 then
+        Timelines.play(player, FOG_TIMELINE, { fogDensity = fogDensity }, { WEATHER_TAG })
     end
 end
 
@@ -58,13 +63,13 @@ end
 local function sendWeather(player)
     local weather = createWeatherPayload()
     Network.sendToPlayer(player, PAYLOAD_ID, weather)
-    updatePrecipitationEffect(player, weather)
+    updateWeatherEffects(player, weather)
 end
 
 local function broadcastWeather(weather)
     for _, player in ipairs(Players.getOnlinePlayers()) do
         Network.sendToPlayer(player, PAYLOAD_ID, weather)
-        updatePrecipitationEffect(player, weather)
+        updateWeatherEffects(player, weather)
     end
 end
 
