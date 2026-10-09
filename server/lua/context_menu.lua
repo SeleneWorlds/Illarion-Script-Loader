@@ -160,7 +160,17 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
     if not action then
         return
     end
-    local maximumRange = (action == "lookAt" or action == "lookAtClose" or action == "attack") and 14 or 1
+    local maximumRange = (action == "lookAt" or action == "lookAtClose" or action == "attack"
+        or action == "giveName") and 14 or 1
+    -- Naming is tied to the selected person, who may move while the dialog is open.
+    if action == "giveName" then
+        local namingTarget = PayloadValidation.entityInRange(player, payload.networkId, maximumRange)
+        if not namingTarget or namingTarget == player:getControlledEntity() then
+            return
+        end
+        local coordinate = namingTarget:getCoordinate()
+        payload.x, payload.y, payload.z = coordinate:getX(), coordinate:getY(), coordinate:getZ()
+    end
     local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, maximumRange)
     local target = payload.networkId == nil and nil
         or PayloadValidation.entityInRange(player, payload.networkId, maximumRange)

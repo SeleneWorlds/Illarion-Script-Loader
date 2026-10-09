@@ -13,7 +13,7 @@ function m.Get(entity, viewer, locale)
         if viewer == entity then return entity:getName() end
         local introductions = viewer and viewer:getRuntimeData(DataKeys.Introductions)
         local relationship = introductions and introductions[charData[DataFields.ID]]
-        if relationship and relationship.customName then return relationship.customName end
+        if relationship and relationship.customName then return "'" .. relationship.customName .. "'" end
         if relationship and relationship.introduced then return entity:getName() end
     elseif characterType ~= Character.monster then
         return entity:getName()
