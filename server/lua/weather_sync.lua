@@ -10,7 +10,10 @@ local RESYNC_INTERVAL_MS = 60 * 1000
 local RAIN_TIMELINE = "illarion:weather/rain"
 local FOG_TIMELINE = "illarion:weather/fog"
 local SNOW_TIMELINE = "illarion:weather/snow"
-local WEATHER_TAG = "illarion:weather"
+local PRECIPITATION_INSTANCE = "weather-precipitation"
+local FOG_INSTANCE = "weather-fog"
+local WEATHER_TRANSITION_SECONDS = 2
+local PRECIPITATION_TIMELINE_KEY = "illarion:weather/precipitation_timeline"
 local LIGHTNING_TIMELINE = "illarion:weather/lightning"
 local LIGHTNING_CHECK_INTERVAL_MS = 1000
 local LIGHTNING_CHANCE_SCALE = 1000
@@ -31,19 +34,28 @@ end
 local function updateWeatherEffects(player, weather)
     local timeline = getPrecipitationTimeline(weather)
     local precipitationStrength = math.min(math.max((weather.percipitation_strength or 0) / 100, 0), 1)
-    Timelines.stopTag(player, WEATHER_TAG)
-    if timeline then
-        Timelines.play(
-            player,
-            timeline,
-            { precipitationStrength = precipitationStrength },
-            { WEATHER_TAG }
-        )
+    local activeTimeline = player[PRECIPITATION_TIMELINE_KEY]
+    if timeline and timeline ~= activeTimeline then
+        -- New emitters start at zero; replacing the instance lets old particles finish.
+        Timelines.play(player, timeline, { precipitationStrength = 0 }, nil, {
+            instanceId = PRECIPITATION_INSTANCE
+        })
+        player[PRECIPITATION_TIMELINE_KEY] = timeline
+        activeTimeline = timeline
+    end
+    if activeTimeline then
+        Timelines.play(player, activeTimeline, {
+            precipitationStrength = timeline and precipitationStrength or 0
+        }, nil, {
+            instanceId = PRECIPITATION_INSTANCE,
+            transition = WEATHER_TRANSITION_SECONDS
+        })
     end
     local fogDensity = math.min(math.max((weather.fog_density or 0) / 100, 0), 1)
-    if fogDensity > 0 then
-        Timelines.play(player, FOG_TIMELINE, { fogDensity = fogDensity }, { WEATHER_TAG })
-    end
+    Timelines.play(player, FOG_TIMELINE, { fogDensity = fogDensity }, nil, {
+        instanceId = FOG_INSTANCE,
+        transition = WEATHER_TRANSITION_SECONDS
+    })
 end
 
 local function createWeatherPayload()
@@ -77,7 +89,10 @@ Network.handlePayload("illarion:request_weather", function(player)
     sendWeather(player)
 end)
 
-Players.playerJoined:connect(sendWeather)
+Players.playerJoined:connect(function(player)
+    Timelines.play(player, FOG_TIMELINE, { fogDensity = 0 }, nil, { instanceId = FOG_INSTANCE })
+    sendWeather(player)
+end)
 Events.onWeatherChanged:connect(broadcastWeather)
 
 Schedules.setInterval(RESYNC_INTERVAL_MS, function()
