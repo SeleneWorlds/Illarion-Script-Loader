@@ -7,6 +7,7 @@ local Config = require("selene.config")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
+local EventLog = require("illarion-script-loader.server.lua.lib.eventLog")
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 
 Character.SeleneMethods.inform = function(user, message, messageEnglish, priority)
@@ -100,7 +101,9 @@ Character.SeleneMethods.idleTime = function(user)
 end
 
 Character.SeleneMethods.logAdmin = function(user, message)
-    local playerTypePrefix = user:isAdmin() and "Admin" or "Player"
+    local isAdmin = user:isAdmin()
+    EventLog.logAdmin(user, message, isAdmin)
+    local playerTypePrefix = isAdmin and "Admin" or "Player"
     print("[Admin]", playerTypePrefix, user.name, "(" .. user.id .. ")", "uses admin tool:", message)
 end
 

@@ -6,6 +6,7 @@ local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
 local Events = require("illarion-script-loader.server.lua.lib.events")
+local EventLog = require("illarion-script-loader.server.lua.lib.eventLog")
 
 Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     local userEntity = user.SeleneEntity
@@ -40,6 +41,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     if not dimension then
         return
     end
+    EventLog.logChat(user, mode, message, messageEnglish)
     local entities = dimension:getEntitiesInRange(userEntity:getCoordinate(), range)
     local nonPlayerListeners = {}
     for _, entity in ipairs(entities) do
@@ -127,6 +129,10 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
         range = 30
     end
     local dimension = user.SeleneEntity:getDimension()
+    if not dimension then
+        return
+    end
+    EventLog.logChat(user, mode, message, nil, language)
     local entities = dimension:getEntitiesInRange(userEntity:getCoordinate(), range)
     local nonPlayerListeners = {}
     for _, entity in ipairs(entities) do
