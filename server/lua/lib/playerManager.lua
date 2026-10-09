@@ -1,6 +1,6 @@
 local Players = require("selene.players")
 local Entities = require("selene.entities")
-local Registries = require("selene.registries")
+local CharacterVisual = require("illarion-script-loader.server.lua.lib.characterVisual")
 local Network = require("selene.network")
 local NameManager = require("illarion-script-loader.server.lua.lib.nameManager")
 
@@ -41,24 +41,6 @@ function m.IsCharacterOnline(characterId)
     return false
 end
 
-function m.findRaceEntity(raceId, sex)
-    local preferredTypeId = sex == "female" and 1 or 0
-    local fallback = nil
-
-    for _, entityDefinition in pairs(Registries.findAll("entities")) do
-        if entityDefinition:getMetadata("raceId") == raceId then
-            fallback = fallback or entityDefinition
-            if entityDefinition:getMetadata("typeId") == preferredTypeId then
-                return entityDefinition
-            end
-        end
-    end
-
-    if fallback then
-        return fallback
-    end
-    return Registries.findByName("entities", "illarion:races/race_0_0")
-end
 
 ---Builds an in-memory character; negative IDs cannot collide with persisted players or NPCs.
 function m.CreateHeadlessCharacter()
@@ -87,7 +69,7 @@ function m.CreateHeadlessCharacter()
 end
 
 function m.Spawn(player, selectedCharacter)
-    local entity = Entities.create(m.findRaceEntity(selectedCharacter.race, selectedCharacter.sex))
+    local entity = Entities.create(CharacterVisual.findRaceEntity(selectedCharacter.race, selectedCharacter.sex))
     local id = selectedCharacter.id
     entity:setName(selectedCharacter.name)
     local charData = entity:getRuntimeData(DataKeys.Character)
@@ -125,15 +107,6 @@ function m.Spawn(player, selectedCharacter)
     player:setCameraToFollowTarget()
 
     local character = CharacterManager.AddEntity(entity)
-    entity:addDynamicComponent("illarion:visual", function()
-        local raceId = character:increaseAttrib("hitpoints", 0) <= 0 and Character.ghost or character:getRace()
-        local sex = charData[DataFields.Sex] or "male"
-        return {
-            type = "visual",
-            visual = m.findRaceEntity(raceId, sex):getName(),
-            alpha = character.isinvisible and 0.5 or 1
-        }
-    end)
 
     local equipment = InventoryManager.GetEquipment(character)
     local belt = InventoryManager.GetBelt(character)

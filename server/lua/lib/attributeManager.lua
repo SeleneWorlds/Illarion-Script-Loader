@@ -1,7 +1,6 @@
 local Attributes = require("selene.attributes")
 local Network = require("selene.network")
 
-local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
@@ -60,7 +59,7 @@ function m.GetAttribute(user, attributeName)
                 -- Clamp the stored total before publishing the resource value.
                 offset:setValue(clampOffset(offset:getValue()))
                 if attributeName == "hitpoints" then
-                    CharacterManager.SetDead(user, attribute:getEffectiveValue() <= 0)
+                    require("illarion-script-loader.server.lua.lib.characterManager").SetDead(user, attribute:getEffectiveValue() <= 0)
                 end
                 Network.sendToEntity(attribute:getOwner(), resource.message, { value = attribute:getEffectiveValue() / max })
             end)
@@ -75,6 +74,10 @@ function m.GetAttribute(user, attributeName)
             attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
             attribute:subscribe(updateActionPointControls)
             updateActionPointControls(attribute)
+        elseif attributeName == "body_height" then
+            attribute:subscribe(function(attribute)
+                attribute:getOwner():updateVisuals()
+            end)
         elseif attributeName == "fightpoints" then
             attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
         end

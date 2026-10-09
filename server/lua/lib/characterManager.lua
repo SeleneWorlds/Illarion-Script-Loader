@@ -3,6 +3,7 @@ local Entities = require("selene.entities")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterMovement = require("illarion-script-loader.server.lua.lib.characterMovement")
+local CharacterVisual = require("illarion-script-loader.server.lua.lib.characterVisual")
 
 local m = {}
 
@@ -14,6 +15,7 @@ function m.AddEntity(entity)
     end
     local character = Character.fromSeleneEntity(entity)
     CharacterMovement.Configure(character)
+    CharacterVisual.Configure(character)
     return character
 end
 
