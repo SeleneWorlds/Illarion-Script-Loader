@@ -2,6 +2,7 @@ local Entities = require("selene.entities")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local CharacterMovement = require("illarion-script-loader.server.lua.lib.characterMovement")
 
 local m = {}
 
@@ -11,7 +12,9 @@ function m.AddEntity(entity)
     if id == nil then
         error("Tried to add an entity without an ID to character manager")
     end
-    return Character.fromSeleneEntity(entity)
+    local character = Character.fromSeleneEntity(entity)
+    CharacterMovement.Configure(character)
+    return character
 end
 
 function m.IsDead(character)
