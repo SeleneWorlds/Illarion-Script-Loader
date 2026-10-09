@@ -554,6 +554,27 @@ function m.restoreCollections(character, saved)
     end
 end
 
+-- Capture live collections without writing or reloading the character's save.
+function m.snapshotCharacter(character)
+    local attributes = {}
+    for _, name in ipairs({
+        "age", "weight", "body_height", "hitpoints", "mana", "foodlevel", "attitude", "luck",
+        "strength", "dexterity", "constitution", "agility", "intelligence", "perception", "willpower", "essence"
+    }) do
+        attributes[name] = attributeValue(character, name)
+    end
+    return {
+        id = character.id,
+        attributes = attributes,
+        skills = serializeSkills(character),
+        items = serializeItems(character),
+        quests = serializeQuests(character.SeleneEntity),
+        effects = serializeEffects(character.SeleneEntity),
+        poison = character:getPoisonValue(),
+        mentalCapacity = character:getMentalCapacity(),
+    }
+end
+
 function m.saveCharacter(player, character)
     if character.SeleneEntity:getRuntimeData(DataKeys.Character)[DataFields.Headless] then
         return
