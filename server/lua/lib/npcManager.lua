@@ -40,6 +40,14 @@ function m.Spawn(npc)
     charData[DataFields.Script] = npc:getField("script")
     charData[DataFields.Race] = race:getMetadata("id")
     charData[DataFields.Sex] = npc:getField("sex") == 1 and "female" or "male"
+    local character = Character.fromSeleneEntity(entity)
+    for skillName, value in pairs(npc:getField("skills") or {}) do
+        local skill = Registries.findByName("illarion:skills", skillName)
+        local skillId = skill and tonumber(skill:getMetadata("id"))
+        if skillId then
+            character:setSkill(skillId, value, 0)
+        end
+    end
     if Config.getProperty("showNpcNameTags") == "true" then
         entity:addDynamicComponent("illarion:name", function(entity)
             return {
