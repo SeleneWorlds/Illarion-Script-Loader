@@ -42,6 +42,7 @@
     "server/lua/impl/ScriptVars.lua",
     "server/lua/impl/SelectionDialog.lua",
     "server/lua/impl/WaypointList.lua",
+    "server/lua/rate_limits.lua",
     "server/lua/chat.lua",
     "server/lua/casting.lua",
     "server/lua/combat.lua",
