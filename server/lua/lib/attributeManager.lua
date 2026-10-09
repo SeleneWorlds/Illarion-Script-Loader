@@ -5,6 +5,17 @@ local CharacterManager = require("illarion-script-loader.server.lua.lib.characte
 
 local m = {}
 
+local resourceAttributes = {
+    hitpoints = { max = 10000, message = "illarion:health" },
+    mana = { max = 10000, message = "illarion:mana" },
+    foodlevel = { max = 60000, message = "illarion:food" },
+}
+local resourceOffsets = {
+    hitpointsOffset = "hitpoints",
+    manaOffset = "mana",
+    foodlevelOffset = "foodlevel",
+}
+
 function m.GetAttribute(user, attributeName)
     local attributeKey = "illarion:" .. attributeName
     local attribute = user.SeleneEntity:getAttribute(attributeKey)
@@ -14,31 +25,33 @@ function m.GetAttribute(user, attributeName)
             initialValue = colour(255, 255, 255)
         end
         attribute = user.SeleneEntity:createAttribute(attributeKey, initialValue)
-        if attributeName == "hitpoints" then
-            local max = 10000
-            attribute:addModifier("offset", Attributes.mathOpFilter(m.GetAttribute(user, "hitpointsOffset"), "+"))
+        local resource = resourceAttributes[attributeName]
+        if resource then
+            local max = resource.max
+            local baseAttribute = attribute
+            local offset = m.GetAttribute(user, attributeName .. "Offset")
+            local function clampOffset(value)
+                local base = baseAttribute:getValue()
+                return math.max(-base, math.min(max - base, value))
+            end
+            offset:addConstraint("resourceBounds", function(_, value)
+                return clampOffset(value)
+            end)
+            attribute:addModifier("offset", Attributes.mathOpFilter(offset, "+"))
             attribute:addModifier("clamp", Attributes.clampFilter(0, max))
             attribute:addConstraint("clamp", Attributes.clampFilter(0, max))
             attribute:subscribe(function(attribute)
-                CharacterManager.SetDead(user, attribute:getEffectiveValue() <= 0)
-                Network.sendToEntity(attribute:getOwner(), "illarion:health", { value = attribute:getEffectiveValue() / max })
+                -- Base values can change independently of their offsets.
+                -- Clamp the stored total before publishing the resource value.
+                offset:setValue(clampOffset(offset:getValue()))
+                if attributeName == "hitpoints" then
+                    CharacterManager.SetDead(user, attribute:getEffectiveValue() <= 0)
+                end
+                Network.sendToEntity(attribute:getOwner(), resource.message, { value = attribute:getEffectiveValue() / max })
             end)
-        elseif attributeName == "foodlevel" then
-            local max = 60000
-            attribute:addModifier("offset", Attributes.mathOpFilter(m.GetAttribute(user, "foodlevelOffset"), "+"))
-            attribute:addModifier("clamp", Attributes.clampFilter(0, max))
-            attribute:addConstraint("clamp", Attributes.clampFilter(0, max))
-            attribute:subscribe(function(attribute)
-                Network.sendToEntity(attribute:getOwner(), "illarion:food", { value = attribute:getEffectiveValue() / max })
-            end)
-        elseif attributeName == "mana" then
-            local max = 10000
-            attribute:addModifier("offset", Attributes.mathOpFilter(m.GetAttribute(user, "manaOffset"), "+"))
-            attribute:addModifier("clamp", Attributes.clampFilter(0, max))
-            attribute:addConstraint("clamp", Attributes.clampFilter(0, max))
-            attribute:subscribe(function(attribute)
-                Network.sendToEntity(attribute:getOwner(), "illarion:mana", { value = attribute:getEffectiveValue() / max })
-            end)
+        elseif resourceOffsets[attributeName] then
+            -- Explicitly install bounds even when an offset is requested first.
+            m.GetAttribute(user, resourceOffsets[attributeName])
         elseif attributeName == "strength" or attributeName == "dexterity" or attributeName == "constitution" or attributeName == "agility" or attributeName == "intelligence" or attributeName == "essence" or attributeName == "perception" or attributeName == "willpower" then
             attribute:addModifier("offset", Attributes.mathOpFilter(m.GetAttribute(user, attributeName .. "Offset"), "+"))
             attribute:addModifier("clamp", Attributes.clampFilter(0, 255))
