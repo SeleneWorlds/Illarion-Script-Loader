@@ -303,7 +303,6 @@ local function moveToward(monster, targetPosition, charData)
             )
             charData[DataFields.PathfindingRetryTick] = m.UpdateTick + PATHFINDING_RETRY_TICKS
         end
-        monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
     else
         local direction = getRandomDirection()
         if direction then
@@ -515,13 +514,13 @@ function m.Update()
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
-            monster.movepoints = monster.movepoints + 1
+            if not entity:isMoving() then
+                monster.movepoints = monster.movepoints + 1
+            end
             monster.fightpoints = monster.fightpoints + 1
-            if monster.movepoints >= MAX_ACTION_POINTS then
+            if not entity:isMoving() and monster.movepoints >= MAX_ACTION_POINTS then
                 local routeStatus = RouteManager.Advance(monster)
-                if routeStatus == "moving" then
-                    monster.movepoints = monster.movepoints - WALK_ACTION_POINT_COST
-                elseif routeStatus == "complete" or routeStatus == "blocked" then
+                if routeStatus == "complete" or routeStatus == "blocked" then
                     monster:setOnRoute(false)
                     local status, script = xpcall(require, charData[DataFields.Script])
                     if status and type(script.abortRoute) == "function" then

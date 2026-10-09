@@ -30,7 +30,9 @@ Schedules.setInterval(100, function()
     for _, player in ipairs(players) do
         if player:getControlledEntity() then
             local user = Character.fromSelenePlayer(player)
-            user.movepoints = user.movepoints + 1
+            if not user.SeleneEntity:isMoving() then
+                user.movepoints = user.movepoints + 1
+            end
             user.fightpoints = user.fightpoints + 1
             local canAttack
             if useLegacyCombat then
