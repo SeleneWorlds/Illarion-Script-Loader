@@ -69,6 +69,32 @@ Character.SeleneMethods.pageGM = function(user, message)
             }
         }},
     }
+    local clientUrl = Config.getProperty("publicClientUrl")
+    if clientUrl and clientUrl ~= "" then
+        local base, fragment = clientUrl:match("^([^#]*)(.*)$")
+        local separator = base:find("?", 1, true) and "&" or "?"
+        local deeplink = base .. separator .. string.format(
+            "character=headless&x=%d&y=%d&z=%d&follow=%d", pos.x, pos.y, pos.z, user.id
+        ) .. fragment
+        payload.components = {{
+            type = 1, -- Action Row
+            components = {{
+                type = 2, -- Button
+                style = 5, -- Link
+                label = "Jump to Character",
+                url = deeplink,
+            }},
+        }}
+        -- Non-application-owned Discord webhooks require this to retain link buttons.
+        local webhookBase, webhookFragment = webhookUrl:match("^([^#]*)(.*)$")
+        local replacements
+        webhookBase, replacements = webhookBase:gsub("([?&])with_components=[^&]*", "%1with_components=true")
+        if replacements == 0 then
+            local webhookSeparator = webhookBase:find("?", 1, true) and "&" or "?"
+            webhookBase = webhookBase .. webhookSeparator .. "with_components=true"
+        end
+        webhookUrl = webhookBase .. webhookFragment
+    end
     local result = HTTP.post(webhookUrl, Json.encode(payload))
 
     if not result.success then
