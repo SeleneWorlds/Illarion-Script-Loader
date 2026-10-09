@@ -242,28 +242,49 @@ function m.updateOfflineCharacterSkill(characterId, skillId, value, setExact)
     return oldValue, newValue
 end
 
-local persistedBaseAttributeColumns = {
-    agility = true,
-    constitution = true,
-    dexterity = true,
-    essence = true,
-    intelligence = true,
-    perception = true,
-    strength = true,
-    willpower = true,
+local persistedAttributeColumns = {
+    agility = { column = "agility", max = 255 },
+    constitution = { column = "constitution", max = 255 },
+    dexterity = { column = "dexterity", max = 255 },
+    essence = { column = "essence", max = 255 },
+    intelligence = { column = "intelligence", max = 255 },
+    perception = { column = "perception", max = 255 },
+    strength = { column = "strength", max = 255 },
+    willpower = { column = "willpower", max = 255 },
+    hitpoints = { column = "hitpoints", max = 10000 },
+    mana = { column = "mana", max = 10000 },
+    foodlevel = { column = "foodlevel", max = 60000 },
+    age = { column = "age" },
+    body_height = { column = "body_height" },
+    poisonvalue = { column = "poison" },
+    attitude = { column = "attitude" },
+    luck = { column = "luck" },
+    weight = { column = "weight" },
+    mentalcapacity = { column = "mental_capacity" },
 }
 
----Updates a base attribute of a character that is not currently loaded.
+---Updates a persisted attribute of a character that is not currently loaded.
 ---@return number oldValue
-function m.updateOfflineCharacterBaseAttribute(characterId, attribute, value)
-    assert(persistedBaseAttributeColumns[attribute], "Attribute is not a persisted base attribute.")
-    local rows = database:query("SELECT " .. attribute .. " AS value FROM characters WHERE id = ?", characterId)
+---@return number newValue
+function m.updateOfflineCharacterAttribute(characterId, attribute, value)
+    local definition = assert(persistedAttributeColumns[attribute], "Attribute is not persisted for offline characters.")
+    local column = definition.column
+    if definition.max then
+        value = math.max(0, math.min(definition.max, value))
+    end
+    local rows = database:query("SELECT " .. column .. " AS value FROM characters WHERE id = ?", characterId)
     local character = assert(rows[1], "Character no longer exists.")
+    local aliveUpdate = attribute == "hitpoints" and ", alive = ?" or ""
+    local values = { value, os.time() }
+    if attribute == "hitpoints" then
+        values[#values + 1] = value > 0 and 1 or 0
+    end
+    values[#values + 1] = characterId
     database:execute(
-        "UPDATE characters SET " .. attribute .. " = ?, last_saved_at = ? WHERE id = ?",
-        { value, os.time(), characterId }
+        "UPDATE characters SET " .. column .. " = ?, last_saved_at = ?" .. aliveUpdate .. " WHERE id = ?",
+        values
     )
-    return character.value
+    return character.value, value
 end
 
 
