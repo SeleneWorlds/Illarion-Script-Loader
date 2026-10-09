@@ -81,6 +81,10 @@ Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
         else
             return Character.male
         end
+    elseif attributeName == "actionpoints" then
+        local attribute = AttributeManager.GetAttribute(user, attributeName)
+        attribute:setValue(attribute:getValue() + value)
+        return attribute:getEffectiveValue()
     elseif attributeName == "poisonvalue" or attributeName == "attitude" or attributeName == "luck" or attributeName == "age" or attributeName == "body_height" then
         local attribute = AttributeManager.GetAttribute(user, attributeName)
         attribute:setValue(attribute:getValue() + value)
@@ -107,6 +111,9 @@ Character.SeleneMethods.setAttrib = function(user, attributeName, value)
     value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     if attributeName == "faceto" then
         user:turn(value)
+        return
+    elseif attributeName == "actionpoints" then
+        AttributeManager.GetAttribute(user, attributeName):setValue(value)
         return
     elseif attributeName == "racetyp" then
         user:setRace(value)

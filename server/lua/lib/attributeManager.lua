@@ -5,6 +5,15 @@ local CharacterManager = require("illarion-script-loader.server.lua.lib.characte
 
 local m = {}
 
+local function updateActionPointControls(attribute)
+    local points = attribute:getEffectiveValue()
+    for _, player in ipairs(attribute:getOwner():getControllingPlayers()) do
+        -- Illarion requires 7 action points to move and 1 to turn.
+        player:setCanMove(points >= 7)
+        player:setCanTurn(points >= 1)
+    end
+end
+
 local resourceAttributes = {
     hitpoints = { max = 10000, message = "illarion:health" },
     mana = { max = 10000, message = "illarion:mana" },
@@ -23,6 +32,8 @@ function m.GetAttribute(user, attributeName)
         local initialValue = 0
         if attributeName == "skinColor" or attributeName == "hairColor" then
             initialValue = colour(255, 255, 255)
+        elseif attributeName == "actionpoints" then
+            initialValue = 21
         end
         attribute = user.SeleneEntity:createAttribute(attributeKey, initialValue)
         local resource = resourceAttributes[attributeName]
@@ -58,6 +69,8 @@ function m.GetAttribute(user, attributeName)
             attribute:addConstraint("clamp", Attributes.clampFilter(0, 255))
         elseif attributeName == "actionpoints" then
             attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
+            attribute:subscribe(updateActionPointControls)
+            updateActionPointControls(attribute)
         elseif attributeName == "fightpoints" then
             attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
         end
