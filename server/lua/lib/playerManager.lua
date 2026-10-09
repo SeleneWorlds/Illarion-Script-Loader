@@ -2,7 +2,7 @@ local Players = require("selene.players")
 local Entities = require("selene.entities")
 local Registries = require("selene.registries")
 local Network = require("selene.network")
-local I18n = require("selene.i18n")
+local NameManager = require("illarion-script-loader.server.lua.lib.nameManager")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -72,23 +72,6 @@ function m.Spawn(player, selectedCharacter)
     entity:setCoordinate(selectedCharacter.x, selectedCharacter.y, selectedCharacter.z)
     entity:setFacing(DirectionUtils.IllaToSelene(selectedCharacter.facing) or "south")
     entity:addDynamicComponent("illarion:name", function(entity, forPlayer)
-        local targetCharData = entity:getRuntimeData(DataKeys.Character)
-        local isControlled = forPlayer:getControlledEntity() == entity
-        local introductionData = forPlayer:getControlledEntity() and forPlayer:getControlledEntity():getRuntimeData(DataKeys.Introductions) or nil
-        local relationship = introductionData and introductionData[targetCharData[DataFields.ID]]
-        local isIntroduced = relationship and relationship.introduced
-        local effectiveName = relationship and relationship.customName or entity:getName()
-        if not isIntroduced and not isControlled and not (relationship and relationship.customName) then
-            local raceId = targetCharData[DataFields.Race]
-            local race = Registries.findByMetadata("illarion:races", "id", raceId)
-            if race then
-                local sex = targetCharData[DataFields.Sex] or "male"
-                local key = "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
-                effectiveName = I18n.get(key, forPlayer:getLocale()) or key
-            else
-                effectiveName = tostring(targetCharData[DataFields.Race])
-            end
-        end
         return {
             type = "visual",
             visual = "illarion:labels/character",
@@ -97,7 +80,7 @@ function m.Spawn(player, selectedCharacter)
                 offsetY = 20
             },
             overrides = {
-                text = effectiveName
+                text = NameManager.Get(entity, forPlayer:getControlledEntity(), forPlayer:getLocale())
             }
         }
     end)

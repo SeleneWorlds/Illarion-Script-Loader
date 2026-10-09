@@ -1,5 +1,6 @@
 local Network = require("selene.network")
 local Config = require("selene.config")
+local NameManager = require("illarion-script-loader.server.lua.lib.nameManager")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -58,7 +59,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
                 end
                 Network.sendToEntity(entity, "illarion:chat", {
                     author = userEntity:getNetworkId(),
-                    authorName = user.name,
+                    authorName = NameManager.Get(userEntity, entity),
                     mode = mode,
                     message = effectiveMessage,
                     showInChat = showInChat
@@ -144,7 +145,7 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
                     end
                     Network.sendToEntity(entity, "illarion:chat", {
                         author = userEntity:getNetworkId(),
-                        authorName = user.name,
+                        authorName = NameManager.Get(userEntity, entity),
                         mode = mode,
                         message = effectiveMessage,
                         showInChat = showInChat

@@ -4,6 +4,7 @@ local I18n = require("selene.i18n")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local NameManager = require("illarion-script-loader.server.lua.lib.nameManager")
 local Events = require("illarion-script-loader.server.lua.lib.events")
 local ItemLookAt = require("illarion-script-loader.server.lua.lib.itemLookAt")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
@@ -95,7 +96,7 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
                 Network.sendToPlayer(player, "illarion:look_at_entity", {
                     networkId = entity:getNetworkId(),
                     tooltip = {
-                        name = entity:getName()
+                        name = NameManager.Get(entity, player:getControlledEntity(), player:getLocale())
                     }
                 })
             end
@@ -104,15 +105,10 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
             if status and type(script.lookAtMonster) == "function" then
                 script.lookAtMonster(character, target, mode)
             else
-                local race = Registries.findByMetadata("illarion:races", "id", charData[DataFields.Race])
-                local raceName = race and race:getField("name")
-                local sex = charData[DataFields.Sex] or "male"
-                local key = race and "nameTag." .. stringx.substringAfter(race:getName(), "illarion:") .. "." .. sex
-                local translatedName = key and I18n.get(key, player:getLocale())
                 Network.sendToPlayer(player, "illarion:look_at_entity", {
                     networkId = entity:getNetworkId(),
                     tooltip = {
-                        name = translatedName or raceName or entity:getEntityDefinition():getName()
+                        name = NameManager.Get(entity, player:getControlledEntity(), player:getLocale())
                     }
                 })
             end
