@@ -25,17 +25,23 @@ end
 
 -- The configured IDs bootstrap a new database. After that, the table is the
 -- source of truth so that revocations survive server restarts.
-if not tableAlreadyExisted then
-    local initialAdmins = Config.getProperty("initialAdmins") or Config.getProperty("admins") or ""
-    for userId in initialAdmins:gmatch("[^,]+") do
-        userId = userId:gsub("^%s+", ""):gsub("%s+$", "")
-        if userId ~= "" then
+local seededAdmins = {}
+local initialAdmins = Config.getProperty("initialAdmins") or Config.getProperty("admins") or ""
+for userId in initialAdmins:gmatch("[^,]+") do
+    userId = userId:gsub("^%s+", ""):gsub("%s+$", "")
+    if userId ~= "" then
+        seededAdmins[userId] = true
+        if not tableAlreadyExisted then
             database:execute(
                 "INSERT OR IGNORE INTO admins (user_id, granted_at) VALUES (?, ?)",
                 { userId, os.time() }
             )
         end
     end
+end
+
+function m.isSeededAdmin(userId)
+    return userId ~= nil and seededAdmins[normalizeUserId(userId)] == true
 end
 
 function m.isAdmin(userId)
