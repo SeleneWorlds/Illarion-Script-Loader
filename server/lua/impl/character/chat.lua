@@ -8,7 +8,9 @@ local ChatMode = require("illarion-script-loader.server.lua.lib.chatMode")
 local Events = require("illarion-script-loader.server.lua.lib.events")
 local EventLog = require("illarion-script-loader.server.lua.lib.eventLog")
 
-Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
+local RaceLanguage = require("illarion-script-loader.server.lua.lib.raceLanguage")
+
+local function talk(user, mode, message, messageEnglish, locale)
     local userEntity = user.SeleneEntity
     mode, message = ChatMode.parsePrefix(mode, message)
     if messageEnglish then
@@ -16,7 +18,7 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
         englishMode, messageEnglish = ChatMode.parsePrefix(mode, messageEnglish)
         mode = englishMode
     end
-    if messageEnglish == nil then
+    if messageEnglish == nil and locale == nil then
         local illaPlayerTalkOk, illaPlayerTalk = pcall(require, "server.playertalk")
         if illaPlayerTalkOk then
             local lastAction = userEntity:getRuntimeData(DataKeys.LastAction)
@@ -41,98 +43,29 @@ Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
     if not dimension then
         return
     end
-    EventLog.logChat(user, mode, message, messageEnglish)
-    local entities = dimension:getEntitiesInRange(userEntity:getCoordinate(), range)
-    local nonPlayerListeners = {}
-    for _, entity in ipairs(entities) do
-        local diffZ = math.abs(userEntity:getCoordinate():getZ() - entity:getCoordinate():getZ())
-        if diffZ <= zRange then
-            local charData = entity:getRuntimeData(DataKeys.Character)
-            local characterType = charData[DataFields.CharacterType]
-            if characterType == Character.player then
-                local effectiveMessage = message
-                if messageEnglish and user:getPlayerLanguage() == Player.english then
-                    effectiveMessage = messageEnglish
-                end
-                local showInChat = true
-                if stringx.endsWith(effectiveMessage, "#npc") then
-                    effectiveMessage = stringx.removeSuffix(effectiveMessage, "#npc")
-                    showInChat = false
-                end
-                Network.sendToEntity(entity, "illarion:chat", {
-                    author = userEntity:getNetworkId(),
-                    authorName = NameManager.Get(userEntity, entity),
-                    mode = mode,
-                    message = effectiveMessage,
-                    showInChat = showInChat
-                })
-            elseif characterType == Character.npc or characterType == Character.monster then
-                table.insert(nonPlayerListeners, entity)
-            end
+    local raceLanguage = user.activeLanguage
+    local isSpeech = mode ~= "emote" and mode ~= "ooc"
+    local prefix = isSpeech and RaceLanguage.prefix(raceLanguage) or ""
+    local function stripNpc(text)
+        if stringx.endsWith(text, "#npc") then
+            return stringx.removeSuffix(text, "#npc"), false
+        end
+        return text, true
+    end
+    local original, showGerman = stripNpc(message)
+    local originalEnglish, showEnglish
+    if messageEnglish then
+        originalEnglish, showEnglish = stripNpc(messageEnglish)
+    end
+    local spoken, spokenEnglish = original, originalEnglish
+    if isSpeech then
+        local skill = RaceLanguage.skill(user, raceLanguage)
+        spoken = RaceLanguage.alter(original, skill)
+        if originalEnglish then
+            spokenEnglish = RaceLanguage.alter(originalEnglish, skill)
         end
     end
-    if user:getType() == Character.player then
-        for _, entity in ipairs(nonPlayerListeners) do
-            local charData = entity:getRuntimeData(DataKeys.Character)
-            local characterType = charData[DataFields.CharacterType]
-            if characterType == Character.monster then
-                local scriptName = charData[DataFields.Script]
-                if scriptName and scriptName ~= "" then
-                    local status, script = xpcall(require, scriptName)
-                    if status and type(script.receiveText) == "function" then
-                        local illaMonster = Character.fromSeleneEntity(entity)
-                        if Config.getProperty("useLegacyReceiveText") == "true" then
-                            thisNPC = illaMonster
-                            script.receiveText(mode, messageEnglish or message, user)
-                        else
-                            script.receiveText(illaMonster, mode, messageEnglish or message, user)
-                        end
-                    end
-                end
-            elseif characterType == Character.npc then
-                local event = { cancel = false }
-                Events.onTalkToNpc:fire(event, entity, user.SelenePlayer, mode, messageEnglish or message)
-                if not event.cancel then
-                    local scriptName = charData[DataFields.Script]
-                    if scriptName and scriptName ~= "" then
-                        local status, script = xpcall(require, scriptName)
-                        if status and type(script.receiveText) == "function" then
-                            local illaNpc = Character.fromSeleneEntity(entity)
-                            if Config.getProperty("useLegacyReceiveText") == "true" then
-                                thisNPC = illaNpc
-                                script.receiveText(mode, messageEnglish or message, user)
-                            else
-                                script.receiveText(illaNpc, mode, messageEnglish or message, user)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    local charData = userEntity:getRuntimeData(DataKeys.Character)
-    charData[DataFields.LastSpokenText] = message
-end
-
-Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
-    language = assert(tonumber(language), "language must be a number, was " .. tostring(language))
-    local userEntity = user.SeleneEntity
-    mode, message = ChatMode.parsePrefix(mode, message)
-    local range = 0
-    local zRange = 2
-    if mode == Character.say or mode == "ooc" or mode == "emote" then
-        range = 14
-    elseif mode == Character.whisper then
-        range = 2
-        zRange = 0
-    elseif mode == Character.yell then
-        range = 30
-    end
-    local dimension = user.SeleneEntity:getDimension()
-    if not dimension then
-        return
-    end
-    EventLog.logChat(user, mode, message, nil, language)
+    EventLog.logChat(user, mode, message, messageEnglish, locale)
     local entities = dimension:getEntitiesInRange(userEntity:getCoordinate(), range)
     local nonPlayerListeners = {}
     for _, entity in ipairs(entities) do
@@ -142,13 +75,18 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
             local characterType = charData[DataFields.CharacterType]
             if characterType == Character.player then
                 local listener = Character.fromSeleneEntity(entity)
-                if listener:getPlayerLanguage() == language then
-                    local showInChat = true
-                    local effectiveMessage = message
-                    if stringx.endsWith(effectiveMessage, "#npc") then
-                        effectiveMessage = stringx.removeSuffix(effectiveMessage, "#npc")
-                        showInChat = false
+                if locale == nil or listener:getPlayerLanguage() == locale then
+                    local english = originalEnglish ~= nil and listener:getPlayerLanguage() == Player.english
+                    local effectiveMessage = english and originalEnglish or original
+                    local showInChat = showGerman
+                    if english then
+                        showInChat = showEnglish
                     end
+                    if isSpeech and entity ~= userEntity then
+                        effectiveMessage = RaceLanguage.alter(english and spokenEnglish or spoken,
+                            RaceLanguage.skill(listener, raceLanguage))
+                    end
+                    effectiveMessage = prefix .. effectiveMessage
                     Network.sendToEntity(entity, "illarion:chat", {
                         author = userEntity:getNetworkId(),
                         authorName = NameManager.Get(userEntity, entity),
@@ -162,6 +100,61 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
             end
         end
     end
+    if user:getType() == Character.player then
+        for _, entity in ipairs(nonPlayerListeners) do
+            local charData = entity:getRuntimeData(DataKeys.Character)
+            local characterType = charData[DataFields.CharacterType]
+            if characterType == Character.monster then
+                local scriptName = charData[DataFields.Script]
+                if scriptName and scriptName ~= "" then
+                    local status, script = pcall(require, scriptName)
+                    if status and type(script.receiveText) == "function" then
+                        local illaMonster = Character.fromSeleneEntity(entity)
+                        if Config.getProperty("useLegacyReceiveText") == "true" then
+                            thisNPC = illaMonster
+                            script.receiveText(mode, messageEnglish or message, user)
+                        else
+                            script.receiveText(illaMonster, mode, messageEnglish or message, user)
+                        end
+                    end
+                end
+            elseif characterType == Character.npc then
+                local npcMessage = originalEnglish or original
+                if isSpeech then
+                    npcMessage = prefix .. RaceLanguage.alter(spokenEnglish or spoken,
+                        RaceLanguage.skill(Character.fromSeleneEntity(entity), raceLanguage))
+                end
+                local event = { cancel = false }
+                Events.onTalkToNpc:fire(event, entity, user.SelenePlayer, mode, npcMessage)
+                if not event.cancel then
+                    local scriptName = charData[DataFields.Script]
+                    if scriptName and scriptName ~= "" then
+                        local status, script = pcall(require, scriptName)
+                        if status and type(script.receiveText) == "function" then
+                            local illaNpc = Character.fromSeleneEntity(entity)
+                            if Config.getProperty("useLegacyReceiveText") == "true" then
+                                thisNPC = illaNpc
+                                script.receiveText(mode, npcMessage, user)
+                            else
+                                script.receiveText(illaNpc, mode, npcMessage, user)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local charData = userEntity:getRuntimeData(DataKeys.Character)
+    charData[DataFields.LastSpokenText] = message
+end
+
+Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
+    return talk(user, mode, message, messageEnglish)
+end
+
+Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
+    language = assert(tonumber(language), "language must be a number, was " .. tostring(language))
+    return talk(user, mode, message, nil, language)
 end
 
 Character.SeleneGetters.activeLanguage = function(user)
@@ -171,7 +164,7 @@ end
 
 Character.SeleneSetters.activeLanguage = function(user, language)
     local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
-    charData[DataFields.Language] = language
+    charData[DataFields.Language] = assert(RaceLanguage.resolve(language), "Unknown race language: " .. tostring(language))
 end
 
 Character.SeleneGetters.lastSpokenText = function(user)

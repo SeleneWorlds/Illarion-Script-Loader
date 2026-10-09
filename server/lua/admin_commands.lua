@@ -6,19 +6,7 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
 
-local LANGUAGE_MAP = {
-    common = Player.common,
-    human = Player.human,
-    dwarf = Player.dwarf,
-    elf = Player.elf,
-    lizard = Player.lizard,
-    orc = Player.orc,
-    halfling = Player.halfling,
-    fairy = Player.fairy,
-    gnome = Player.gnome,
-    goblin = Player.goblin,
-    ancient = Player.ancient,
-}
+local RaceLanguage = require("illarion-script-loader.server.lua.lib.raceLanguage")
 
 local function trim(value)
     return (value:gsub("^%s+", ""):gsub("%s+$", ""))
@@ -80,7 +68,7 @@ end
 
 local function handleLanguage(character, args)
     local languageName = trim(args):lower()
-    local language = LANGUAGE_MAP[languageName] or languageName
+    local language = RaceLanguage.resolve(languageName)
     if language == nil then
         character:inform("Unbekannte Sprache.", "Unknown language.")
         return
