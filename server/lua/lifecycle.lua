@@ -46,7 +46,14 @@ end
 local function finishLogin(player, selectedCharacter)
     local character = PlayerManager.Spawn(player, selectedCharacter)
     if Config.getProperty("showWelcomeMessage") == "true" then
-        local otherPlayerCount = #world:getPlayersOnline() - 1
+        local otherPlayerCount = 0
+        for _, onlinePlayer in ipairs(Players.getOnlinePlayers()) do
+            local entity = onlinePlayer:getControlledEntity()
+            if onlinePlayer ~= player and entity
+                    and not entity:getRuntimeData(DataKeys.Character)[DataFields.Headless] then
+                otherPlayerCount = otherPlayerCount + 1
+            end
+        end
         local welcomeMessageDe = ":) Willkommen in Illarion, es sind " .. otherPlayerCount .. " andere Spieler online."
         local welcomeMessageEn = ":) Welcome to Illarion. There are " .. otherPlayerCount .. " other players online."
         common.InformNLS(character, welcomeMessageDe, welcomeMessageEn)
