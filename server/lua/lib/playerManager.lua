@@ -89,9 +89,15 @@ function m.Spawn(player, selectedCharacter)
         if forPlayer == player then
             return nil
         end
+        local red, green, blue = InventoryManager.GetHeldWeaponColor(
+            InventoryManager.GetEquipment({ SeleneEntity = entity })
+        )
         return {
             type = "visual",
             visual = "illarion:labels/character",
+            red = red,
+            green = green,
+            blue = blue,
             position = {
                 origin = "top",
                 offsetY = 20

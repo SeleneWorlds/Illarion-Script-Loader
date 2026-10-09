@@ -24,6 +24,30 @@ function m.IsTwoHandedItem(item)
     return weapon ~= nil and twoHandedWeaponTypes[tonumber(weapon.weaponType)] == true
 end
 
+-- Only weapons held in the tool slots affect the name tag; ammunition,
+-- shields, and the blocked-hand placeholder keep the peaceful color.
+function m.GetHeldWeaponColor(equipment)
+    local melee = false
+    local ranged = false
+    local magic = false
+    for _, slotId in ipairs({ LEFT_TOOL, RIGHT_TOOL }) do
+        local item = equipment:getItem(slotId)
+        local weapon = item and item.def:getField("weapon")
+        local weaponType = weapon and tonumber(weapon.weaponType)
+        if weaponType == 13 then
+            magic = true
+        elseif weaponType == 7 then
+            ranged = true
+        elseif weaponType and weaponType >= 1 and weaponType <= 6 then
+            melee = true
+        end
+    end
+    if magic then return 0.7, 0.8, 1 end
+    if ranged then return 0, 0.8, 0.2 end
+    if melee then return 1, 0.3, 0.3 end
+    return 1, 1, 0.2
+end
+
 local function otherHand(slotId)
     if slotId == LEFT_TOOL then
         return RIGHT_TOOL
