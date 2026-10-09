@@ -81,7 +81,10 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
                 table.insert(actions, { id = "attack", label = "Attack!" })
             end
             if targetType == Character.player then
-                table.insert(actions, { id = "report", label = "Report to GM" })
+                table.insert(actions, {
+                    id = "report", label = "Report to GM",
+                    target = { name = target:getName(), characterId = targetData[DataFields.ID] }
+                })
             end
         end
     else
@@ -209,6 +212,6 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
         introductions[id] = relationship
         target:updateVisuals()
     elseif action == "report" and targetType == Character.player and type(payload.detail) == "string" then
-        user:pageGM("Report concerning " .. target:getName() .. " (" .. target:getNetworkId() .. "): " .. string.sub(payload.detail, 1, 1000))
+        user:pageGM("Report concerning " .. target:getName() .. " (" .. targetData[DataFields.ID] .. "): " .. string.sub(payload.detail, 1, 1000))
     end
 end)
