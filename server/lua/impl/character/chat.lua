@@ -73,31 +73,33 @@ local function talk(user, mode, message, messageEnglish, locale)
         if diffZ <= zRange then
             local charData = entity:getRuntimeData(DataKeys.Character)
             local characterType = charData[DataFields.CharacterType]
-            if characterType == Character.player then
-                local listener = Character.fromSeleneEntity(entity)
-                if locale == nil or listener:getPlayerLanguage() == locale then
-                    local english = originalEnglish ~= nil and listener:getPlayerLanguage() == Player.english
-                    local effectiveMessage = english and originalEnglish or original
-                    local showInChat = showGerman
-                    if english then
-                        showInChat = showEnglish
-                    end
-                    if isSpeech and entity ~= userEntity then
-                        effectiveMessage = RaceLanguage.alter(english and spokenEnglish or spoken,
-                            RaceLanguage.skill(listener, raceLanguage))
-                    end
-                    effectiveMessage = prefix .. effectiveMessage
-                    Network.sendToEntity(entity, "illarion:chat", {
-                        author = userEntity:getNetworkId(),
-                        authorName = NameManager.Get(userEntity, entity),
-                        mode = mode,
-                        message = effectiveMessage,
-                        showInChat = showInChat
-                    })
-                end
-            elseif characterType == Character.npc or characterType == Character.monster then
+            if characterType == Character.npc or characterType == Character.monster then
                 table.insert(nonPlayerListeners, entity)
             end
+        end
+    end
+    for _, player in ipairs(dimension:getObserversInRange(userEntity:getCoordinate(), range, zRange)) do
+        local entity = player:getControlledEntity()
+        local charData = entity and entity:getRuntimeData(DataKeys.Character)
+        local language = player:getLanguage() == "de" and Player.german or Player.english
+        if locale == nil or language == locale then
+            local english = originalEnglish ~= nil and language == Player.english
+            local effectiveMessage = english and originalEnglish or original
+            local showInChat = showGerman
+            if english then showInChat = showEnglish end
+            local listener = entity and charData[DataFields.CharacterType] == Character.player
+                and not charData[DataFields.Headless] and Character.fromSeleneEntity(entity)
+            if isSpeech and listener and entity ~= userEntity then
+                effectiveMessage = RaceLanguage.alter(english and spokenEnglish or spoken,
+                    RaceLanguage.skill(listener, raceLanguage))
+            end
+            Network.sendToPlayer(player, "illarion:chat", {
+                author = userEntity:getNetworkId(),
+                authorName = NameManager.Get(userEntity, listener and entity or nil, player:getLocale()),
+                mode = mode,
+                message = prefix .. effectiveMessage,
+                showInChat = showInChat
+            })
         end
     end
     if user:getType() == Character.player then
