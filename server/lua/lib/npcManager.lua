@@ -70,7 +70,7 @@ end
 function m.SpawnDynamic(name, race, sex, pos, scriptName)
     local raceId = race:getMetadata("id")
     local typeId = sex == "female" and 1 or 0
-    local entityType = "illarion:race_" .. raceId .. "_" .. typeId
+    local entityType = "illarion:races/race_" .. raceId .. "_" .. typeId
     local entity = Entities.create(entityType)
     entity:setName(name)
     entity:setCoordinate(pos)
