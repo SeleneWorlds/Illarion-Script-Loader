@@ -1,5 +1,6 @@
 local IllarionInventory = require("illarion-script-loader.server.lua.lib.illarionInventory")
 local Players = require("selene.players")
+local Network = require("selene.network")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
@@ -208,6 +209,13 @@ function m.GetDepot(user, depotId)
     })
 end
 
+function m.CreateDetachedDepot(user, depotId)
+    return IllarionInventory:new({
+        data = tablex.observable(), slots = DepotSlotIds(depotId),
+        owner = user, isContainer = true
+    })
+end
+
 function m.GetBackpack(user)
     local item = user:getItemAt(0)
     if not item then
@@ -264,6 +272,15 @@ function m.CloseShowcase(user, showcaseId)
     local showcase = showcases[showcaseId]
     showcases[showcaseId] = nil
     return showcase
+end
+
+function m.CloseAllShowcases(user)
+    local ids = {}
+    for id in pairs(m.GetShowcases(user)) do ids[#ids + 1] = id end
+    for _,id in ipairs(ids) do
+        m.CloseShowcase(user, id)
+        Network.sendToEntity(user.SeleneEntity, "illarion:close_showcase", {showcaseId = id})
+    end
 end
 
 function m.CloseShowcasesForItem(user, item)

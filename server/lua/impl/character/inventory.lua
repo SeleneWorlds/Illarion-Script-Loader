@@ -1,10 +1,25 @@
 local Registries = require("selene.registries")
 
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
+local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 
 Character.SeleneMethods.getDepot = function(user, depotId)
     depotId = assert(tonumber(depotId), "depotId must be a number, was " .. tostring(depotId))
     return Container.fromSeleneInventory(InventoryManager.GetDepot(user, depotId))
+end
+
+Character.SeleneMethods.moveDepotContentFrom = function(user, sourcecharid, targetdepotid, sourcedepotid)
+    local function id(value, name)
+        local number = tonumber(value)
+        assert(number and math.tointeger(number) and number >= 0 and number <= 4294967295,
+            name .. " must be an unsigned integer")
+        return math.tointeger(number)
+    end
+    sourcecharid = id(sourcecharid, "sourcecharid")
+    targetdepotid = id(targetdepotid, "targetdepotid")
+    sourcedepotid = id(sourcedepotid, "sourcedepotid")
+    if user:getType() ~= Character.player then return false end
+    return CharacterPersistence.moveDepotContentFrom(user, sourcecharid, targetdepotid, sourcedepotid)
 end
 
 Character.SeleneMethods.getBackPack = function(user, itemId)

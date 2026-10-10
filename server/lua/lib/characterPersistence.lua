@@ -464,24 +464,87 @@ local function restoreSafely(description, restore)
     end
 end
 
-local function restoreInventory(inventory, savedItems, inventoryName)
+local function restoreInventory(inventory, savedItems, inventoryName, strict)
+    local restoredSlots = {}
     for _, entry in ipairs(savedItems or {}) do
-        restoreSafely("item in " .. inventoryName .. " slot " .. tostring(entry.slot), function()
+        local function restore()
             local slotId = tonumber(entry.slot)
             if not slotId or not inventory:hasSlot(slotId) then
                 error("Cannot restore item into invalid slot " .. tostring(entry.slot))
             end
+            if strict and restoredSlots[slotId] then
+                error("Duplicate saved item slot " .. tostring(entry.slot))
+            end
+            restoredSlots[slotId] = true
             local item = deserializeItem(entry.item)
             if entry.item.content then
                 local contents = InventoryManager.GetContentsContainer({ SeleneItem = item })
                 if not contents then
                     error("Persisted contents belong to non-container item " .. tostring(entry.item.id))
                 end
-                restoreInventory(contents, entry.item.content, inventoryName .. " container in slot " .. tostring(slotId))
+                restoreInventory(contents, entry.item.content, inventoryName .. " container in slot " .. tostring(slotId), strict)
             end
             inventory:setItem(slotId, item)
-        end)
+        end
+        if strict then restore()
+        else restoreSafely("item in " .. inventoryName .. " slot " .. tostring(entry.slot), restore) end
     end
+end
+
+function m.moveDepotContentFrom(target, sourceId, targetDepotId, sourceDepotId)
+    local source
+    for _,player in ipairs(world:getPlayersOnline()) do
+        if player.id == sourceId then source = player; break end
+    end
+    if sourceId == target.id then source = target end
+    local replacement, sourceItems, targetItems
+    local begun = false
+    local ok, result = pcall(function()
+        database:execute("BEGIN IMMEDIATE")
+        begun = true
+        local sourceRow = database:query("SELECT json(items) AS items FROM characters WHERE id = ?", {sourceId})[1]
+        local targetRow = sourceId == target.id and sourceRow
+            or database:query("SELECT id FROM characters WHERE id = ?", {target.id})[1]
+        if not sourceRow or not targetRow then database:execute("ROLLBACK"); begun = false; return false end
+        sourceItems = source and serializeItems(source) or Json.decode(sourceRow.items)
+        sourceItems.depots = sourceItems.depots or {}
+        local sourceIndex, depot
+        for index,entry in ipairs(sourceItems.depots) do
+            if tonumber(entry.id) == sourceDepotId then sourceIndex, depot = index, entry; break end
+        end
+        if not depot then database:execute("ROLLBACK"); begun = false; return false end
+        if sourceId == target.id and sourceDepotId == targetDepotId then
+            database:execute("ROLLBACK"); begun = false; return true
+        end
+        replacement = InventoryManager.CreateDetachedDepot(target, targetDepotId)
+        restoreInventory(replacement, depot.items, "transferred depot", true)
+        table.remove(sourceItems.depots, sourceIndex)
+        targetItems = sourceId == target.id and sourceItems or serializeItems(target)
+        for index=#targetItems.depots,1,-1 do
+            if tonumber(targetItems.depots[index].id) == targetDepotId then table.remove(targetItems.depots, index) end
+        end
+        targetItems.depots[#targetItems.depots+1] = {id=targetDepotId, items=depot.items or {}}
+        if sourceId ~= target.id then
+            database:execute("UPDATE characters SET items = ? WHERE id = ?", {Json.encode(sourceItems), sourceId})
+        end
+        database:execute("UPDATE characters SET items = ? WHERE id = ?", {Json.encode(targetItems), target.id})
+        database:execute("COMMIT")
+        begun = false
+        return true
+    end)
+    if not ok then
+        if begun then pcall(database.execute, database, "ROLLBACK") end
+        Logging.error("Failed to transfer depot: " .. tostring(result))
+        return false
+    end
+    if not result or not replacement then return result end
+    if source then
+        source.SeleneEntity:getRuntimeData(DataKeys.Inventories)["depot:" .. sourceDepotId] = nil
+    end
+    target.SeleneEntity:getRuntimeData(DataKeys.Inventories)["depot:" .. targetDepotId] = replacement
+    InventoryManager.CloseAllShowcases(target)
+    if source and source ~= target then InventoryManager.CloseAllShowcases(source) end
+    return true
 end
 
 function m.restoreCollections(character, saved)
