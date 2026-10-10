@@ -12,8 +12,19 @@ local function firstFreeSlot(inventory)
     end
 end
 
+local function canMergeAtSlot(inventory, slotId, item)
+    local targetItem = inventory:getItem(slotId)
+    return item ~= nil
+        and targetItem ~= nil
+        and inventory:canMergeItem(targetItem, item)
+        and inventory:getItemCount(targetItem) < math.min(
+            inventory:getItemMaxCount(targetItem),
+            inventory:getSlotMaxCount(slotId)
+        )
+end
+
 function IllarionInventory:addItemAt(slotId, item)
-    if useLegacyContainerCompaction and self.isContainer then
+    if useLegacyContainerCompaction and self.isContainer and not canMergeAtSlot(self, slotId, item) then
         slotId = firstFreeSlot(self)
         if slotId == nil then
             return self:getItemCount(item)
@@ -25,15 +36,7 @@ end
 function IllarionInventory:moveItemTo(targetInventory, fromSlotId, toSlotId, count, context)
     if targetInventory ~= self and useLegacyContainerCompaction and targetInventory.isContainer then
         local sourceItem = self:getItem(fromSlotId)
-        local targetItem = targetInventory:getItem(toSlotId)
-        local canMergeAtTarget = sourceItem ~= nil
-            and targetItem ~= nil
-            and targetInventory:canMergeItem(targetItem, sourceItem)
-            and targetInventory:getItemCount(targetItem) < math.min(
-                targetInventory:getItemMaxCount(targetItem),
-                targetInventory:getSlotMaxCount(toSlotId)
-            )
-        if not canMergeAtTarget then
+        if not canMergeAtSlot(targetInventory, toSlotId, sourceItem) then
             toSlotId = firstFreeSlot(targetInventory)
             if toSlotId == nil then
                 return false
