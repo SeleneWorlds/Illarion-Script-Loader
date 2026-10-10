@@ -115,8 +115,17 @@ Character.SeleneMethods.turn = function(user, direction)
         return
     end
 
-    local supported, seleneDirection = xpcall(Grid.getDirectionByName, directionName)
-    if supported then
+    local seleneDirection = Grid.getDirectionByName(directionName)
+    if not seleneDirection then
+        -- Preserve diagonals where supported; otherwise use their north/south component.
+        if direction == Character.northeast or direction == Character.northwest then
+            seleneDirection = Grid.getDirectionByName("north")
+        elseif direction == Character.southeast or direction == Character.southwest then
+            seleneDirection = Grid.getDirectionByName("south")
+        end
+    end
+
+    if seleneDirection then
         user.SeleneEntity:setFacing(seleneDirection)
     end
 end
