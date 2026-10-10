@@ -112,7 +112,7 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
         end
     else
         local itemDef = itemDefinition(target)
-        local tileDef, tile = staticItemDefinition(player, payload)
+        local tileDef = staticItemDefinition(player, payload)
         local topItem = itemDef or tileDef
         if topItem and (topItem:getField("containerSlots") or 0) > 0 then
             table.insert(actions, { id = "open", label = "Open" })
@@ -124,8 +124,7 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
                 and not ItemMovement.isOccupied(target:getDimension(), target:getCoordinate(), player:getControlledEntity()) then
             table.insert(actions, { id = "pickup", label = "Pick up" })
         end
-        if (topItem and topItem:getField("script") and topItem:getField("script") ~= "")
-                or (not topItem and tile and tile:getMetadata("script")) then
+        if PayloadValidation.coordinateInRange(player, payload, nil, 1) then
             table.insert(actions, { id = "use", label = "Use" })
             table.insert(actions, { id = "useWith", label = "Use with..." })
         end
