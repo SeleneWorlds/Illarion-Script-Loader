@@ -83,6 +83,7 @@ function m.SpawnDynamic(name, race, sex, pos, scriptName)
     charData[DataFields.Sex] = sex
     entity:spawn()
     CharacterManager.AddEntity(entity)
+    return entity
 end
 
 function m.Despawn(entity)

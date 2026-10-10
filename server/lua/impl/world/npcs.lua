@@ -43,6 +43,6 @@ world.SeleneMethods.createDynamicNPC = function(world, name, raceId, pos, sex, s
     if race == nil then
         error("Unknown race id " .. raceId)
     end
-    NPCManager.SpawnDynamic(name, race, sex == 1 and "female" or "male", pos, scriptName)
-    return true
+    local entity = NPCManager.SpawnDynamic(name, race, sex == 1 and "female" or "male", pos, scriptName)
+    return true, Character.fromSeleneEntity(entity)
 end
