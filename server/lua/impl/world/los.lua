@@ -71,8 +71,8 @@ world.SeleneMethods.LoS = function(world, startPos, endPos)
                 for _, tile in ipairs(tiles) do
                     local itemId = tile:getMetadata("itemId")
                     if itemId then
-                        local itemDef = Registries.findByMetadata("illarion:items", "itemId", itemId)
-                        local volume = itemDef:getField("volume")
+                        local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
+                        local volume = itemDef and tonumber(itemDef:getField("volume")) or 0
                         if volume > highestVolume then
                             highestVolume = volume
                             highestVolumeTile = tile
