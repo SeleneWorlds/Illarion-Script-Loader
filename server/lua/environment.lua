@@ -40,12 +40,26 @@ local function calculateLight()
     return { red = result[1], green = result[2], blue = result[3] }
 end
 
+local function indoorLight(outdoors)
+    return { red = outdoors.red * 0.6, green = outdoors.green * 0.6, blue = outdoors.blue * 0.6 }
+end
+
+local function undergroundLight()
+    return { red = 0.1, green = 0.1, blue = 0.1 }
+end
+
 local function updatePlayer(player)
-    Environment.setAmbientLight(player, calculateLight())
+    local outdoors = calculateLight()
+    Environment.setOutdoorsAmbientLight(player, outdoors)
+    Environment.setIndoorsAmbientLight(player, indoorLight(outdoors))
+    Environment.setUndergroundAmbientLight(player, undergroundLight())
 end
 
 local function updateAll()
-    Environment.setGlobalAmbientLight(calculateLight())
+    local outdoors = calculateLight()
+    Environment.setGlobalOutdoorsAmbientLight(outdoors)
+    Environment.setGlobalIndoorsAmbientLight(indoorLight(outdoors))
+    Environment.setGlobalUndergroundAmbientLight(undergroundLight())
 end
 
 Players.playerJoined:connect(updatePlayer)
