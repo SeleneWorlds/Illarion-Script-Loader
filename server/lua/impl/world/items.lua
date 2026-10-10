@@ -8,6 +8,7 @@ local ItemEntity = require("illarion-script-loader.server.lua.lib.itemEntity")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 local PERMANENT_WEAR = 255
+local IMMOVABLE_WEIGHT = 30000
 
 world.SeleneMethods.getItemStatsFromId = function(world, itemId)
     itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
@@ -225,8 +226,9 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
     end
 
     local agingSpeed = tonumber(itemDef:getField("agingSpeed")) or 0
+    local weight = tonumber(itemDef:getField("weight")) or 0
     local item
-    if agingSpeed == PERMANENT_WEAR then
+    if agingSpeed == PERMANENT_WEAR or weight >= IMMOVABLE_WEIGHT then
         local tileDef = Registries.findByMetadata("tiles", "itemId", itemId)
         if not tileDef then
             error("Unknown tile for item id " .. tostring(itemId))
