@@ -233,7 +233,12 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         if not tileDef then
             error("Unknown tile for item id " .. tostring(itemId))
         end
-        item = Item.fromSeleneTile(dimension:placeTile(pos, tileDef))
+        local tile = dimension:placeTile(pos, tileDef)
+        local tileData = dimension:getAnnotationAt(tile:getCoordinate(), tileDef:getName()) or {}
+        tileData[DataFields.Quality] = tonumber(quality) or 333
+        tileData[DataFields.Wear] = agingSpeed
+        dimension:annotateTile(tile:getCoordinate(), tileDef:getName(), tileData)
+        item = Item.fromSeleneTile(tile)
     else
         local entityType = Registries.findByMetadata("entities", "itemId", itemId)
         if not entityType then
