@@ -18,7 +18,7 @@ Character.SeleneMethods.startAction = function(user, duration, gfxId, gfxInterva
     local sfxHandle = nil
     if gfxId ~= 0 then
         local playGfx = function()
-            world:gfx(gfxId, user)
+            world:gfx(gfxId, user.pos)
         end
         if gfxInterval > 0 then
             gfxHandle = Schedules.setInterval(gfxInterval * 100, playGfx, { immediate = true })
