@@ -14,22 +14,16 @@ local menuActions = {
     giveName = true, report = true
 }
 
-local function validTarget(player, payload, maximumRange)
+local function resolveTarget(player, payload, maximumRange)
     if payload.networkId == nil then
-        return nil
+        return PayloadValidation.coordinateInRange(player, payload, nil, maximumRange)
     end
     local target = PayloadValidation.entityInRange(player, payload.networkId, maximumRange)
     if not target then
         return nil
     end
     local coordinate = target:getCoordinate()
-    if coordinate:getX() ~= payload.x or coordinate:getY() ~= payload.y or coordinate:getZ() ~= payload.z then
-        return nil
-    end
-    if target:getDimension() ~= player:getControlledEntity():getDimension() then
-        return nil
-    end
-    return target
+    return coordinate:getX(), coordinate:getY(), coordinate:getZ(), target
 end
 
 local function itemDefinition(entity)
@@ -84,15 +78,13 @@ Network.handlePayload("illarion:walk_to", function(player, payload)
 end)
 
 Network.handlePayload("illarion:request_menu_at", function(player, payload)
-    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
+    local x, y, z, target = resolveTarget(player, payload, 14)
     local requestId = PayloadValidation.integer(payload.requestId, 0)
-    local target = payload.networkId == nil and nil or PayloadValidation.entityInRange(player, payload.networkId, 14)
-    if not x or not requestId or (payload.networkId ~= nil and not target) then
+    if not x or not requestId then
         return
     end
     payload = { x = x, y = y, z = z, networkId = payload.networkId, requestId = requestId }
     local actions = {}
-    target = target and validTarget(player, payload, 14)
     local userEntity = player:getControlledEntity()
     local targetData = target and target:getRuntimeData(DataKeys.Character)
     local targetType = targetData and targetData[DataFields.CharacterType]
@@ -198,19 +190,8 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
     end
     local maximumRange = (action == "lookAt" or action == "lookAtClose" or action == "attack"
         or action == "giveName") and 14 or 1
-    -- Naming is tied to the selected person, who may move while the dialog is open.
-    if action == "giveName" then
-        local namingTarget = PayloadValidation.entityInRange(player, payload.networkId, maximumRange)
-        if not namingTarget or namingTarget == player:getControlledEntity() then
-            return
-        end
-        local coordinate = namingTarget:getCoordinate()
-        payload.x, payload.y, payload.z = coordinate:getX(), coordinate:getY(), coordinate:getZ()
-    end
-    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, maximumRange)
-    local target = payload.networkId == nil and nil
-        or PayloadValidation.entityInRange(player, payload.networkId, maximumRange)
-    if not x or (payload.networkId ~= nil and not target) then
+    local x, y, z, target = resolveTarget(player, payload, maximumRange)
+    if not x or (action == "giveName" and (not target or target == player:getControlledEntity())) then
         return
     end
     local detail = payload.detail == nil and nil or PayloadValidation.string(payload.detail, 1000)
@@ -218,7 +199,6 @@ Network.handlePayload("illarion:menu_action_at", function(player, payload)
         return
     end
     payload = { x = x, y = y, z = z, networkId = payload.networkId, action = action, detail = detail }
-    target = target and validTarget(player, payload, maximumRange)
     local user = Character.fromSelenePlayer(player)
     local targetData = target and target:getRuntimeData(DataKeys.Character)
     local targetType = targetData and targetData[DataFields.CharacterType]
