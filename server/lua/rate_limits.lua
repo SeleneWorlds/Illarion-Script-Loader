@@ -29,7 +29,7 @@ defaults(5, 10, {
 defaults(10, 20, {
     "move_slot_to_slot", "move_coordinate_to_slot", "move_coordinate_to_coordinate",
     "move_slot_to_coordinate", "drop_slot_in_front", "set_combat_target",
-    "request_menu_at", "menu_action_at", "look_at", "look_at_entity"
+    "request_menu_at", "menu_action_at", "look_at", "look_at_entity", "walk_to"
 })
 
 -- Hover/focus can cross many inventory/menu items quickly.

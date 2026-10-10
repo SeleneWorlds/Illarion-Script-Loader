@@ -1,5 +1,6 @@
 local Network = require("selene.network")
 local Registries = require("selene.registries")
+local Pathfinding = require("selene.pathfinding")
 
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -51,6 +52,36 @@ local function staticItemDefinition(player, payload)
     -- The base tile is the use target when there are no static items above it.
     return nil, tiles[1]
 end
+
+-- Plan on the server, which has authoritative terrain and entity collisions.
+local function canWalkTo(player, x, y, z)
+    local entity = player:getControlledEntity()
+    return entity and not entity:getDimension():hasCollisionAt(x, y, z, entity:getCollisionViewer())
+end
+
+Network.handlePayload("illarion:walk_to", function(player, payload)
+    local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
+    if not x or not player:canMove() then
+        return
+    end
+    local entity = player:getControlledEntity()
+    local steps = {}
+    if canWalkTo(player, x, y, z) then
+        local path = Pathfinding.findPath(entity, { x = x, y = y, z = z }, 30, 4096)
+        local coordinate = entity:getCoordinate()
+        local fromX, fromY, fromZ = coordinate.x, coordinate.y, coordinate.z
+        for _, direction in ipairs(path or {}) do
+            local vector = direction:getVector()
+            local nextX, nextY, nextZ = fromX + vector.x, fromY + vector.y, fromZ + vector.z
+            steps[#steps + 1] = {
+                fromX = fromX, fromY = fromY, fromZ = fromZ,
+                x = nextX, y = nextY, z = nextZ, direction = direction:getName()
+            }
+            fromX, fromY, fromZ = nextX, nextY, nextZ
+        end
+    end
+    Network.sendToPlayer(player, "illarion:walk_path", { networkId = entity:getNetworkId(), steps = steps })
+end)
 
 Network.handlePayload("illarion:request_menu_at", function(player, payload)
     local x, y, z = PayloadValidation.coordinateInRange(player, payload, nil, 14)
@@ -106,6 +137,9 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
             table.insert(actions, { id = "use", label = "Use" })
             table.insert(actions, { id = "useWith", label = "Use with..." })
         end
+    end
+    if not targetType and canWalkTo(player, x, y, z) then
+        table.insert(actions, { id = "goTo", label = "Go to" })
     end
     Network.sendToPlayer(player, "illarion:menu_at", {
         requestId = payload.requestId,
