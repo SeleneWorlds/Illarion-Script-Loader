@@ -9,4 +9,14 @@ function ItemMovement.isImmovable(itemDef, wear)
     return itemWear == PERMANENT_WEAR or itemWeight >= IMMOVABLE_WEIGHT
 end
 
+function ItemMovement.isOccupied(dimension, coordinate, pickerEntity)
+    -- Check all characters, including those hidden from the interacting player.
+    for _, entity in ipairs(dimension:getEntitiesAt(coordinate)) do
+        if entity ~= pickerEntity and entity:hasTag("illarion:character") then
+            return true
+        end
+    end
+    return false
+end
+
 return ItemMovement

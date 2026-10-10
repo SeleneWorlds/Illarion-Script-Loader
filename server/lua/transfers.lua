@@ -254,7 +254,9 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
         end
     end
 
-    if not sourceEntity then
+    if not sourceEntity or ItemMovement.isOccupied(
+        sourceEntity:getDimension(), sourceEntity:getCoordinate(), character.SeleneEntity
+    ) then
         return
     end
 
@@ -358,7 +360,9 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         end
     end
 
-    if not sourceEntity then
+    if not sourceEntity or ItemMovement.isOccupied(
+        sourceEntity:getDimension(), sourceEntity:getCoordinate(), character.SeleneEntity
+    ) then
         return
     end
 

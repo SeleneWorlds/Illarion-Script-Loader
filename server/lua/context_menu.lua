@@ -97,7 +97,8 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
         table.insert(actions, { id = "lookAt", label = "Examine" })
         local itemData = target and target:getRuntimeData(DataKeys.Item)
         local wear = itemData and itemData[DataFields.Wear]
-        if itemDef and not ItemMovement.isImmovable(itemDef, wear) then
+        if itemDef and not ItemMovement.isImmovable(itemDef, wear)
+                and not ItemMovement.isOccupied(target:getDimension(), target:getCoordinate(), player:getControlledEntity()) then
             table.insert(actions, { id = "pickup", label = "Pick up" })
         end
         if (topItem and topItem:getField("script") and topItem:getField("script") ~= "")
@@ -118,7 +119,8 @@ local function pickup(player, payload, target)
         return
     end
     local itemData = target:getRuntimeData(DataKeys.Item)
-    if ItemMovement.isImmovable(itemDef, itemData[DataFields.Wear]) then
+    if ItemMovement.isImmovable(itemDef, itemData[DataFields.Wear])
+            or ItemMovement.isOccupied(target:getDimension(), target:getCoordinate(), player:getControlledEntity()) then
         return
     end
     local item = {
