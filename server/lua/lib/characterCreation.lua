@@ -155,7 +155,15 @@ function m.getOptions(compactColours, locale)
             for _, item in ipairs(items) do
                 item.slot = nil
             end
-            table.insert(startPacks, { id = id, name = name, items = items })
+            local suggestions = {}
+            local packAttributes = plainTable(pack:getField("attributes"))
+            for _, attribute in ipairs(creationAttributes) do
+                suggestions[attribute] = tonumber(packAttributes[attribute])
+            end
+            table.insert(startPacks, {
+                id = id, name = name, items = items,
+                attributes = next(suggestions) and suggestions or nil
+            })
         end
     end
     table.sort(startPacks, function(a, b) return a.id < b.id end)
