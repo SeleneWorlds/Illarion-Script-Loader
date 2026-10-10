@@ -72,16 +72,18 @@ local function createWeatherPayload()
     }
 end
 
-local function sendWeather(player)
-    local weather = createWeatherPayload()
+local function sendWeather(player, weather)
+    if not player:getControlledEntity() then
+        return
+    end
+    weather = weather or createWeatherPayload()
     Network.sendToPlayer(player, PAYLOAD_ID, weather)
     updateWeatherEffects(player, weather)
 end
 
 local function broadcastWeather(weather)
     for _, player in ipairs(Players.getOnlinePlayers()) do
-        Network.sendToPlayer(player, PAYLOAD_ID, weather)
-        updateWeatherEffects(player, weather)
+        sendWeather(player, weather)
     end
 end
 
@@ -89,7 +91,7 @@ Network.handlePayload("illarion:request_weather", function(player)
     sendWeather(player)
 end)
 
-Players.playerJoined:connect(function(player)
+Events.onCharacterSelected:connect(function(player)
     Timelines.play(player, FOG_TIMELINE, { fogDensity = 0 }, nil, { instanceId = FOG_INSTANCE })
     sendWeather(player)
 end)
@@ -105,6 +107,8 @@ Schedules.setInterval(LIGHTNING_CHECK_INTERVAL_MS, function()
         return
     end
     for _, player in ipairs(Players.getOnlinePlayers()) do
-        Timelines.play(player, LIGHTNING_TIMELINE)
+        if player:getControlledEntity() then
+            Timelines.play(player, LIGHTNING_TIMELINE)
+        end
     end
 end)

@@ -8,6 +8,7 @@ local Permissions = require("selene.permissions")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
@@ -165,6 +166,7 @@ Network.handlePayload("illarion:select_character", function(player, payload)
             Character.fromSelenePlayer(player):warp(position(headlessX, headlessY, headlessZ))
         end
         Network.sendToPlayer(player, "illarion:character_selected", { id = selectedId })
+        Events.onCharacterSelected:fire(player)
         local editorOk, editor = pcall(require, "moonlight-editor.server.lua.editor")
         if editorOk and not editor.isEnabled(player) then
             editor.toggle(player)
@@ -200,6 +202,7 @@ Network.handlePayload("illarion:select_character", function(player, payload)
             Network.sendToPlayer(player, "illarion:character_selected", {
                 id = ownedCharacter.id
             })
+            Events.onCharacterSelected:fire(player)
             return
         end
     end
