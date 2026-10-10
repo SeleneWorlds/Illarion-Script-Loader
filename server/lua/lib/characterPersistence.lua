@@ -127,6 +127,16 @@ database:execute([[
     )
 ]])
 
+-- Lower IDs are reserved because various scripts assume charIds start out higher.
+database:execute([[
+    INSERT INTO sqlite_sequence (name, seq)
+    SELECT 'characters', 9999
+    WHERE NOT EXISTS (SELECT 1 FROM sqlite_sequence WHERE name = 'characters')
+]])
+database:execute([[
+    UPDATE sqlite_sequence SET seq = MAX(seq, 9999) WHERE name = 'characters'
+]])
+
 local function getUserId(player)
     local userId = player:getUserId()
     if not userId then
