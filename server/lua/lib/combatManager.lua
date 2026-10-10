@@ -3,6 +3,9 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local Network = require("selene.network")
 local Entities = require("selene.entities")
+local Config = require("selene.config")
+
+local useLegacyCombat = Config.getProperty("useLegacyCombat") == "true"
 
 local m = {}
 
@@ -67,6 +70,15 @@ function m.Attack(user)
 
     if user.SeleneEntity:getDimension() ~= target.SeleneEntity:getDimension()
             or not user:isInRange(target, 14) then
+        return false
+    end
+
+    -- Target changes must obey the same cooldown as scheduled attacks.
+    if useLegacyCombat then
+        if user.movepoints < 21 then
+            return false
+        end
+    elseif user.fightpoints < 0 then
         return false
     end
 
