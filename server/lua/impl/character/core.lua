@@ -192,8 +192,7 @@ Character.SeleneMethods.defaultMusic = function()
 end
 
 isValidChar = function(user)
-    -- TODO This should actually check if the user is truly still valid
-    return true
+    return user ~= nil and user.SeleneEntity ~= nil
 end
 
 getCharForId = function(id)
@@ -204,4 +203,8 @@ function Character.fromSeleneEntity(entity)
     local players = entity:getControllingPlayers()
     local player = #players > 0 and players[1] or nil
     return setmetatable({SeleneEntity = entity, SelenePlayer = player}, Character.SeleneMetatable)
+end
+
+function Character.fromSeleneEmpty()
+    return setmetatable({}, Character.SeleneMetatable)
 end

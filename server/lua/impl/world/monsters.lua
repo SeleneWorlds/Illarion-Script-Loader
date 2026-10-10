@@ -1,5 +1,6 @@
 local Dimensions = require("selene.dimensions")
 local Registries = require("selene.registries")
+local Logging = require("selene.logging")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
@@ -12,7 +13,8 @@ world.SeleneMethods.createMonster = function(world, monsterId, pos, movePoints)
     end
     local monsterDef = Registries.findByMetadata("illarion:monsters", "id", monsterId)
     if not monsterDef then
-         error("Unknown monster id " .. monsterId)
+        Logging.error("World::createMonster: Failed to create monster with unknown id " .. monsterId .. "!")
+        return Character.fromSeleneEmpty()
     end
 
     return MonsterManager.Spawn(monsterDef, pos, movePoints)
