@@ -26,6 +26,17 @@ Character.SeleneMethods.inform = function(user, message, messageEnglish, priorit
 end
 
 Character.SeleneMethods.pageGM = function(user, message)
+    local page = "Page from " .. user.name .. ": " .. message
+    for _, onlineCharacter in ipairs(world:getPlayersOnline()) do
+        if onlineCharacter:isAdmin() then
+            onlineCharacter:inform(page)
+        end
+    end
+
+    if user:isAdmin() then
+        return true
+    end
+
     local webhookUrl = Config.getProperty("notifyAdminDiscordWebhook")
     local player = user.SelenePlayer
     local now = os.time()
