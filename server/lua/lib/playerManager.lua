@@ -217,6 +217,10 @@ function m.Spawn(player, selectedCharacter)
         selectedCharacter.skinAlpha
     ))
 
+    if selectedCharacter.headless then
+        CharacterManager.setGodMode(character, true)
+    end
+
     local playerData = player:getRuntimeData(DataKeys.Player)
     playerData[DataFields.TotalOnlineTime] = selectedCharacter.totalOnlineTime
     playerData[DataFields.CurrentLoginTimestamp] = os.time()
