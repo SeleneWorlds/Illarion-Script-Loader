@@ -130,6 +130,34 @@ Network.handlePayload("illarion:create_character", function(player, payload)
     sendCharacters(player)
 end)
 
+Network.handlePayload("illarion:delete_character", function(player, payload)
+    local function fail(message)
+        Network.sendToPlayer(player, "illarion:character_deletion_result", { error = message })
+    end
+    if player:getControlledEntity() then
+        fail("Characters can only be deleted from character selection.")
+        return
+    end
+    local id = type(payload) == "table" and PayloadValidation.integer(payload.id, 1)
+    if not id or type(payload.name) ~= "string" then
+        fail("Invalid character deletion request.")
+        return
+    end
+    if PlayerManager.IsCharacterOnline(id) then
+        fail("This character is currently logged in.")
+        return
+    end
+    local ok, deleted, deletionError = pcall(CharacterPersistence.deleteCharacter, player, id, payload.name)
+    if not ok then
+        Logging.error("Character deletion failed: " .. tostring(deleted))
+        fail("Character deletion failed. Please try again.")
+        return
+    end
+    if not deleted then fail(deletionError); return end
+    Network.sendToPlayer(player, "illarion:character_deletion_result", { id = id })
+    sendCharacters(player)
+end)
+
 Network.handlePayload("illarion:select_character", function(player, payload)
     if player:getControlledEntity() then
         return

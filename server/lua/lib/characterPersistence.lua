@@ -123,9 +123,20 @@ database:execute([[
         quests JSONB NOT NULL DEFAULT '{}',
         long_time_effects JSONB NOT NULL DEFAULT '{}',
         created_at INTEGER NOT NULL,
-        last_saved_at INTEGER NOT NULL
+        last_saved_at INTEGER NOT NULL,
+        deleted_at INTEGER
     )
 ]])
+
+-- Migrate existing saves while preserving every character record.
+-- TODO Would be nice if we had some cleaner way of doing migrations
+local hasDeletedAt = false
+for _, column in ipairs(database:query("PRAGMA table_info(characters)")) do
+    if column.name == "deleted_at" then hasDeletedAt = true; break end
+end
+if not hasDeletedAt then
+    database:execute("ALTER TABLE characters ADD COLUMN deleted_at INTEGER")
+end
 
 -- Lower IDs are reserved because various scripts assume charIds start out higher.
 database:execute([[
@@ -153,7 +164,7 @@ function m.loadCharacterSummaries(player)
         [[
             SELECT id, name, race, sex, created_at AS "createdAt"
             FROM characters
-            WHERE user_id = ?
+            WHERE user_id = ? AND deleted_at IS NULL
             ORDER BY id
         ]],
         userId
@@ -162,12 +173,29 @@ function m.loadCharacterSummaries(player)
     return characters
 end
 
+---Soft deletes an owned character after exact name confirmation.
+function m.deleteCharacter(player, characterId, name)
+    local userId = getUserId(player)
+    local rows = database:query(
+        "SELECT name FROM characters WHERE user_id = ? AND id = ? AND deleted_at IS NULL",
+        { userId, characterId }
+    )
+    if not rows[1] then return false, "Character is no longer available." end
+    if rows[1].name ~= name then return false, "Type the character's exact name to confirm deletion." end
+    database:execute(
+        "UPDATE characters SET deleted_at = ? WHERE user_id = ? AND id = ? AND name = ? AND deleted_at IS NULL",
+        { os.time(), userId, characterId, name }
+    )
+    return true
+end
+
 ---Loads the small records for all persisted characters.
 ---@return PersistedCharacterSummary[]
 function m.loadAllCharacterSummaries()
     return database:query([[
         SELECT id, name, race, sex, x, y, z, created_at AS "createdAt"
         FROM characters
+        WHERE deleted_at IS NULL
         ORDER BY id
     ]])
 end
@@ -324,7 +352,7 @@ function m.loadCharacter(player, characterId)
                    json(long_time_effects) AS "longTimeEffects",
                    created_at AS "createdAt", last_saved_at AS "lastSavedAt"
             FROM characters
-            WHERE user_id = ? AND id = ?
+            WHERE user_id = ? AND id = ? AND deleted_at IS NULL
         ]],
         { getUserId(player), characterId }
     )
@@ -686,7 +714,7 @@ function m.saveCharacter(player, character)
                 skin_alpha = ?, total_online_time = ?, skills = jsonb(?), items = jsonb(?),
                 introductions = jsonb(?), quests = jsonb(?), long_time_effects = jsonb(?),
                 last_saved_at = ?
-            WHERE user_id = ? AND id = ?
+            WHERE user_id = ? AND id = ? AND deleted_at IS NULL
         ]],
         {
             entity:getName(), characterData[DataFields.Race], characterData[DataFields.Sex],
