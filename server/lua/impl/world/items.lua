@@ -104,6 +104,7 @@ world.SeleneMethods.erase = function(world, item, amount)
         return true
     elseif item:getType() == scriptItem.container then
         item.inside:increaseAtPos(item.itempos, -amount)
+        return true
     end
 end
 
