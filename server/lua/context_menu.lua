@@ -77,6 +77,45 @@ Network.handlePayload("illarion:walk_to", function(player, payload)
     Network.sendToPlayer(player, "illarion:walk_path", { networkId = entity:getNetworkId(), steps = steps })
 end)
 
+-- Resolve pointer turning from authoritative position/facing, then use the
+-- client's normal facing request path (including its movement permissions).
+Network.handlePayload("illarion:turn_to", function(player, payload)
+    local x, y = PayloadValidation.coordinateInRange(player, payload, nil, 14)
+    if not x or not player:canMove() then
+        return
+    end
+    local entity = player:getControlledEntity()
+    local coordinate = entity:getCoordinate()
+    local direction
+    if payload.delta ~= nil then
+        local delta = PayloadValidation.integer(payload.delta, -1, 1)
+        if not delta or delta == 0 or x ~= coordinate.x or y ~= coordinate.y then
+            return
+        end
+        local facing = entity:getFacing()
+        local directions = { "north", "east", "south", "west" }
+        for index, name in ipairs(directions) do
+            if facing and facing:getName() == name then
+                direction = directions[(index - 1 + delta) % 4 + 1]
+                break
+            end
+        end
+    else
+        local dx, dy = x - coordinate.x, y - coordinate.y
+        if dx == 0 and dy == 0 then
+            return
+        end
+        if math.abs(dx) > math.abs(dy) then
+            direction = dx > 0 and "east" or "west"
+        else
+            direction = dy > 0 and "south" or "north"
+        end
+    end
+    if direction then
+        Network.sendToPlayer(player, "illarion:turn_to", { direction = direction })
+    end
+end)
+
 Network.handlePayload("illarion:request_menu_at", function(player, payload)
     local x, y, z, target = resolveTarget(player, payload, 14)
     local requestId = PayloadValidation.integer(payload.requestId, 0)
