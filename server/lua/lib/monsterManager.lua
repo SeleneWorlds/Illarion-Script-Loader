@@ -202,12 +202,13 @@ end
 local function getCandidates(monster, range)
     local candidates = {}
     for _, candidate in ipairs(world:getPlayersInRangeOf(monster.pos, range)) do
-        if not CharacterManager.IsDead(candidate) then
+        if not candidate.isinvisible and not CharacterManager.IsDead(candidate) then
             candidates[#candidates + 1] = candidate
         end
     end
     for _, candidate in ipairs(world:getMonstersInRangeOf(monster.pos, range)) do
-        if candidate.SeleneEntity ~= monster.SeleneEntity and not CharacterManager.IsDead(candidate) then
+        if candidate.SeleneEntity ~= monster.SeleneEntity
+                and not candidate.isinvisible and not CharacterManager.IsDead(candidate) then
             candidates[#candidates + 1] = candidate
         end
     end
