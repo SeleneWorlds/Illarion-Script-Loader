@@ -184,6 +184,15 @@ Character.SeleneGetters.SeleneEntity = function(user)
     return user.SelenePlayer and user.SelenePlayer:getControlledEntity() or rawget(user, "SeleneEntity")
 end
 
+-- TODO This shouldn't exist, callers should use something like :getPrimaryControllingPlayer() directly
+Character.SeleneGetters.SelenePlayer = function(user)
+    -- Use the stored entity directly to avoid recursing through the SeleneEntity getter.
+    local entity = rawget(user, "SeleneEntity")
+    if not entity then return nil end
+    local players = entity:getControllingPlayers()
+    return players[1]
+end
+
 Character.SeleneMethods.performAnimation = function(user, animId)
     animId = assert(tonumber(animId), "animId must be a number, was " .. tostring(animId))
     user.SeleneEntity:playAnimation(tostring(animId))
@@ -211,9 +220,7 @@ getCharForId = function(id)
 end
 
 function Character.fromSeleneEntity(entity)
-    local players = entity:getControllingPlayers()
-    local player = #players > 0 and players[1] or nil
-    return setmetatable({SeleneEntity = entity, SelenePlayer = player}, Character.SeleneMetatable)
+    return setmetatable({SeleneEntity = entity}, Character.SeleneMetatable)
 end
 
 function Character.fromSeleneEmpty()
