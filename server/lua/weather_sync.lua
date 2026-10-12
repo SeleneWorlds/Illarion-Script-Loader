@@ -34,13 +34,14 @@ end
 local function updateWeatherEffects(player, weather)
     local timeline = getPrecipitationTimeline(weather)
     local precipitationStrength = math.min(math.max((weather.percipitation_strength or 0) / 100, 0), 1)
-    local activeTimeline = player[PRECIPITATION_TIMELINE_KEY]
+    local runtimeData = player:getRuntimeData("illarion:weather")
+    local activeTimeline = runtimeData[PRECIPITATION_TIMELINE_KEY]
     if timeline and timeline ~= activeTimeline then
         -- New emitters start at zero; replacing the instance lets old particles finish.
         Timelines.play(player, timeline, { precipitationStrength = 0 }, nil, {
             instanceId = PRECIPITATION_INSTANCE
         })
-        player[PRECIPITATION_TIMELINE_KEY] = timeline
+        runtimeData[PRECIPITATION_TIMELINE_KEY] = timeline
         activeTimeline = timeline
     end
     if activeTimeline then
