@@ -37,7 +37,7 @@ end
 world.SeleneMethods.getMonstersInRangeOf = function(world, pos, range)
     range = assert(tonumber(range), "range must be a number, was " .. tostring(range))
     local dimension = Dimensions.getDefault()
-    local entities = dimension:getEntitiesInRange(pos, range)
+    local entities = dimension:getEntitiesInBox(pos, { x = range, y = range, z = 2 })
     local monsters = {}
     for _, entity in ipairs(entities) do
         local charData = entity:getRuntimeData(DataKeys.Character)
