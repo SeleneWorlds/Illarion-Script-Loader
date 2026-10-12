@@ -192,7 +192,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             local movedItem = Item.fromSeleneInventoryItem(InventoryItem:fromInventorySlot(fromInventory, fromSlotId, fromItem))
             sourceSnapshot = CreateItemSnapshot(movedItem)
             local targetItem = CreateItemSnapshot(movedItem)
-            targetItem.pos = toInventory.owner.pos
+            targetItem.pos = toInventory.owner and toInventory.owner.pos or context.character.pos
             targetItem.owner = toInventory.owner
             targetItem.itempos = toSlotId
             targetItem.inside = toInventory.isContainer and Container.fromSeleneInventory(toInventory) or nil
@@ -275,7 +275,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     sourceSnapshot.pos = position(fromX, fromY, fromZ)
     sourceSnapshot.owner = character
     local targetScriptItem = CreateItemSnapshot(sourceSnapshot)
-    targetScriptItem.pos = targetInventory.owner.pos
+    targetScriptItem.pos = targetInventory.owner and targetInventory.owner.pos or character.pos
     targetScriptItem.owner = targetInventory.owner
     targetScriptItem.itempos = toSlotId
     targetScriptItem.inside = targetInventory.isContainer and Container.fromSeleneInventory(targetInventory) or nil

@@ -350,6 +350,7 @@ function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)
         end
         inventories[inventoryName] = inventory
     end
+    inventory.owner = user
     return inventory
 end
 
