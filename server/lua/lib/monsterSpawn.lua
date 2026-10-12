@@ -58,7 +58,7 @@ function MonsterSpawn:scheduleNext()
     self.timeoutId = Schedules.setTimeout(interval * 1000, function()
         self.timeoutId = nil
         self:spawn()
-    end)
+    end, { name = self.def:getName() })
 end
 
 function MonsterSpawn:monsterRemoved(monsterDef)
