@@ -3,7 +3,6 @@ local Entities = require("selene.entities")
 local Grid = require("selene.grid")
 local Pathfinding = require("selene.pathfinding")
 local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
-local Profiler = require("selene.profiler")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -535,28 +534,12 @@ function m.Update()
     end
     m.NewMonsters = {}
 
-    -- Keep the normal loop free of per-monster profiling bridge calls.
-    local profiling = Profiler.isCapturing ~= nil and Profiler.isCapturing()
-
     for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
-            local ready
-            if profiling then
-                ready = Profiler.measure("monster bookkeeping/point regeneration", ActionPoints.Regenerate, entity, charData)
-            else
-                ready = ActionPoints.Regenerate(entity, charData)
-            end
-            local active = false
-            if ready then
-                if profiling then
-                    active = Profiler.measure("monster bookkeeping/activation", isActive, monster)
-                else
-                    active = isActive(monster)
-                end
-            end
-            if active then
+            local ready = ActionPoints.Regenerate(entity, charData)
+            if ready and isActive(monster) then
                 local routeStatus = RouteManager.Advance(monster)
                 if routeStatus == "complete" or routeStatus == "blocked" then
                     monster:setOnRoute(false)
