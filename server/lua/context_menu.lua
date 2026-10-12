@@ -133,7 +133,12 @@ Network.handlePayload("illarion:request_menu_at", function(player, payload)
             table.insert(actions, { id = "lookAt", label = "Examine" })
             if targetType == Character.player then
                 table.insert(actions, { id = "lookAtClose", label = "Examine closely" })
-                table.insert(actions, { id = "giveName", label = "Give name" })
+                local introductions = userEntity:getRuntimeData(DataKeys.Introductions)
+                local relationship = introductions and introductions[targetData[DataFields.ID]]
+                table.insert(actions, {
+                    id = "giveName", label = "Give name",
+                    givenName = relationship and relationship.customName or ""
+                })
                 table.insert(actions, { id = "introduce", label = "Introduce" })
             end
             local combat = userEntity:getRuntimeData(DataKeys.Combat)
