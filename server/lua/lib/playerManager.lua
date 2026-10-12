@@ -1,4 +1,5 @@
 local Players = require("selene.players")
+local Config = require("selene.config")
 local Entities = require("selene.entities")
 local CharacterVisual = require("illarion-script-loader.server.lua.lib.characterVisual")
 local Network = require("selene.network")
@@ -50,7 +51,9 @@ function m.CreateHeadlessCharacter()
     end
     local selected = {
         id = id, name = "Admin", headless = true, race = 26, sex = "male",
-        x = -465, y = -465, z = 0,
+        x = assert(tonumber(Config.getProperty("headlessSpawnX")), "headlessSpawnX must be configured as a number"),
+        y = assert(tonumber(Config.getProperty("headlessSpawnY")), "headlessSpawnY must be configured as a number"),
+        z = assert(tonumber(Config.getProperty("headlessSpawnZ")), "headlessSpawnZ must be configured as a number"),
         facing = 4, age = 18, weight = 0, bodyHeight = 0,
         hitpoints = 10000, mana = 0, foodlevel = 30000, attitude = 0, luck = 0,
         poison = 0, mentalCapacity = 10000, magicType = 0,
