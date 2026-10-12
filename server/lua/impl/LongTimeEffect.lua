@@ -37,7 +37,7 @@ LongTimeEffect.SeleneMethods.addValue = function(effect, key, value)
     value = assert(tonumber(value), "value must be a number, was " .. tostring(value))
     local data = EffectManager.EnsureSeleneEffectData(effect)
     if not data.values then
-        data.values = tablex.observable({})
+        data.values = {}
     end
     data.values[key] = value
 end

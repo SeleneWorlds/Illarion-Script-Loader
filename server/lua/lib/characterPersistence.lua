@@ -621,12 +621,12 @@ function m.restoreCollections(character, saved)
             if not Registries.findByName("illarion:ltes", effectName) then
                 error("Cannot restore unknown long-time effect " .. tostring(effectName))
             end
-            effects[effectName] = tablex.observable({
+            effects[effectName] = {
                 nextCalled = tonumber(value.nextCalled) or 0,
                 numberCalled = tonumber(value.numberCalled) or 0,
-                values = tablex.observable(copyStringMap(value.values)),
+                values = copyStringMap(value.values),
                 addEffectCalled = true
-            })
+            }
         end)
     end
 

@@ -18,7 +18,7 @@ end
 function m.EnsureSeleneEffectData(effect)
     local data = effect.SeleneEffectData
     if not data then
-        data = tablex.observable({})
+        data = {}
         effect.SeleneEffectData = data
     end
     return data
