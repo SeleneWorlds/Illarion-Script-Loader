@@ -145,9 +145,13 @@ function m.Update()
     end
     m.PendingRemoval = {}
 
-    for _, entity in ipairs(Entities.byTag("illarion:character")) do
+    local active = {}
+    for _, entity in ipairs(Entities.activeByTag("illarion:character")) do
+        active[#active + 1] = entity
+    end
+    for _, entity in ipairs(active) do
         local charData = entity:getRuntimeData(DataKeys.Character)
-        if charData[DataFields.CharacterType] == Character.npc then
+        if charData[DataFields.CharacterType] == Character.npc and entity:isActive() then
             local npc = Character.fromSeleneEntity(entity)
             if charData[DataFields.Dead] then
                 npc:increaseAttrib("hitpoints", 10000)

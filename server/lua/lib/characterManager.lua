@@ -29,6 +29,9 @@ function m.SetDead(character, dead)
     local charData = character.SeleneEntity:getRuntimeData(DataKeys.Character)
     charData[DataFields.Dead] = dead
     if wasDead ~= dead then
+        if charData[DataFields.CharacterType] == Character.monster then
+            character.SeleneEntity:setEnabled(not dead)
+        end
         character.SeleneEntity:updateVisuals()
     end
     if not wasDead and dead then

@@ -77,6 +77,7 @@ end
 function m.SetOnRoute(character, onRoute)
     local state = getState(character)
     state.onRoute = onRoute and true or false
+    character.SeleneEntity:setKeepAwake(state.onRoute)
     if not state.onRoute then
         invalidatePath(state)
     end

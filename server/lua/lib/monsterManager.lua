@@ -14,7 +14,6 @@ local CombatManager = require("illarion-script-loader.server.lua.lib.combatManag
 
 local m = {}
 
-local ACTIVE_RANGE = 60
 local MAX_ACTION_POINTS = 21
 local WALK_ACTION_POINT_COST = 20
 local VIEW_RANGE = 11
@@ -143,10 +142,6 @@ local function keepDirectionInsideSpawn(monster, direction, spawn)
 end
 
 local function makeRandomMove(monster, charData)
-    if #world:getPlayersInRangeOf(monster.pos, ACTIVE_RANGE) == 0 then
-        return
-    end
-
     local spawn
     local spawnName = charData[DataFields.MonsterSpawn]
     if spawnName then
@@ -392,6 +387,7 @@ function m.Spawn(monsterDef, pos, movePoints)
     end
 
     local entity = Entities.create(race:getIdentifier():withPrefix("races/"):withSuffix("_0"))
+    entity:setSleepWhenUnobserved(true, 60, 70, 2)
     entity:setName(race:getField("name"))
     m.IdCounter = m.IdCounter + 1
     local charData = entity:getRuntimeData(DataKeys.Character)
@@ -508,17 +504,6 @@ function m.RemoveAll()
     m.NewMonsters = {}
 end
 
-local function isActive(monster)
-    if monster:getOnRoute() then return true end
-    local entity = monster.SeleneEntity
-    local dimension = entity:getDimension()
-    return dimension ~= nil and dimension:hasPlayersInBox(
-        entity:getCoordinate(), ACTIVE_RANGE, ACTIVE_RANGE, 2
-    )
-end
-
-
-
 function m.Update()
     m.UpdateTick = m.UpdateTick + 1
 
@@ -534,12 +519,18 @@ function m.Update()
     end
     m.NewMonsters = {}
 
-    for _, entity in ipairs(Entities.byTag("illarion:character")) do
+    -- Hooks may remove or disable entities, changing the live collection mid-pass.
+    local active = {}
+    for _, entity in ipairs(Entities.activeByTag("illarion:character")) do
+        active[#active + 1] = entity
+    end
+    for _, entity in ipairs(active) do
         local charData = entity:getRuntimeData(DataKeys.Character)
-        if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
+        if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead]
+                and entity:isActive() then
             local monster = Character.fromSeleneEntity(entity)
             local ready = ActionPoints.Regenerate(entity, charData)
-            if ready and isActive(monster) then
+            if ready then
                 local routeStatus = RouteManager.Advance(monster)
                 if routeStatus == "complete" or routeStatus == "blocked" then
                     monster:setOnRoute(false)
