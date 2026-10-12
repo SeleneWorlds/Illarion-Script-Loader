@@ -31,13 +31,9 @@ end
 world.SeleneMethods.getPlayersInRangeOf = function(world, pos, range)
     range = assert(tonumber(range), "range must be a number, was " .. tostring(range))
     local dimension = Dimensions.getDefault()
-    local players = Players.getOnlinePlayers()
     local result = {}
-    for _, player in ipairs(players) do
-        local entity = player:getControlledEntity()
-        if entity and entity:getCoordinate():getHorizontalDistanceTo(pos) <= range then
-            table.insert(result, Character.fromSelenePlayer(player))
-        end
+    for _, player in ipairs(dimension:getPlayersInBox(pos, { x = range, y = range, z = 2 })) do
+        result[#result + 1] = Character.fromSelenePlayer(player)
     end
     return result
 end
