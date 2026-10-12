@@ -15,7 +15,7 @@ end
 Character.SeleneMethods.get_mon_type = Character.SeleneMethods.getMonsterType
 
 Character.SeleneMethods.getLoot = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     local monsterDef = charData[DataFields.Monster]
     if monsterDef then
         local drops = monsterDef:getField("drops")

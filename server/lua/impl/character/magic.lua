@@ -3,13 +3,13 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local MagicManager = require("illarion-script-loader.server.lua.lib.magicManager")
 
 Character.SeleneMethods.getMagicType = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     return charData[DataFields.MagicType] or 0
 end
 
 Character.SeleneMethods.setMagicType = function(user, magicType)
     magicType = assert(tonumber(magicType), "magicType must be a number, was " .. tostring(magicType))
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     charData[DataFields.MagicType] = magicType
     MagicManager.SendMagicState(user)
 end

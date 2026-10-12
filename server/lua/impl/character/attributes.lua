@@ -74,7 +74,7 @@ Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
         end
         return race
     elseif attributeName == "sex" then
-        local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+        local charData = user.SeleneCharacterData
         local sex = charData[DataFields.Sex]
         if sex == "female" then
             return Character.female
@@ -128,7 +128,7 @@ Character.SeleneMethods.setAttrib = function(user, attributeName, value)
         user:setRace(value)
         return
     elseif attributeName == "sex" then
-        local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+        local charData = user.SeleneCharacterData
         charData[DataFields.Sex] = value == Character.female and "female" or "male"
         return
     elseif attributeName == "poisonvalue" or attributeName == "attitude" or attributeName == "luck" or attributeName == "age" or attributeName == "body_height" then

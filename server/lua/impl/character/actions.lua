@@ -113,7 +113,7 @@ Character.SeleneMethods.changeSource = function(user, source)
     end
 
     if getmetatable(source) == Character.SeleneMetatable then
-        local sourceData = source.SeleneEntity:getRuntimeData(DataKeys.Character)
+        local sourceData = source.SeleneCharacterData
         local characterType = sourceData and sourceData[DataFields.CharacterType]
         if characterType == Character.player then
             -- The legacy server accepts players as a character source, but an

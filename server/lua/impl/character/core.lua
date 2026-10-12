@@ -11,13 +11,13 @@ local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 Character.SeleneMethods.getType = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     return charData[DataFields.CharacterType] or Character.player
 end
 Character.SeleneMethods.get_type = Character.SeleneMethods.getType
 
 Character.SeleneMethods.getRace = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     return charData[DataFields.Race]
 end
 
@@ -25,7 +25,7 @@ Character.SeleneMethods.get_race = Character.SeleneMethods.getRace
 
 Character.SeleneMethods.setRace = function(user, raceId)
     raceId = assert(tonumber(raceId), "raceId must be a number, was " .. tostring(raceId))
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     charData[DataFields.Race] = raceId
     user.SeleneEntity:updateVisuals()
 end
@@ -40,7 +40,7 @@ Character.SeleneMethods.introduce = function(user, other)
 end
 
 Character.SeleneGetters.id = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     return charData[DataFields.ID] or 0
 end
 
@@ -182,6 +182,18 @@ end
 
 Character.SeleneGetters.SeleneEntity = function(user)
     return user.SelenePlayer and user.SelenePlayer:getControlledEntity() or rawget(user, "SeleneEntity")
+end
+
+Character.SeleneGetters.SeleneCharacterData = function(user)
+    local entity = rawget(user, "SeleneEntity")
+    if entity then
+        -- Entity wrappers keep the live table, not a copy of its fields.
+        local data = entity:getRuntimeData(DataKeys.Character)
+        rawset(user, "SeleneCharacterData", data)
+        return data
+    end
+    -- Player wrappers follow their currently controlled entity, which can change.
+    return user.SeleneEntity:getRuntimeData(DataKeys.Character)
 end
 
 -- TODO This shouldn't exist, callers should use something like :getPrimaryControllingPlayer() directly

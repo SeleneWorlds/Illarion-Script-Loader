@@ -160,16 +160,16 @@ Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
 end
 
 Character.SeleneGetters.activeLanguage = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     return charData[DataFields.Language] or 0
 end
 
 Character.SeleneSetters.activeLanguage = function(user, language)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     charData[DataFields.Language] = assert(RaceLanguage.resolve(language), "Unknown race language: " .. tostring(language))
 end
 
 Character.SeleneGetters.lastSpokenText = function(user)
-    local charData = user.SeleneEntity:getRuntimeData(DataKeys.Character)
+    local charData = user.SeleneCharacterData
     return charData[DataFields.LastSpokenText] or ""
 end
