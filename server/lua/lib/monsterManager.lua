@@ -429,7 +429,7 @@ end
 
 function m.RemoveBySpawn(identifier)
     local entities = {}
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.MonsterSpawn] == identifier then
             entities[#entities + 1] = entity
@@ -462,7 +462,7 @@ function m.ReloadDefinitions(identifier)
         end
         return false
     end
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do collect(entity) end
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do collect(entity) end
     for index = #m.NewMonsters, 1, -1 do
         local entity = m.NewMonsters[index]
         if collect(entity) or seen[entity] then table.remove(m.NewMonsters, index) end
@@ -493,7 +493,7 @@ end
 
 function m.RemoveAll()
     local entities = {}
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster then
             entities[#entities + 1] = entity
@@ -534,7 +534,7 @@ function m.Update()
     end
     m.NewMonsters = {}
 
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
@@ -548,10 +548,10 @@ function m.Update()
                         script.abortRoute(monster)
                     end
                 end
-                local engaged = routeStatus == "idle" and updateAggro(monster, charData)
-                if routeStatus == "idle" and not engaged then
-                    makeRandomMove(monster, charData)
-                end
+                 local engaged = routeStatus == "idle" and updateAggro(monster, charData)
+                 if routeStatus == "idle" and not engaged then
+                     makeRandomMove(monster, charData)
+                 end
             end
         end
     end

@@ -95,7 +95,7 @@ function m.Despawn(entity)
 end
 
 function m.FindStatic(identifier)
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         local definition = charData[DataFields.NPC]
         if charData[DataFields.CharacterType] == Character.npc
@@ -114,7 +114,7 @@ end
 
 function m.RemoveAllStatic()
     local entities = {}
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.npc and charData[DataFields.NPC] then
             entities[#entities + 1] = entity
@@ -127,7 +127,7 @@ end
 
 function m.RemoveAll()
     local entities = {}
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.npc then
             entities[#entities + 1] = entity
@@ -145,7 +145,7 @@ function m.Update()
     end
     m.PendingRemoval = {}
 
-    for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
+    for _, entity in ipairs(Entities.byTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.npc then
             local npc = Character.fromSeleneEntity(entity)
