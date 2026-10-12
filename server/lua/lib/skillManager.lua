@@ -1,4 +1,4 @@
-local Attributes = require("selene.attributes")
+local Attributes = require("moonlight-attributes.server.lua.attributes")
 local Network = require("selene.network")
 local Registries = require("selene.registries")
 
@@ -30,9 +30,9 @@ end
 
 function m.GetMajorSkillAttribute(user, skillId)
     local attributeKey = "illarion:majorSkills:" .. skillId
-    local attribute = user.SeleneEntity:getAttribute(attributeKey)
+    local attribute = Attributes.get(user.SeleneEntity, attributeKey)
     if attribute == nil then
-        attribute = user.SeleneEntity:createAttribute(attributeKey, 0)
+        attribute = Attributes.create(user.SeleneEntity, attributeKey, 0)
         attribute:addConstraint("clamp", Attributes.clampFilter(0, 100))
         attribute:subscribe(function()
             sendSkill(user, skillId)
@@ -43,9 +43,9 @@ end
 
 function m.GetMinorSkillAttribute(user, skillId)
     local attributeKey = "illarion:minorSkills:" .. skillId
-    local attribute = user.SeleneEntity:getAttribute(attributeKey)
+    local attribute = Attributes.get(user.SeleneEntity, attributeKey)
     if attribute == nil then
-        attribute = user.SeleneEntity:createAttribute(attributeKey, 0)
+        attribute = Attributes.create(user.SeleneEntity, attributeKey, 0)
         attribute:addConstraint("clamp", Attributes.clampFilter(0, 10000))
         attribute:subscribe(function()
             sendSkill(user, skillId)

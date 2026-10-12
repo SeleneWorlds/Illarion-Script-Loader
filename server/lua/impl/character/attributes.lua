@@ -1,4 +1,3 @@
-local Attributes = require("selene.attributes")
 local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")

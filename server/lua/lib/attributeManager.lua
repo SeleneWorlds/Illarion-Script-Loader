@@ -1,4 +1,4 @@
-local Attributes = require("selene.attributes")
+local Attributes = require("moonlight-attributes.server.lua.attributes")
 local Network = require("selene.network")
 
 
@@ -17,13 +17,13 @@ local resourceOffsets = {
 
 function m.GetAttribute(user, attributeName)
     local attributeKey = "illarion:" .. attributeName
-    local attribute = user.SeleneEntity:getAttribute(attributeKey)
+    local attribute = Attributes.get(user.SeleneEntity, attributeKey)
     if attribute == nil then
         local initialValue = 0
         if attributeName == "skinColor" or attributeName == "hairColor" then
             initialValue = colour(255, 255, 255)
         end
-        attribute = user.SeleneEntity:createAttribute(attributeKey, initialValue)
+        attribute = Attributes.create(user.SeleneEntity, attributeKey, initialValue)
         local resource = resourceAttributes[attributeName]
         if resource then
             local max = resource.max
