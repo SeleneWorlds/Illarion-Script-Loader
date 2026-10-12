@@ -32,5 +32,7 @@ m.Wear = "wear"
 m.TargetId = "targetId"
 m.GodMode = "godMode"
 m.Frozen = "frozen"
+m.ActionPoints = "actionPoints"
+m.FightPoints = "fightPoints"
 
 return m

@@ -3,6 +3,7 @@ local Registries = require("selene.registries")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 
 Character.SeleneMethods.isBaseAttributeValid = function(user, attribute, value)
@@ -81,10 +82,14 @@ Character.SeleneMethods.increaseAttrib = function(user, attributeName, value)
         else
             return Character.male
         end
-    elseif attributeName == "actionpoints" then
-        local attribute = AttributeManager.GetAttribute(user, attributeName)
-        attribute:setValue(attribute:getValue() + value)
-        return attribute:getEffectiveValue()
+    elseif attributeName == "actionpoints" or attributeName == "fightpoints" then
+        local data = ActionPoints.Data(user)
+        if attributeName == "actionpoints" then
+            ActionPoints.SetMovement(user.SeleneEntity, data, data[DataFields.ActionPoints] + value)
+            return data[DataFields.ActionPoints]
+        end
+        ActionPoints.SetFight(data, data[DataFields.FightPoints] + value)
+        return data[DataFields.FightPoints]
     elseif attributeName == "poisonvalue" or attributeName == "attitude" or attributeName == "luck" or attributeName == "age" or attributeName == "body_height" then
         local attribute = AttributeManager.GetAttribute(user, attributeName)
         attribute:setValue(attribute:getValue() + value)
@@ -112,8 +117,13 @@ Character.SeleneMethods.setAttrib = function(user, attributeName, value)
     if attributeName == "faceto" then
         user:turn(value)
         return
-    elseif attributeName == "actionpoints" then
-        AttributeManager.GetAttribute(user, attributeName):setValue(value)
+    elseif attributeName == "actionpoints" or attributeName == "fightpoints" then
+        local data = ActionPoints.Data(user)
+        if attributeName == "actionpoints" then
+            ActionPoints.SetMovement(user.SeleneEntity, data, value)
+        else
+            ActionPoints.SetFight(data, value)
+        end
         return
     elseif attributeName == "racetyp" then
         user:setRace(value)

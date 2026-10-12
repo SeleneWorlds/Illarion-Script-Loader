@@ -2,6 +2,8 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Grid = require("selene.grid")
 local Pathfinding = require("selene.pathfinding")
+local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
+local Profiler = require("selene.profiler")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
@@ -507,6 +509,16 @@ function m.RemoveAll()
     m.NewMonsters = {}
 end
 
+local function isActive(monster)
+    if monster:getOnRoute() then return true end
+    local dimension = monster.SeleneEntity:getDimension()
+    return dimension ~= nil and dimension:hasPlayersInBox(
+        monster.pos, { x = ACTIVE_RANGE, y = ACTIVE_RANGE, z = 2 }
+    )
+end
+
+
+
 function m.Update()
     m.UpdateTick = m.UpdateTick + 1
 
@@ -522,23 +534,28 @@ function m.Update()
     end
     m.NewMonsters = {}
 
-    local function isActive(monster)
-        if monster:getOnRoute() then return true end
-        local dimension = monster.SeleneEntity:getDimension()
-        return dimension ~= nil and dimension:hasPlayersInBox(
-            monster.pos, { x = ACTIVE_RANGE, y = ACTIVE_RANGE, z = 2 }
-        )
-    end
+    -- Keep the normal loop free of per-monster profiling bridge calls.
+    local profiling = Profiler.isCapturing ~= nil and Profiler.isCapturing()
 
     for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
             local monster = Character.fromSeleneEntity(entity)
-            if not entity:isMoving() then
-                monster.movepoints = monster.movepoints + 1
+            local ready
+            if profiling then
+                ready = Profiler.measure("monster bookkeeping/point regeneration", ActionPoints.Regenerate, entity, charData)
+            else
+                ready = ActionPoints.Regenerate(entity, charData)
             end
-            monster.fightpoints = monster.fightpoints + 1
-            if not entity:isMoving() and monster.movepoints >= MAX_ACTION_POINTS and isActive(monster) then
+            local active = false
+            if ready then
+                if profiling then
+                    active = Profiler.measure("monster bookkeeping/activation", isActive, monster)
+                else
+                    active = isActive(monster)
+                end
+            end
+            if active then
                 local routeStatus = RouteManager.Advance(monster)
                 if routeStatus == "complete" or routeStatus == "blocked" then
                     monster:setOnRoute(false)

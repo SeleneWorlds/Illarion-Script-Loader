@@ -5,6 +5,7 @@ local Config = require("selene.config")
 
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
@@ -90,9 +91,9 @@ Character.SeleneMethods.callAttackScript = function(attacker, defender)
 end
 
 Character.SeleneGetters.fightpoints = function(user)
-    return AttributeManager.GetAttribute(user, "fightpoints"):getEffectiveValue()
+    return ActionPoints.Data(user)[DataFields.FightPoints]
 end
 
 Character.SeleneSetters.fightpoints = function(user, value)
-    AttributeManager.GetAttribute(user, "fightpoints"):setValue(value)
+    ActionPoints.SetFight(ActionPoints.Data(user), value)
 end

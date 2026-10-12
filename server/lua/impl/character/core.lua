@@ -7,6 +7,7 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local DirectionUtils = require("illarion-script-loader.server.lua.lib.directionUtils")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local AttributeManager = require("illarion-script-loader.server.lua.lib.attributeManager")
+local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 
 Character.SeleneMethods.getType = function(user)
@@ -163,11 +164,12 @@ Character.SeleneMethods.setOnRoute = function(user, onRoute)
 end
 
 Character.SeleneGetters.movepoints = function(user)
-    return AttributeManager.GetAttribute(user, "actionpoints"):getEffectiveValue()
+    return ActionPoints.Data(user)[DataFields.ActionPoints]
 end
 
 Character.SeleneSetters.movepoints = function(user, value)
-    AttributeManager.GetAttribute(user, "actionpoints"):setValue(value)
+    local data = ActionPoints.Data(user)
+    ActionPoints.SetMovement(user.SeleneEntity, data, value)
 end
 
 Character.SeleneGetters.speed = function(user)

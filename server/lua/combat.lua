@@ -3,6 +3,8 @@ local Schedules = require("selene.schedules")
 local Players = require("selene.players")
 local Config = require("selene.config")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
+local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
 local useLegacyCombat = Config.getProperty("useLegacyCombat") == "true"
@@ -30,15 +32,13 @@ Schedules.setInterval(100, function()
     for _, player in ipairs(players) do
         if player:getControlledEntity() then
             local user = Character.fromSelenePlayer(player)
-            if not user.SeleneEntity:isMoving() then
-                user.movepoints = user.movepoints + 1
-            end
-            user.fightpoints = user.fightpoints + 1
+            local points = ActionPoints.Data(user)
+            ActionPoints.Regenerate(user.SeleneEntity, points)
             local canAttack
             if useLegacyCombat then
-                canAttack = user.movepoints >= 21
+                canAttack = points[DataFields.ActionPoints] >= 21
             else
-                canAttack = user.fightpoints >= 0
+                canAttack = points[DataFields.FightPoints] >= 0
             end
             if user.attackmode and canAttack then
                 CombatManager.Attack(user)

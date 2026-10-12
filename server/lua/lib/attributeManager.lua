@@ -1,21 +1,8 @@
 local Attributes = require("selene.attributes")
 local Network = require("selene.network")
 
-local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
-local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 
 local m = {}
-
-local function updateActionPointControls(attribute)
-    local points = attribute:getEffectiveValue()
-    local owner = attribute:getOwner()
-    local frozen = owner:getRuntimeData(DataKeys.Character)[DataFields.Frozen]
-    for _, player in ipairs(owner:getControllingPlayers()) do
-        -- Illarion requires 7 action points to move and 1 to turn.
-        player:setCanMove(not frozen and points >= 7)
-        player:setCanTurn(points >= 1)
-    end
-end
 
 local resourceAttributes = {
     hitpoints = { max = 10000, message = "illarion:health" },
@@ -35,8 +22,6 @@ function m.GetAttribute(user, attributeName)
         local initialValue = 0
         if attributeName == "skinColor" or attributeName == "hairColor" then
             initialValue = colour(255, 255, 255)
-        elseif attributeName == "actionpoints" then
-            initialValue = 21
         end
         attribute = user.SeleneEntity:createAttribute(attributeKey, initialValue)
         local resource = resourceAttributes[attributeName]
@@ -70,16 +55,10 @@ function m.GetAttribute(user, attributeName)
             attribute:addModifier("offset", Attributes.mathOpFilter(m.GetAttribute(user, attributeName .. "Offset"), "+"))
             attribute:addModifier("clamp", Attributes.clampFilter(0, 255))
             attribute:addConstraint("clamp", Attributes.clampFilter(0, 255))
-        elseif attributeName == "actionpoints" then
-            attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
-            attribute:subscribe(updateActionPointControls)
-            updateActionPointControls(attribute)
         elseif attributeName == "body_height" then
             attribute:subscribe(function(attribute)
                 attribute:getOwner():updateVisuals()
             end)
-        elseif attributeName == "fightpoints" then
-            attribute:addConstraint("clamp", Attributes.clampFilter(math.mininteger, 21))
         end
     end
     return attribute
