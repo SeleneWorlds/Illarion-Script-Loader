@@ -206,7 +206,7 @@ Network.handlePayload("illarion:merchant_dialog:sell", function(player, payload)
 
     local sourceItem = inventory:getItem(slotId)
     if not sourceItem then return end
-    local item = sourceItem:deepCopy()
+    local item = inventory:copyItem(sourceItem)
     if amount < item.count then
         item.count = amount
     end

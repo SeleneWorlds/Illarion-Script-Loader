@@ -211,7 +211,7 @@ end
 
 function m.CreateDetachedDepot(user, depotId)
     return IllarionInventory:new({
-        data = tablex.observable(), slots = DepotSlotIds(depotId),
+        slots = DepotSlotIds(depotId),
         owner = user, isContainer = true
     })
 end
@@ -252,7 +252,7 @@ end
 
 function m.FindShowcase(user, inventory)
     for showcaseId, showcase in pairs(m.GetShowcases(user) or {}) do
-        if showcase.inventory.data == inventory.data then
+        if showcase.inventory == inventory then
             return showcaseId, showcase
         end
     end
@@ -260,6 +260,7 @@ function m.FindShowcase(user, inventory)
 end
 
 function m.SetShowcase(user, showcaseId, inventory, token, origin)
+    m.CloseShowcase(user, showcaseId)
     m.GetShowcases(user)[showcaseId] = {
         inventory = inventory,
         token = token,
@@ -270,6 +271,9 @@ end
 function m.CloseShowcase(user, showcaseId)
     local showcases = m.GetShowcases(user)
     local showcase = showcases[showcaseId]
+    if showcase and showcase.observer then
+        showcase.inventory:unsubscribe(showcase.observer)
+    end
     showcases[showcaseId] = nil
     return showcase
 end
@@ -290,7 +294,7 @@ function m.CloseShowcasesForItem(user, item)
 
     local closedShowcaseIds = {}
     for showcaseId, showcase in pairs(m.GetShowcases(user) or {}) do
-        if showcase.inventory.data == item.content then
+        if showcase.inventory == item.content then
             m.CloseShowcase(user, showcaseId)
             table.insert(closedShowcaseIds, showcaseId)
         end
@@ -336,7 +340,6 @@ function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)
     local inventory = inventories[inventoryName]
     if not inventory then
         inventory = IllarionInventory:new({
-            data = tablex.observable(),
             slots = slotIds,
             owner = user
         })
@@ -351,35 +354,37 @@ function m.GetRuntimeDataBasedInventory(user, inventoryName, slotIds, options)
 end
 
 function m.GetContentsContainer(item)
-    local itemDef, content
+    local itemDef, state, contentKey
     if item.SeleneItem then
-        itemDef = item.SeleneItem.def
-        item.SeleneItem.content = item.SeleneItem.content or tablex.observable()
-        content = item.SeleneItem.content
+        state = item.SeleneItem
+        itemDef = state.def
+        contentKey = "content"
     elseif item.SeleneEntity then
-        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
-        if not itemData then
+        state = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        if not state then
             return nil
         end
         local itemId = item.SeleneEntity:getEntityDefinition():getMetadata("itemId")
         itemDef = require("selene.registries").findByMetadata("illarion:items", "id", itemId)
-        itemData[DataFields.Content] = itemData[DataFields.Content] or tablex.observable()
-        content = itemData[DataFields.Content]
+        contentKey = DataFields.Content
     end
     local slotCount = itemDef and itemDef:getField("containerSlots")
     if slotCount == nil or slotCount <= 0 then
         return nil
     end
-    local slots = {}
-    for i = 1, slotCount do
-        table.insert(slots, i)
+    if not state[contentKey] then
+        local slots = {}
+        for i = 1, slotCount do
+            table.insert(slots, i)
+        end
+        state[contentKey] = IllarionInventory:new({
+            slots = slots,
+            isContainer = true,
+        })
     end
-    return IllarionInventory:new({
-        data = content,
-        slots = slots,
-        isContainer = true,
-        owner = item.owner
-    })
+    local inventory = state[contentKey]
+    inventory.owner = item.owner
+    return inventory
 end
 
 function m.ItemMatchesFilter(itemDef, data)

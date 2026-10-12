@@ -1,7 +1,7 @@
-local ObservableMapInventory = require("moonlight-inventory.server.lua.observable_map_inventory")
+local Inventory = require("moonlight-inventory.server.lua.inventory")
 local Config = require("selene.config")
 
-local IllarionInventory = ObservableMapInventory:new()
+local IllarionInventory = Inventory:new()
 local useLegacyContainerCompaction = Config.getProperty("useLegacyContainerCompaction") == "true"
 
 local function firstFreeSlot(inventory)
@@ -30,7 +30,7 @@ function IllarionInventory:addItemAt(slotId, item)
             return self:getItemCount(item)
         end
     end
-    return ObservableMapInventory.addItemAt(self, slotId, item)
+    return Inventory.addItemAt(self, slotId, item)
 end
 
 function IllarionInventory:moveItemTo(targetInventory, fromSlotId, toSlotId, count, context)
@@ -43,12 +43,12 @@ function IllarionInventory:moveItemTo(targetInventory, fromSlotId, toSlotId, cou
             end
         end
     end
-    return ObservableMapInventory.moveItemTo(self, targetInventory, fromSlotId, toSlotId, count, context)
+    return Inventory.moveItemTo(self, targetInventory, fromSlotId, toSlotId, count, context)
 end
 
 function IllarionInventory:removeItem(filter, amount)
     if not useLegacyContainerCompaction or not self.isContainer then
-        return ObservableMapInventory.removeItem(self, filter, amount)
+        return Inventory.removeItem(self, filter, amount)
     end
 
     local rest = amount
@@ -80,7 +80,7 @@ function IllarionInventory:removeItem(filter, amount)
 end
 
 function IllarionInventory:setItem(slotId, item)
-    ObservableMapInventory.setItem(self, slotId, item)
+    Inventory.setItem(self, slotId, item)
     if item ~= nil or not useLegacyContainerCompaction or not self.isContainer then
         return
     end
@@ -93,8 +93,8 @@ function IllarionInventory:setItem(slotId, item)
         elseif foundEmptySlot then
             local candidateItem = self:getItem(candidateSlotId)
             if candidateItem ~= nil then
-                ObservableMapInventory.setItem(self, emptySlotId, candidateItem)
-                ObservableMapInventory.setItem(self, candidateSlotId, nil)
+                Inventory.setItem(self, emptySlotId, candidateItem)
+                Inventory.setItem(self, candidateSlotId, nil)
                 emptySlotId = candidateSlotId
             end
         end

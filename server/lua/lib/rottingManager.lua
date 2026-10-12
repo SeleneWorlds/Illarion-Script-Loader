@@ -108,10 +108,10 @@ function m.AgeFieldEntity(entity)
 end
 
 local function ageInventory(inventory, seenInventories)
-    if not inventory or seenInventories[inventory.data] then
+    if not inventory or seenInventories[inventory] then
         return
     end
-    seenInventories[inventory.data] = true
+    seenInventories[inventory] = true
 
     for _, slotId in ipairs(inventory:getSlots()) do
         local item = inventory:getItem(slotId)

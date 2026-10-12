@@ -51,7 +51,7 @@ local function openShowcase(player, character, inventory, origin)
     nextShowcaseToken = nextShowcaseToken + 1
     local token = nextShowcaseToken
     InventoryManager.SetShowcase(character, showcaseId, inventory, token, origin)
-    inventory:subscribe(function(data)
+    local observer = inventory:subscribe(function(data)
         local current = InventoryManager.GetShowcases(character)[showcaseId]
         if not current or current.token ~= token then
             return
@@ -65,6 +65,7 @@ local function openShowcase(player, character, inventory, origin)
             })
         end
     end)
+    InventoryManager.GetShowcases(character)[showcaseId].observer = observer
     sendShowcase(player, showcaseId, inventory)
 end
 
