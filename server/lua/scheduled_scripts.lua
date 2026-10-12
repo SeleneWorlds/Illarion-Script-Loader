@@ -32,7 +32,7 @@ local function addSchedule(definition)
                 script[functionName]()
                 scheduleNext()
             end
-        end)
+        end, { name = identifier })
     end
     scheduleNext()
 end
