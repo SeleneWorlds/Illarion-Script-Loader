@@ -12,7 +12,7 @@ local prefixes = {
 function RaceLanguage.resolve(value)
     if type(value) == "string" then
         value = value:lower():gsub("^%s+", ""):gsub("%s+$", "")
-        value = value:gsub("%s+language$", "")
+        value = value:gsub("%s*language$", "")
     end
     local id = tonumber(value)
     if id and names[id] then
@@ -30,7 +30,9 @@ function RaceLanguage.prefix(language)
 end
 
 function RaceLanguage.skill(character, language)
-    return character:getSkill((names[language] or names[0]) .. " language")
+    local name = names[RaceLanguage.resolve(language)] or names[0]
+    local skillId = Character[name .. " language"] or Character[name .. "Language"]
+    return character:getSkill(skillId)
 end
 
 function RaceLanguage.alter(message, skill)
