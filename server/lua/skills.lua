@@ -6,7 +6,10 @@ local illaLearnOk, illaLearn = xpcall(require, "server.learn")
 Schedules.setInterval(10000, function()
     for _, entity in ipairs(Entities.byTag("illarion:character")) do
         if illaLearnOk then
-            illaLearn.reduceMC(Character.fromSeleneEntity(entity))
+            local character = Character.fromSeleneEntity(entity)
+            if character:getMentalCapacity() > 0 then
+                illaLearn.reduceMC()
+            end
         end
     end
 end)
