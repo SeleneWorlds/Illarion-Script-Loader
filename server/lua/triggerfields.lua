@@ -11,7 +11,7 @@ local function reloadTriggerFields()
     end
     annotatedCoordinates = {}
     for _, field in pairs(Registries.findAll("illarion:triggerfields")) do
-        local coordinate = { x = field:getField("x"), y = field:getField("y"), z = field:getField("z") }
+        local coordinate = field:getField("coordinate")
         map:annotateTile(coordinate.x, coordinate.y, coordinate.z, "illarion:triggerfield", {
             script = field:getField("script")
         })
