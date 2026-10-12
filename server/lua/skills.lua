@@ -8,7 +8,7 @@ Schedules.setInterval(10000, function()
         if illaLearnOk then
             local character = Character.fromSeleneEntity(entity)
             if character:getMentalCapacity() > 0 then
-                illaLearn.reduceMC()
+                illaLearn.reduceMC(character)
             end
         end
     end
