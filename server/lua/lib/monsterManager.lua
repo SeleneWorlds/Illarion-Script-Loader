@@ -511,9 +511,10 @@ end
 
 local function isActive(monster)
     if monster:getOnRoute() then return true end
-    local dimension = monster.SeleneEntity:getDimension()
+    local entity = monster.SeleneEntity
+    local dimension = entity:getDimension()
     return dimension ~= nil and dimension:hasPlayersInBox(
-        monster.pos, { x = ACTIVE_RANGE, y = ACTIVE_RANGE, z = 2 }
+        entity:getCoordinate(), ACTIVE_RANGE, ACTIVE_RANGE, 2
     )
 end
 
