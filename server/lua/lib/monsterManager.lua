@@ -201,15 +201,26 @@ end
 
 local function getCandidates(monster, range)
     local candidates = {}
-    for _, candidate in ipairs(world:getPlayersInRangeOf(monster.pos, range)) do
+    local center = monster.pos
+    local dimension = monster.SeleneEntity:getDimension()
+    if not dimension then return candidates end
+    local halfExtents = { x = range, y = range, z = 0 }
+    for _, player in ipairs(dimension:getPlayersInBox(center, halfExtents)) do
+        local candidate = Character.fromSelenePlayer(player)
         if not candidate.isinvisible and not CharacterManager.IsDead(candidate) then
             candidates[#candidates + 1] = candidate
         end
     end
-    for _, candidate in ipairs(world:getMonstersInRangeOf(monster.pos, range)) do
-        if candidate.SeleneEntity ~= monster.SeleneEntity
-                and not candidate.isinvisible and not CharacterManager.IsDead(candidate) then
-            candidates[#candidates + 1] = candidate
+    for _, entity in ipairs(dimension:getEntitiesInBox(center, halfExtents)) do
+        local charData = entity:getRuntimeData(DataKeys.Character)
+        if charData[DataFields.CharacterType] == Character.monster then
+            local candidate = Character.fromSeleneEntity(entity)
+            local candidatePosition = candidate.pos
+            if not (candidatePosition.x == center.x and candidatePosition.y == center.y
+                    and candidatePosition.z == center.z)
+                    and not candidate.isinvisible and not CharacterManager.IsDead(candidate) then
+                candidates[#candidates + 1] = candidate
+            end
         end
     end
     return candidates
