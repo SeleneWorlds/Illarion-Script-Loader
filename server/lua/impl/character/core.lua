@@ -196,13 +196,12 @@ Character.SeleneGetters.SeleneCharacterData = function(user)
     return user.SeleneEntity:getRuntimeData(DataKeys.Character)
 end
 
--- TODO This shouldn't exist, callers should use something like :getPrimaryControllingPlayer() directly
+-- TODO This shouldn't exist, callers should use :getPrimaryControllingPlayer() directly
 Character.SeleneGetters.SelenePlayer = function(user)
     -- Use the stored entity directly to avoid recursing through the SeleneEntity getter.
     local entity = rawget(user, "SeleneEntity")
     if not entity then return nil end
-    local players = entity:getControllingPlayers()
-    return players[1]
+    return entity:getPrimaryControllingPlayer()
 end
 
 Character.SeleneMethods.performAnimation = function(user, animId)
