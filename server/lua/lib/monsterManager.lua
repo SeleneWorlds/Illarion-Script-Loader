@@ -522,6 +522,14 @@ function m.Update()
     end
     m.NewMonsters = {}
 
+    local function isActive(monster)
+        if monster:getOnRoute() then return true end
+        local dimension = monster.SeleneEntity:getDimension()
+        return dimension ~= nil and dimension:hasPlayersInBox(
+            monster.pos, { x = ACTIVE_RANGE, y = ACTIVE_RANGE, z = 2 }
+        )
+    end
+
     for _, entity in ipairs(Entities.findAllByTag("illarion:character")) do
         local charData = entity:getRuntimeData(DataKeys.Character)
         if charData[DataFields.CharacterType] == Character.monster and not charData[DataFields.Dead] then
@@ -530,7 +538,7 @@ function m.Update()
                 monster.movepoints = monster.movepoints + 1
             end
             monster.fightpoints = monster.fightpoints + 1
-            if not entity:isMoving() and monster.movepoints >= MAX_ACTION_POINTS then
+            if not entity:isMoving() and monster.movepoints >= MAX_ACTION_POINTS and isActive(monster) then
                 local routeStatus = RouteManager.Advance(monster)
                 if routeStatus == "complete" or routeStatus == "blocked" then
                     monster:setOnRoute(false)
