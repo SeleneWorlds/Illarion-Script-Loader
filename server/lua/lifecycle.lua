@@ -241,7 +241,7 @@ Players.playerLeft:connect(function(player)
         local character = Character.fromSelenePlayer(player)
         character:abortAction()
         if not player:getControlledEntity():getRuntimeData(DataKeys.Character)[DataFields.Headless] then
-            illaLogout.onLogout(character)
+            xpcall(illaLogout.onLogout, character)
         end
         CharacterPersistence.saveCharacter(player, character)
     end
