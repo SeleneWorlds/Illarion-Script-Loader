@@ -22,7 +22,8 @@ local function addSchedule(definition)
     schedules[identifier] = schedule
     local function scheduleNext()
         if schedule.stopped then return end
-        local interval = math.random(definition:getField("minInterval"), definition:getField("maxInterval"))
+        local intervalRange = definition:getField("interval")
+        local interval = math.random(intervalRange.min, intervalRange.max)
         schedule.timeoutId = Schedules.setTimeout(interval * 1000, function()
             schedule.timeoutId = nil
             if schedule.stopped then return end
