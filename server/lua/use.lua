@@ -221,6 +221,8 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
     end
 
     local target = position(x, y, z)
+    local targetItem
+    local targetCharacter
     local actionFunction = script.UseItemWithField
     local entity = character.SeleneEntity
     local entities = entity:getDimension():getEntitiesAt(x, y, z, entity:getInteractionViewer())
@@ -229,8 +231,24 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
         local characterData = targetEntity:getRuntimeData(DataKeys.Character)
         if characterData and characterData[DataFields.CharacterType] then
             target = Character.fromSeleneEntity(targetEntity)
+            targetCharacter = true
             actionFunction = script.UseItemWithCharacter
             break
+        elseif targetEntity:hasTag("illarion:item") then
+            targetItem = Item.fromSeleneEntity(targetEntity)
+            actionFunction = script.UseItem
+            break
+        end
+    end
+    if not targetCharacter and not targetItem then
+        local tiles = entity:getDimension():getTilesAt(x, y, z, entity:getInteractionViewer())
+        for i = #tiles, 1, -1 do
+            local tile = tiles[i]
+            if tile:getMetadata("itemId") then
+                targetItem = Item.fromSeleneTile(tile)
+                actionFunction = script.UseItem
+                break
+            end
         end
     end
     if type(actionFunction) ~= "function" then
@@ -241,6 +259,11 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
     local actionData = character.SeleneEntity:getRuntimeData(DataKeys.LastAction)
     actionData[DataFields.LastActionScript] = script
     actionData[DataFields.LastActionFunction] = actionFunction
+    if targetItem then
+        actionData[DataFields.LastActionArgs] = getUseItemArgs(character, item, targetItem, counter)
+        callUseItem(script, character, item, targetItem, counter)
+        return
+    end
     actionData[DataFields.LastActionArgs] = { character, item, target, counter, 0 }
     actionFunction(character, item, target, counter, 0, Action.none)
 end)
