@@ -29,7 +29,7 @@ local function addSchedule(definition)
             local status, script = xpcall(require, definition:getField("script"))
             local functionName = definition:getField("function")
             if status and type(script[functionName]) == "function" then
-                script[functionName]()
+                script[functionName](definition)
                 scheduleNext()
             end
         end, { name = identifier })
