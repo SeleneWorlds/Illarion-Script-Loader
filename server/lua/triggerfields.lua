@@ -13,7 +13,7 @@ local function reloadTriggerFields()
     for _, field in pairs(Registries.findAll("illarion:triggerfields")) do
         local coordinate = field:getField("coordinate")
         map:annotateTile(coordinate.x, coordinate.y, coordinate.z, "illarion:triggerfield", {
-            script = field:getField("script")
+            triggerfield = field:getName()
         })
         annotatedCoordinates[#annotatedCoordinates + 1] = coordinate
     end
@@ -76,16 +76,17 @@ Entities.steppedOnTile:connect(function(entity, coordinate)
     -- TODO We use this pattern a lot, it would be nice to have a helper that just gives us the script or nil.
     local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
-        local scriptName = triggerfieldAnnotation.script
+        local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
+        local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.MoveToField) == "function" then
-                script.MoveToField(character)
+                script.MoveToField(character, triggerfield)
             end
             -- Not sure what the realistic purpose of this one is.
             -- TODO In Illarion, this also fires if a character is standing on a trigger script and an item gets dropped onto it.
             if status and type(script.CharacterOnField) == "function" then
-                script.CharacterOnField(character)
+                script.CharacterOnField(character, triggerfield)
             end
         end
     end
@@ -95,11 +96,12 @@ Entities.steppedOffTile:connect(function(entity, coordinate)
     local dimension = entity:getDimension()
     local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity:getCollisionViewer())
     if triggerfieldAnnotation then
-        local scriptName = triggerfieldAnnotation.script
+        local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
+        local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.MoveFromField) == "function" then
-                script.MoveFromField(Character.fromSeleneEntity(entity))
+                script.MoveFromField(Character.fromSeleneEntity(entity), triggerfield)
             end
         end
     end

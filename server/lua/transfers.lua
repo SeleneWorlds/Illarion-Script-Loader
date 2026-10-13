@@ -311,11 +311,12 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
     else
         local triggerfieldAnnotation = sourceEntity:getDimension():getAnnotationAt(sourceEntity:getCoordinate(), "illarion:triggerfield", sourceEntity.Collision)
         if triggerfieldAnnotation then
-            local scriptName = triggerfieldAnnotation.script
+            local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
+            local scriptName = triggerfield and triggerfield:getField("script")
             if scriptName and scriptName ~= "" then
                 local status, script = xpcall(require, scriptName)
                 if status and type(script.TakeItemFromField) == "function" then
-                    script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character)
+                    script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character, triggerfield)
                 end
             end
         end
@@ -426,10 +427,12 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         "illarion:triggerfield",
         sourceEntity.Collision
     )
-    if sourceTriggerfield and sourceTriggerfield.script then
-        local status, script = xpcall(require, sourceTriggerfield.script)
+    local sourceTriggerfieldEntry = sourceTriggerfield and Registries.findByName("illarion:triggerfields", sourceTriggerfield.triggerfield)
+    local sourceScriptName = sourceTriggerfieldEntry and sourceTriggerfieldEntry:getField("script")
+    if sourceScriptName and sourceScriptName ~= "" then
+        local status, script = xpcall(require, sourceScriptName)
         if status and type(script.TakeItemFromField) == "function" then
-            script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character)
+            script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character, sourceTriggerfieldEntry)
         end
     end
 
@@ -438,10 +441,12 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
         "illarion:triggerfield",
         movedEntity.Collision
     )
-    if targetTriggerfield and targetTriggerfield.script then
-        local status, script = xpcall(require, targetTriggerfield.script)
+    local targetTriggerfieldEntry = targetTriggerfield and Registries.findByName("illarion:triggerfields", targetTriggerfield.triggerfield)
+    local targetScriptName = targetTriggerfieldEntry and targetTriggerfieldEntry:getField("script")
+    if targetScriptName and targetScriptName ~= "" then
+        local status, script = xpcall(require, targetScriptName)
         if status and type(script.PutItemOnField) == "function" then
-            script.PutItemOnField(Item.fromSeleneEntity(movedEntity), character)
+            script.PutItemOnField(Item.fromSeleneEntity(movedEntity), character, targetTriggerfieldEntry)
         end
     end
 end)
@@ -525,11 +530,12 @@ local function moveSlotToCoordinate(player, payload)
 
     local triggerfieldAnnotation = targetDimension:getAnnotationAt(entity:getCoordinate(), "illarion:triggerfield", entity.Collision)
     if triggerfieldAnnotation then
-        local scriptName = triggerfieldAnnotation.script
+        local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
+        local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, scriptName)
             if status and type(script.PutItemOnField) == "function" then
-                script.PutItemOnField(Item.fromSeleneEntity(entity), character)
+                script.PutItemOnField(Item.fromSeleneEntity(entity), character, triggerfield)
             end
         end
     end
