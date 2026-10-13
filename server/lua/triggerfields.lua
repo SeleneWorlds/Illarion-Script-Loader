@@ -11,11 +11,13 @@ local function reloadTriggerFields()
     end
     annotatedCoordinates = {}
     for _, field in pairs(Registries.findAll("illarion:triggerfields")) do
-        local coordinate = field:getField("coordinate")
-        map:annotateTile(coordinate.x, coordinate.y, coordinate.z, "illarion:triggerfield", {
-            triggerfield = field:getName()
-        })
-        annotatedCoordinates[#annotatedCoordinates + 1] = coordinate
+        if field:getField("enabled") ~= false then
+            local coordinate = field:getField("coordinate")
+            map:annotateTile(coordinate.x, coordinate.y, coordinate.z, "illarion:triggerfield", {
+                triggerfield = field:getName()
+            })
+            annotatedCoordinates[#annotatedCoordinates + 1] = coordinate
+        end
     end
 end
 
