@@ -6,7 +6,7 @@ local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
 local m = {}
 
 function m.findRaceEntity(raceId, sex)
-    local preferredTypeId = sex == "female" and 1 or 0
+    local preferredTypeId = (sex == "female" or sex == 1) and 1 or 0
     local fallback = nil
 
     for _, entityDefinition in pairs(Registries.findAll("entities")) do

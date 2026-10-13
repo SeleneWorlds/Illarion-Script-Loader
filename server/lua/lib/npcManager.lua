@@ -5,6 +5,7 @@ local Registries = require("selene.registries")
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
 local DataKeys = require("illarion-script-loader.server.lua.lib.datakeys")
 local DataFields = require("illarion-script-loader.server.lua.lib.dataFields")
+local CharacterVisual = require("illarion-script-loader.server.lua.lib.characterVisual")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
 local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager")
 local Events = require("illarion-script-loader.server.lua.lib.events")
@@ -27,7 +28,8 @@ function m.Spawn(npc)
     if not race then
         error("Unknown NPC race " .. tostring(raceName))
     end
-    local entity = Entities.create(npc:getField("entity"))
+    local sex = (npc:getField("sex") == "female" or npc:getField("sex") == 1) and "female" or "male"
+    local entity = Entities.create(CharacterVisual.findRaceEntity(race:getMetadata("id"), sex))
     entity:setName(npc:getField("name"))
     local coordinate = npc:getField("coordinate")
     entity:setCoordinate(coordinate.x, coordinate.y, coordinate.z)
@@ -39,7 +41,7 @@ function m.Spawn(npc)
     charData[DataFields.NPC] = npc
     charData[DataFields.Script] = npc:getField("script")
     charData[DataFields.Race] = race:getMetadata("id")
-    charData[DataFields.Sex] = npc:getField("sex")
+    charData[DataFields.Sex] = sex
     local character = Character.fromSeleneEntity(entity)
     for skillName, value in pairs(npc:getField("skills") or {}) do
         local skill = Registries.findByName("illarion:skills", skillName)
@@ -69,9 +71,8 @@ end
 
 function m.SpawnDynamic(name, race, sex, pos, scriptName)
     local raceId = race:getMetadata("id")
-    local typeId = sex == "female" and 1 or 0
-    local entityType = "illarion:races/race_" .. raceId .. "_" .. typeId
-    local entity = Entities.create(entityType)
+    sex = (sex == "female" or sex == 1) and "female" or "male"
+    local entity = Entities.create(CharacterVisual.findRaceEntity(raceId, sex))
     entity:setName(name)
     entity:setCoordinate(pos)
     m.IdCounter = m.IdCounter + 1
