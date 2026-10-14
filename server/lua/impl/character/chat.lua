@@ -18,6 +18,10 @@ local function talk(user, mode, message, messageEnglish, locale)
         englishMode, messageEnglish = ChatMode.parsePrefix(mode, messageEnglish)
         mode = englishMode
     end
+    if user:getType() == Character.player and user.SeleneCharacterData[DataFields.Dead]
+            and mode ~= "emote" and mode ~= "ooc" then
+        mode = Character.whisper
+    end
     if messageEnglish == nil and locale == nil then
         local illaPlayerTalkOk, illaPlayerTalk = pcall(require, "server.playertalk")
         if illaPlayerTalkOk then
