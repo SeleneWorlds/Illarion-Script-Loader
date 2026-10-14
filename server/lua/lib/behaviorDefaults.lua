@@ -3,23 +3,23 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 local m = {}
 
 local function data(definition)
-    assert(type(definition.data) == "table", "Scenario payload must be a table")
+    assert(type(definition.data) == "table", "Behavior payload must be a table")
     return definition.data
 end
 
 local function character(context)
-    return assert(context and context.character, "Scenario context requires a character")
+    return assert(context and context.character, "Behavior context requires a character")
 end
 
-function m.registerScenarioDefaults(scenarios)
-    scenarios:registerAction("poison", function(action, context)
+function m.registerBehaviorDefaults(behaviors)
+    behaviors:registerAction("poison", function(action, context)
         local amount = data(action).amount
         assert(type(amount) == "number" and amount == amount and amount >= 0 and amount < math.huge,
             "Poison amount must be a finite non-negative number")
         return character(context):increasePoisonValue(amount)
     end, { type = "object", properties = { amount = { type = "number", min = 0 } } })
 
-    scenarios:registerAction("inform", function(action, context)
+    behaviors:registerAction("inform", function(action, context)
         local payload = data(action)
         assert(type(payload.message) == "string", "Inform message must be a string")
         assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
@@ -34,16 +34,16 @@ function m.registerScenarioDefaults(scenarios)
         priority = { type = "number", optional = true }
     } })
 
-    scenarios:registerAction("decrease_movepoints", function(action, context)
+    behaviors:registerAction("decrease_movepoints", function(action, context)
         context.character.movepoints = context.character.movepoints - action.data.amount
     end, { type = "object", properties = { amount = { type = "integer", min = 0 } } })
 
-    scenarios:registerAction("move_forward", function(_, context)
+    behaviors:registerAction("move_forward", function(_, context)
         local User = context.character
         return User:move(User:get_face_to(), false)
     end)
 
-    scenarios:registerCondition("has_any_item_equipped_at", function(condition, context)
+    behaviors:registerCondition("has_any_item_equipped_at", function(condition, context)
         local payload = data(condition)
         local slot = payload.slot
         assert(type(slot) == "number" and slot >= 0 and slot <= 11 and slot % 1 == 0,
@@ -60,7 +60,7 @@ function m.registerScenarioDefaults(scenarios)
         equipped = { type = "boolean", optional = true }
     } })
 
-    return scenarios
+    return behaviors
 end
 
 return m
