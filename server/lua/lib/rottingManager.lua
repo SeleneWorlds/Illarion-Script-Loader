@@ -1,3 +1,4 @@
+local Dimensions = require("selene.dimensions")
 local Entities = require("selene.entities")
 local Players = require("selene.players")
 local Registries = require("selene.registries")
@@ -107,6 +108,70 @@ function m.AgeFieldEntity(entity)
     entity:remove()
 end
 
+function m.AgeFieldTile(tile)
+    local dimension = tile:getDimension()
+    if not dimension or not tile:hasTag("illarion:item") then
+        return
+    end
+
+    local itemId = tile:getMetadata("itemId")
+    local itemDef = itemId and Registries.findByMetadata("illarion:items", "id", itemId) or nil
+    if not itemDef then
+        return
+    end
+
+    local coordinate = tile:getCoordinate()
+    local name = tile:getName()
+    local data = dimension:getAnnotationAt(coordinate, name)
+    if not data then
+        return
+    end
+    local wear, rotted = nextWear(itemDef, data[DataFields.Wear], false)
+    if wear == nil then
+        return
+    end
+    if not rotted then
+        data[DataFields.Wear] = wear
+        dimension:annotateTile(coordinate, name, data)
+        return
+    end
+
+    local replacement
+    local replacementDef = replacementDefinition(itemDef)
+    if replacementDef then
+        local replacementId = replacementDef:getMetadata("id")
+        local tileDef = Registries.findByMetadata("tiles", "itemId", replacementId)
+        if not tileDef then
+            error("Unknown tile for item id " .. tostring(replacementId))
+        end
+        dimension:getMap():swapTile(coordinate, tile:getDefinition(), tileDef)
+        data[DataFields.Wear] = initialWear(replacementDef)
+        dimension:annotateTile(coordinate, name, nil)
+        dimension:annotateTile(coordinate, tileDef:getName(), data)
+        for _, candidate in ipairs(dimension:getTilesAt(coordinate)) do
+            if candidate:getName() == tileDef:getName() then
+                replacement = candidate
+                break
+            end
+        end
+    end
+
+    local annotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield")
+    if annotation and annotation.script then
+        local status, script = xpcall(require, annotation.script)
+        if status and type(script.ItemRotsOnField) == "function" then
+            script.ItemRotsOnField(
+                Item.fromSeleneTile(tile),
+                replacement and Item.fromSeleneTile(replacement) or Item.fromSeleneEmpty()
+            )
+        end
+    end
+    if not replacementDef then
+        dimension:getMap():removeTile(coordinate, tile:getDefinition())
+        dimension:annotateTile(coordinate, name, nil)
+    end
+end
+
 local function ageInventory(inventory, seenInventories)
     if not inventory or seenInventories[inventory] then
         return
@@ -156,6 +221,20 @@ function m.Tick()
             ageInventory(InventoryManager.GetContentsContainer(Item.fromSeleneEntity(entity)), seenInventories)
         end
         m.AgeFieldEntity(entity)
+    end
+
+    -- Snapshot annotated tiles before replacements mutate the map.
+    local dimension = Dimensions.getDefault()
+    local tiles = {}
+    for _, entry in ipairs(dimension:getAllAnnotations()) do
+        for _, tile in ipairs(dimension:getTilesAt(entry.coordinate)) do
+            if tile:hasTag("illarion:item") and entry.annotations[tile:getName()] then
+                tiles[#tiles + 1] = tile
+            end
+        end
+    end
+    for _, tile in ipairs(tiles) do
+        m.AgeFieldTile(tile)
     end
 
     for _, player in ipairs(Players.getOnlinePlayers()) do
