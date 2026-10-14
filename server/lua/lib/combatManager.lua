@@ -70,6 +70,7 @@ function m.Attack(user)
 
     if user.SeleneEntity:getDimension() ~= target.SeleneEntity:getDimension()
             or not user:isInRange(target, 14) then
+        user:stopAttack()
         return false
     end
 
