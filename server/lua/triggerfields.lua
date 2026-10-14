@@ -1,6 +1,7 @@
 local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Dimensions = require("selene.dimensions")
+local Server = require("selene.server")
 
 local annotatedCoordinates = {}
 
@@ -22,6 +23,7 @@ local function reloadTriggerFields()
 end
 
 reloadTriggerFields()
+Server.serverReloaded:connect(reloadTriggerFields)
 Registries.entryAdded("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.entryChanged("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.entryRemoved("illarion:triggerfields"):connect(reloadTriggerFields)
