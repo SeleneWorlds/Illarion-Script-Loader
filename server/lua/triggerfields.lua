@@ -2,6 +2,19 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Dimensions = require("selene.dimensions")
 local Server = require("selene.server")
+local Behaviors = require("moonlight-behaviors.server.lua.behaviors")
+local BehaviorDefaults = require("illarion-script-loader.server.lua.lib.behaviorDefaults")
+
+local behaviors = BehaviorDefaults.registerBehaviorDefaults(Behaviors:new())
+
+local function emit(event, triggerfield, character, coordinate)
+    if not triggerfield or triggerfield:getField("enabled") == false then return end
+    behaviors:emit(event, triggerfield:getField("behaviors") or {}, {
+        character = character,
+        triggerfield = triggerfield,
+        coordinate = coordinate
+    })
+end
 
 local annotatedCoordinates = {}
 
@@ -78,9 +91,11 @@ Entities.steppedOnTile:connect(function(entity, coordinate)
 
     -- Trigger fields receive events when characters move onto them
     -- TODO We use this pattern a lot, it would be nice to have a helper that just gives us the script or nil.
-    local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity.Collision)
+    local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity:getCollisionViewer())
     if triggerfieldAnnotation then
         local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
+        emit("move_to_field", triggerfield, character, coordinate)
+        emit("character_on_field", triggerfield, character, coordinate)
         local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, debug.traceback, scriptName)
@@ -101,6 +116,7 @@ Entities.steppedOffTile:connect(function(entity, coordinate)
     local triggerfieldAnnotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity:getCollisionViewer())
     if triggerfieldAnnotation then
         local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
+        emit("move_from_field", triggerfield, Character.fromSeleneEntity(entity), coordinate)
         local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, debug.traceback, scriptName)

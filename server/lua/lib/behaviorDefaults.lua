@@ -13,8 +13,8 @@ local function character(context)
     return assert(context and context.character, "Behavior context requires a character")
 end
 
-local function itemAt(action)
-    local coordinate = assert(action.data.position, "Action requires a position")
+local function itemAt(definition)
+    local coordinate = assert(data(definition).position, "Behavior requires a position")
     return world:getItemOnField(position(coordinate.x, coordinate.y, coordinate.z))
 end
 
@@ -25,6 +25,14 @@ function m.registerBehaviorDefaults(behaviors)
 
     behaviors:registerAction("open_door", function(action)
         return require("base.doors").OpenDoor(itemAt(action))
+    end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerAction("close_door", function(action)
+        return require("base.doors").CloseDoor(itemAt(action))
+    end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerAction("lock_door", function(action)
+        return require("base.keys").LockDoor(itemAt(action))
     end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerAction("swap_item", function(action)
@@ -41,6 +49,11 @@ function m.registerBehaviorDefaults(behaviors)
         oldItem = { type = "registry", registry = "illarion:items" },
         item = { type = "registry", registry = "illarion:items" }
     } })
+
+    behaviors:registerAction("warp", function(action, context)
+        local coordinate = assert(data(action).position, "Warp requires a position")
+        return character(context):warp(position(coordinate.x, coordinate.y, coordinate.z))
+    end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerAction("poison", function(action, context)
         local amount = data(action).amount
@@ -72,6 +85,57 @@ function m.registerBehaviorDefaults(behaviors)
         local User = context.character
         return User:move(User:get_face_to(), false)
     end)
+
+    local directions = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" }
+    local directionValues, validDirections = {}, {}
+    for _, direction in ipairs(directions) do
+        directionValues[#directionValues + 1] = { value = direction, label = direction }
+        validDirections[direction] = true
+    end
+    behaviors:registerCondition("is_facing", function(condition, context)
+        local direction = data(condition).direction
+        assert(validDirections[direction], "Facing direction must be a compass direction")
+        return character(context):get_face_to() == Character[direction]
+    end, { type = "object", properties = {
+        direction = { type = "enum", values = directionValues }
+    } })
+
+    behaviors:registerCondition("last_spoken_contains", function(condition, context)
+        local payload = data(condition)
+        assert(type(payload.phrase) == "string", "Last spoken phrase must be a string")
+        assert(payload.ignoreCase == nil or type(payload.ignoreCase) == "boolean",
+            "Ignore case must be a boolean")
+        local text = character(context).lastSpokenText or ""
+        local phrase = payload.phrase
+        if payload.ignoreCase then
+            text, phrase = text:lower(), phrase:lower()
+        end
+        return text:find(phrase, 1, true) ~= nil
+    end, { type = "object", properties = {
+        phrase = "string",
+        ignoreCase = { type = "boolean", optional = true }
+    } })
+
+    behaviors:registerCondition("is_door_closed", function(condition)
+        local item = itemAt(condition)
+        return item ~= nil and require("base.doors").CheckClosedDoor(item.id)
+    end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerCondition("is_door_locked", function(condition)
+        local item = itemAt(condition)
+        return item ~= nil and item.quality == 333 and require("base.doors").CheckClosedDoor(item.id)
+    end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerCondition("is_item_at", function(condition)
+        local payload = data(condition)
+        assert(type(payload.item) == "string", "Item condition requires an item reference")
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        local item = itemAt(condition)
+        return item ~= nil and item.id == entry:getMetadata("id")
+    end, { type = "object", properties = {
+        position = "coordinate",
+        item = { type = "registry", registry = "illarion:items" }
+    } })
 
     behaviors:registerCondition("has_any_item_equipped_at", function(condition, context)
         local payload = data(condition)
