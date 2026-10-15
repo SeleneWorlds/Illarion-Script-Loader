@@ -31,6 +31,7 @@ local function reloadTriggerFields()
                 triggerfield = field:getName()
             })
             annotatedCoordinates[#annotatedCoordinates + 1] = coordinate
+            emit("init", field, nil, coordinate)
         end
     end
 end
