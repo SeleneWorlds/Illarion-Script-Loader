@@ -67,14 +67,10 @@ function m.registerBehaviorDefaults(behaviors)
         assert(type(payload.message) == "string", "Inform message must be a string")
         assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
             "English inform message must be a string")
-        assert(payload.priority == nil or (type(payload.priority) == "number"
-            and payload.priority == payload.priority and math.abs(payload.priority) < math.huge),
-            "Inform priority must be a finite number")
-        return character(context):inform(payload.message, payload.messageEnglish or payload.message, payload.priority)
+        return character(context):inform(payload.message, payload.messageEnglish or payload.message)
     end, { type = "object", properties = {
         message = "string",
-        messageEnglish = { type = "string", optional = true },
-        priority = { type = "number", optional = true }
+        messageEnglish = { type = "string", optional = true }
     } })
 
     behaviors:registerAction("decrease_movepoints", function(action, context)
@@ -155,6 +151,43 @@ function m.registerBehaviorDefaults(behaviors)
         item = { type = "registry", registry = "illarion:items" }
     } })
 
+    behaviors:registerCondition("has_item_equipped_at", function(condition, context)
+        local payload = data(condition)
+        local slot = payload.slot
+        assert(type(slot) == "number" and slot >= 0 and slot <= 11 and slot % 1 == 0,
+            "Equipment slot must be an integer from 0 to 11")
+        local expected
+        if payload.item ~= nil then
+            assert(type(payload.item) == "string", "Equipped item must be an item reference")
+            expected = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        end
+        assert(payload.data == nil or (type(payload.data) == "number"
+            and payload.data == payload.data and math.abs(payload.data) < math.huge),
+            "Equipped item data must be a finite number")
+        local item = InventoryManager.GetEquipment(character(context)):getItem(slot)
+        if item == nil or InventoryManager.IsBlockedHandItem(item) then return false end
+        local numericData = tonumber(item.data and item.data.data) or 0
+        return (expected == nil or item.def:getMetadata("id") == expected:getMetadata("id"))
+            and (payload.data == nil or numericData == payload.data)
+    end, { type = "object", properties = {
+        slot = { type = "enum", values = {
+            { value = 0, label = "Backpack" },
+            { value = 1, label = "Head" },
+            { value = 2, label = "Neck" },
+            { value = 3, label = "Breast" },
+            { value = 4, label = "Hands" },
+            { value = 5, label = "Left hand" },
+            { value = 6, label = "Right hand" },
+            { value = 7, label = "Left finger" },
+            { value = 8, label = "Right finger" },
+            { value = 9, label = "Legs" },
+            { value = 10, label = "Feet" },
+            { value = 11, label = "Coat" },
+        } },
+        item = { type = "registry", registry = "illarion:items", optional = true },
+        data = { type = "number", optional = true }
+    } })
+
     behaviors:registerCondition("has_any_item_equipped_at", function(condition, context)
         local payload = data(condition)
         local slot = payload.slot
@@ -168,7 +201,20 @@ function m.registerBehaviorDefaults(behaviors)
         if expected == nil then expected = true end
         return equipped == expected
     end, { type = "object", properties = {
-        slot = { type = "integer", min = 0, max = 11 },
+        slot = { type = "enum", values = {
+            { value = 0, label = "Backpack" },
+            { value = 1, label = "Head" },
+            { value = 2, label = "Neck" },
+            { value = 3, label = "Breast" },
+            { value = 4, label = "Hands" },
+            { value = 5, label = "Left hand" },
+            { value = 6, label = "Right hand" },
+            { value = 7, label = "Left finger" },
+            { value = 8, label = "Right finger" },
+            { value = 9, label = "Legs" },
+            { value = 10, label = "Feet" },
+            { value = 11, label = "Coat" },
+        } },
         equipped = { type = "boolean", optional = true }
     } })
 
