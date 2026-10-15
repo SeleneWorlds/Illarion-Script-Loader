@@ -8,7 +8,7 @@ local function loadEffectScript(def)
     if def:getField("enabled") == false then
         return false, nil
     end
-    return xpcall(require, def:getField("script"))
+    return xpcall(require, debug.traceback, def:getField("script"))
 end
 
 function m.WrapLongTimeEffect(def, entity, data)

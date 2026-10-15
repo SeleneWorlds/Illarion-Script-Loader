@@ -88,7 +88,7 @@ Network.handlePayload("illarion:cast", function(player, payload)
     end
 
     local scriptName = spellDefinition:getField("script")
-    local loaded, script = xpcall(require, scriptName)
+    local loaded, script = xpcall(require, debug.traceback, scriptName)
     if not loaded then
         return
     end

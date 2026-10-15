@@ -9,7 +9,7 @@ function m.Get(character, itemDef, item)
     local result = nil
     local scriptName = itemDef:getField("script")
     if scriptName and scriptName ~= "" then
-        local status, script = xpcall(require, scriptName)
+        local status, script = xpcall(require, debug.traceback, scriptName)
         if status and type(script.LookAtItem) == "function" then
             result = script.LookAtItem(character, item)
             if useLegacyLookAt then

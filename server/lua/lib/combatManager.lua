@@ -45,7 +45,7 @@ local function notifyMonsterAttacked(target, attacker)
     local characterData = target.SeleneEntity:getRuntimeData(DataKeys.Character)
     local scriptName = characterData[DataFields.Script]
     if scriptName and scriptName ~= "" then
-        local status, script = xpcall(require, scriptName)
+        local status, script = xpcall(require, debug.traceback, scriptName)
         if status and type(script.onAttacked) == "function" then
             script.onAttacked(target, attacker)
         end

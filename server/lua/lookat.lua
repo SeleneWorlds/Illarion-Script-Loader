@@ -87,7 +87,7 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
             if not event.cancel then
                 local scriptName = charData[DataFields.Script]
                 if scriptName and scriptName ~= nil then
-                    local status, script = xpcall(require, scriptName)
+                    local status, script = xpcall(require, debug.traceback, scriptName)
                     if status and type(script.lookAtNpc) == "function" then
                         script.lookAtNpc(target, character, mode)
                         return
@@ -101,7 +101,7 @@ Network.handlePayload("illarion:look_at_entity", function(player, payload)
                 })
             end
         elseif characterType == Character.monster then
-            local status, script = xpcall(require, charData[DataFields.Script])
+            local status, script = xpcall(require, debug.traceback, charData[DataFields.Script])
             if status and type(script.lookAtMonster) == "function" then
                 script.lookAtMonster(character, target, mode)
             else

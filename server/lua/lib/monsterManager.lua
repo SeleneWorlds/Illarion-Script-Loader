@@ -165,7 +165,7 @@ local function loadMonsterScript(charData)
     if scriptName == nil or scriptName == "" then
         return nil
     end
-    local status, script = xpcall(require, scriptName)
+    local status, script = xpcall(require, debug.traceback, scriptName)
     return status and script or nil
 end
 
@@ -512,7 +512,7 @@ function m.Update()
         CharacterManager.AddEntity(entity)
         entity:spawn()
 
-        local status, script = xpcall(require, charData[DataFields.Script])
+        local status, script = xpcall(require, debug.traceback, charData[DataFields.Script])
         if status and type(script.onSpawn) == "function" then
             script.onSpawn(Character.fromSeleneEntity(entity))
         end
@@ -534,7 +534,7 @@ function m.Update()
                 local routeStatus = RouteManager.Advance(monster)
                 if routeStatus == "complete" or routeStatus == "blocked" then
                     monster:setOnRoute(false)
-                    local status, script = xpcall(require, charData[DataFields.Script])
+                    local status, script = xpcall(require, debug.traceback, charData[DataFields.Script])
                     if status and type(script.abortRoute) == "function" then
                         script.abortRoute(monster)
                     end

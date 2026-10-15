@@ -1,6 +1,4 @@
 -- Run from the repository root: lua bundles/illarion-script-loader/tests/rotting_tiles.lua
--- Selene replaces xpcall with a protected call that accepts function arguments.
-xpcall = pcall
 local fields = { Wear = 'wear' }
 local defs = {}
 local function definition(id, aging, replacement)

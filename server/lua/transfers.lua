@@ -105,7 +105,7 @@ local function callMoveItemAfterMove(character, itemDef, sourceItem, targetItem)
         return
     end
 
-    local status, script = xpcall(require, scriptName)
+    local status, script = xpcall(require, debug.traceback, scriptName)
     if status and type(script.MoveItemAfterMove) == "function" then
         script.MoveItemAfterMove(character, sourceItem, targetItem)
     end
@@ -117,7 +117,7 @@ local function callMoveItemBeforeMove(character, itemDef, sourceItem, targetItem
         return true
     end
 
-    local status, script = xpcall(require, scriptName)
+    local status, script = xpcall(require, debug.traceback, scriptName)
     if status and type(script.MoveItemBeforeMove) == "function" then
         return script.MoveItemBeforeMove(character, sourceItem, targetItem)
     end
@@ -204,7 +204,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             end
             local scriptName = fromItem.def:getField("script")
             if scriptName and scriptName ~= "" then
-                local status, script = xpcall(require, scriptName)
+                local status, script = xpcall(require, debug.traceback, scriptName)
                 if status and type(script.MoveItemBeforeMove) == "function" then
                     return script.MoveItemBeforeMove(context.character, movedItem, targetItem)
                 end
@@ -220,7 +220,7 @@ Network.handlePayload("illarion:move_slot_to_slot", function(player, payload)
             closeMovedContainer(context.character, toItem)
             local scriptName = fromItem.def:getField("script")
             if scriptName and scriptName ~= "" then
-                local status, script = xpcall(require, scriptName)
+                local status, script = xpcall(require, debug.traceback, scriptName)
                 if status and type(script.MoveItemAfterMove) == "function" then
                     local targetItem = Item.fromSeleneInventoryItem(toInventory:getInventoryItem(toSlotId))
                     script.MoveItemAfterMove(context.character, sourceSnapshot, targetItem)
@@ -314,7 +314,7 @@ Network.handlePayload("illarion:move_coordinate_to_slot", function(player, paylo
             local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
             local scriptName = triggerfield and triggerfield:getField("script")
             if scriptName and scriptName ~= "" then
-                local status, script = xpcall(require, scriptName)
+                local status, script = xpcall(require, debug.traceback, scriptName)
                 if status and type(script.TakeItemFromField) == "function" then
                     script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character, triggerfield)
                 end
@@ -430,7 +430,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     local sourceTriggerfieldEntry = sourceTriggerfield and Registries.findByName("illarion:triggerfields", sourceTriggerfield.triggerfield)
     local sourceScriptName = sourceTriggerfieldEntry and sourceTriggerfieldEntry:getField("script")
     if sourceScriptName and sourceScriptName ~= "" then
-        local status, script = xpcall(require, sourceScriptName)
+        local status, script = xpcall(require, debug.traceback, sourceScriptName)
         if status and type(script.TakeItemFromField) == "function" then
             script.TakeItemFromField(Item.fromSeleneEntity(sourceEntity), character, sourceTriggerfieldEntry)
         end
@@ -444,7 +444,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     local targetTriggerfieldEntry = targetTriggerfield and Registries.findByName("illarion:triggerfields", targetTriggerfield.triggerfield)
     local targetScriptName = targetTriggerfieldEntry and targetTriggerfieldEntry:getField("script")
     if targetScriptName and targetScriptName ~= "" then
-        local status, script = xpcall(require, targetScriptName)
+        local status, script = xpcall(require, debug.traceback, targetScriptName)
         if status and type(script.PutItemOnField) == "function" then
             script.PutItemOnField(Item.fromSeleneEntity(movedEntity), character, targetTriggerfieldEntry)
         end
@@ -533,7 +533,7 @@ local function moveSlotToCoordinate(player, payload)
         local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
         local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
-            local status, script = xpcall(require, scriptName)
+            local status, script = xpcall(require, debug.traceback, scriptName)
             if status and type(script.PutItemOnField) == "function" then
                 script.PutItemOnField(Item.fromSeleneEntity(entity), character, triggerfield)
             end

@@ -41,7 +41,7 @@ local function notifyItemCharacterOnField(itemId, character)
 
     local scriptName = item:getField("script")
     if scriptName and scriptName ~= "" then
-        local status, script = xpcall(require, scriptName)
+        local status, script = xpcall(require, debug.traceback, scriptName)
         if status and type(script.CharacterOnField) == "function" then
             script.CharacterOnField(character)
         end
@@ -83,7 +83,7 @@ Entities.steppedOnTile:connect(function(entity, coordinate)
         local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
         local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
-            local status, script = xpcall(require, scriptName)
+            local status, script = xpcall(require, debug.traceback, scriptName)
             if status and type(script.MoveToField) == "function" then
                 script.MoveToField(character, triggerfield)
             end
@@ -103,7 +103,7 @@ Entities.steppedOffTile:connect(function(entity, coordinate)
         local triggerfield = Registries.findByName("illarion:triggerfields", triggerfieldAnnotation.triggerfield)
         local scriptName = triggerfield and triggerfield:getField("script")
         if scriptName and scriptName ~= "" then
-            local status, script = xpcall(require, scriptName)
+            local status, script = xpcall(require, debug.traceback, scriptName)
             if status and type(script.MoveFromField) == "function" then
                 script.MoveFromField(Character.fromSeleneEntity(entity), triggerfield)
             end

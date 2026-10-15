@@ -241,7 +241,10 @@ Players.playerLeft:connect(function(player)
         local character = Character.fromSelenePlayer(player)
         character:abortAction()
         if not player:getControlledEntity():getRuntimeData(DataKeys.Character)[DataFields.Headless] then
-            xpcall(illaLogout.onLogout, character)
+            local ok, logoutError = xpcall(illaLogout.onLogout, debug.traceback, character)
+            if not ok then
+                Logging.error(logoutError)
+            end
         end
         CharacterPersistence.saveCharacter(player, character)
     end

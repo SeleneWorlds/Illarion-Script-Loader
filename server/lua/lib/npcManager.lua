@@ -162,7 +162,7 @@ function m.Update()
 
                 local scriptName = charData[DataFields.Script]
                 if scriptName and scriptName ~= "" then
-                    local status, script = xpcall(require, scriptName)
+                    local status, script = xpcall(require, debug.traceback, scriptName)
                     if not event.cancel and status and type(script.nextCycle) == "function" then
                         thisNPC = npc
                         script.nextCycle(npc)

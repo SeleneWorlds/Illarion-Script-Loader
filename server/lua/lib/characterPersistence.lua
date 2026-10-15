@@ -693,7 +693,7 @@ function m.saveCharacter(player, character)
     local longTimeEffects = Json.encode(serializeEffects(entity))
 
     database:execute("BEGIN IMMEDIATE")
-    local ok, saveError = xpcall(database.execute, database,
+    local ok, saveError = xpcall(database.execute, debug.traceback, database,
         [[
             UPDATE characters
             SET name = ?, race = ?, sex = ?, x = ?, y = ?, z = ?, facing = ?,

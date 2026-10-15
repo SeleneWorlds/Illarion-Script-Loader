@@ -52,7 +52,7 @@ local function notifyRotOnField(entity, replacement)
         return
     end
 
-    local status, script = xpcall(require, annotation.script)
+    local status, script = xpcall(require, debug.traceback, annotation.script)
     if status and type(script.ItemRotsOnField) == "function" then
         script.ItemRotsOnField(
             Item.fromSeleneEntity(entity),
@@ -158,7 +158,7 @@ function m.AgeFieldTile(tile)
 
     local annotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield")
     if annotation and annotation.script then
-        local status, script = xpcall(require, annotation.script)
+        local status, script = xpcall(require, debug.traceback, annotation.script)
         if status and type(script.ItemRotsOnField) == "function" then
             script.ItemRotsOnField(
                 Item.fromSeleneTile(tile),

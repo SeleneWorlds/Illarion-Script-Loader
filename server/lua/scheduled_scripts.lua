@@ -27,7 +27,7 @@ local function addSchedule(definition)
         schedule.timeoutId = Schedules.setTimeout(interval * 1000, function()
             schedule.timeoutId = nil
             if schedule.stopped then return end
-            local status, script = xpcall(require, definition:getField("script"))
+            local status, script = xpcall(require, debug.traceback, definition:getField("script"))
             local functionName = definition:getField("function")
             if status and type(script[functionName]) == "function" then
                 script[functionName](definition)
