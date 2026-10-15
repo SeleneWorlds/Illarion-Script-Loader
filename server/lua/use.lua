@@ -9,6 +9,7 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local function callUseItem(script, user, item, targetItem, counter)
+    Events.onUseItem:fire({ character = user, item = item, targetItem = targetItem, counter = counter })
     if Config.getProperty("useLegacyUseItem") == "true" then
         script.UseItem(user, item, targetItem, counter, 0, Action.none)
     else
@@ -265,5 +266,10 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
         return
     end
     actionData[DataFields.LastActionArgs] = { character, item, target, counter, 0 }
+    Events.onUseItem:fire({
+        character = character, item = item, counter = counter,
+        targetCharacter = targetCharacter and target or nil,
+        targetPosition = targetCharacter and target.pos or target
+    })
     actionFunction(character, item, target, counter, 0, Action.none)
 end)

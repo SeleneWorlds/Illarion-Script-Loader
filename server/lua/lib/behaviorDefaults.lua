@@ -116,6 +116,24 @@ function m.registerBehaviorDefaults(behaviors)
         ignoreCase = { type = "boolean", optional = true }
     } })
 
+    behaviors:registerCondition("is_at", function(condition, context)
+        local payload = data(condition)
+        local subjectName = payload.subject or "character"
+        assert(subjectName == "character" or subjectName == "item" or subjectName == "targetItem",
+            "Position subject must be character, item, or targetItem")
+        local expected = assert(payload.position, "Position condition requires a position")
+        local subject = context and context[subjectName]
+        local actual = subject and subject.pos
+        return actual ~= nil and actual.x == expected.x and actual.y == expected.y and actual.z == expected.z
+    end, { type = "object", properties = {
+        position = "coordinate",
+        subject = { type = "enum", optional = true, values = {
+            { value = "character", label = "character" },
+            { value = "item", label = "item" },
+            { value = "targetItem", label = "targetItem" }
+        } }
+    } })
+
     behaviors:registerCondition("is_door_closed", function(condition)
         local item = itemAt(condition)
         return item ~= nil and require("base.doors").CheckClosedDoor(item.id)
