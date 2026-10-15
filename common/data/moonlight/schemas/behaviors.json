@@ -1,0 +1,6 @@
+{
+  "definition": {
+    "type": "scripted_schema_lookup",
+    "module": "illarion-script-loader.server.lua.lib.behaviorDefaults"
+  }
+}

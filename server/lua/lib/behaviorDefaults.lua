@@ -1,3 +1,5 @@
+local Registries = require("selene.registries")
+local Behaviors = require("moonlight-behaviors.server.lua.behaviors")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 local m = {}
@@ -11,7 +13,35 @@ local function character(context)
     return assert(context and context.character, "Behavior context requires a character")
 end
 
+local function itemAt(action)
+    local coordinate = assert(action.data.position, "Action requires a position")
+    return world:getItemOnField(position(coordinate.x, coordinate.y, coordinate.z))
+end
+
 function m.registerBehaviorDefaults(behaviors)
+    behaviors:registerAction("unlock_door", function(action)
+        return require("base.keys").UnlockDoor(itemAt(action))
+    end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerAction("open_door", function(action)
+        return require("base.doors").OpenDoor(itemAt(action))
+    end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerAction("swap_item", function(action)
+        local payload = data(action)
+        assert(type(payload.oldItem) == "string", "Swap item requires an old item reference")
+        local oldEntry = assert(Registries.findByName("illarion:items", payload.oldItem), "Unknown old item")
+        local item = itemAt(action)
+        if not item or item.id ~= oldEntry:getMetadata("id") then return false end
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        item.id = entry:getMetadata("id")
+        return world:changeItem(item)
+    end, { type = "object", properties = {
+        position = "coordinate",
+        oldItem = { type = "registry", registry = "illarion:items" },
+        item = { type = "registry", registry = "illarion:items" }
+    } })
+
     behaviors:registerAction("poison", function(action, context)
         local amount = data(action).amount
         assert(type(amount) == "number" and amount == amount and amount >= 0 and amount < math.huge,
@@ -61,6 +91,10 @@ function m.registerBehaviorDefaults(behaviors)
     } })
 
     return behaviors
+end
+
+function m.schema()
+    return m.registerBehaviorDefaults(Behaviors:new()):schema().properties
 end
 
 return m
