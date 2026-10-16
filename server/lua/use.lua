@@ -8,8 +8,12 @@ local Events = require("illarion-script-loader.server.lua.lib.events")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
-local function callUseItem(script, user, item, targetItem, counter)
+local function emitUseItem(user, item, targetItem, counter)
     Events.onUseItem:fire({ character = user, item = item, targetItem = targetItem, counter = counter })
+end
+
+local function callUseItem(script, user, item, targetItem, counter)
+    emitUseItem(user, item, targetItem, counter)
     if Config.getProperty("useLegacyUseItem") == "true" then
         script.UseItem(user, item, targetItem, counter, 0, Action.none)
     else
@@ -37,6 +41,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
     local illaPos = position(x, y, z)
     local actionData = playerEntity:getRuntimeData(DataKeys.LastAction)
 
+    local fallbackItem
     -- Entities can be either Monsters, NPCs, or non-static (dropped) items
     local entities = dimension:getEntitiesAt(x, y, z, playerEntity:getInteractionViewer())
     for i = #entities, 1, -1 do
@@ -46,6 +51,7 @@ Network.handlePayload("illarion:use_at", function(player, payload)
             if itemId then
                 local item = Registries.findByMetadata("illarion:items", "id", itemId)
                 if item then
+                    fallbackItem = fallbackItem or Item.fromSeleneEntity(entity)
                     local scriptName = item:getField("script")
                     if scriptName and scriptName ~= "" then
                         local status, script = xpcall(require, debug.traceback, scriptName)
@@ -121,10 +127,15 @@ Network.handlePayload("illarion:use_at", function(player, payload)
                     end
                 end
             end
-            -- As with entity items, a static item without a use script still
-            -- covers the base tile.
+            -- Unscripted items still dispatch behaviors and cover the base tile.
+            emitUseItem(illaUser, fallbackItem or Item.fromSeleneTile(tile), Item.fromSeleneEmpty(), counter)
             return
         end
+    end
+
+    if fallbackItem then
+        emitUseItem(illaUser, fallbackItem, Item.fromSeleneEmpty(), counter)
+        return
     end
 
     -- With no items on top, use the base tile's TileScript.
