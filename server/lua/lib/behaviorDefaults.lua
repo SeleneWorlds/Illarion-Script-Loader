@@ -14,6 +14,16 @@ local function character(context)
     return assert(context and context.character, "Behavior context requires a character")
 end
 
+local function questData(definition)
+    local payload = data(definition)
+    assert(type(payload.questId) == "number" and payload.questId >= 0
+        and payload.questId < math.huge and payload.questId % 1 == 0,
+        "Quest id must be a non-negative integer")
+    assert(type(payload.progress) == "number" and math.abs(payload.progress) < math.huge
+        and payload.progress % 1 == 0, "Quest progress must be a finite integer")
+    return payload
+end
+
 local function itemAt(definition)
     local coordinate = assert(data(definition).position, "Behavior requires a position")
     return world:getItemOnField(position(coordinate.x, coordinate.y, coordinate.z))
@@ -117,6 +127,14 @@ function m.registerBehaviorDefaults(behaviors)
         item = { type = "registry", registry = "illarion:items" }
     } })
 
+    behaviors:registerAction("set_quest_progress", function(action, context)
+        local payload = questData(action)
+        return character(context):setQuestProgress(payload.questId, payload.progress)
+    end, { type = "object", properties = {
+        questId = { type = "integer", min = 0 },
+        progress = "integer"
+    } })
+
     behaviors:registerAction("warp", function(action, context)
         local coordinate = assert(data(action).position, "Warp requires a position")
         return character(context):warp(position(coordinate.x, coordinate.y, coordinate.z))
@@ -193,6 +211,26 @@ function m.registerBehaviorDefaults(behaviors)
         return character(context):get_face_to() == Character[direction]
     end, { type = "object", properties = {
         direction = { type = "enum", values = directionValues }
+    } })
+
+    behaviors:registerCondition("is_admin", function(_, context)
+        return character(context):isAdmin()
+    end)
+
+    behaviors:registerCondition("quest_progress", function(condition, context)
+        local payload = questData(condition)
+        local operator = payload.operator == nil and "equals" or payload.operator
+        assert(operator == "equals" or operator == "less_than", "Unknown quest progress operator")
+        local progress = character(context):getQuestProgress(payload.questId)
+        if operator == "less_than" then return progress < payload.progress end
+        return progress == payload.progress
+    end, { type = "object", properties = {
+        questId = { type = "integer", min = 0 },
+        progress = "integer",
+        operator = { type = "enum", optional = true, values = {
+            { value = "equals", label = "equals" },
+            { value = "less_than", label = "less than" }
+        } }
     } })
 
     behaviors:registerCondition("is_active_language", function(condition, context)
