@@ -304,6 +304,30 @@ function m.registerBehaviorDefaults(behaviors)
         direction = { type = "enum", values = directionValues }
     } })
 
+    behaviors:registerCondition("attribute_sum_above", function(condition, context)
+        local payload = data(condition)
+        assert(type(payload.attributes) == "table" and #payload.attributes > 0,
+            "Attribute sum requires a non-empty array of attributes")
+        assert(type(payload.threshold) == "number" and math.abs(payload.threshold) < math.huge,
+            "Attribute threshold must be a finite number")
+        local total, count = 0, 0
+        local user = character(context)
+        for key in pairs(payload.attributes) do
+            assert(type(key) == "number" and key >= 1 and key % 1 == 0,
+                "Attributes must be an array")
+            count = count + 1
+        end
+        for i = 1, count do
+            local attribute = payload.attributes[i]
+            assert(type(attribute) == "string" and attribute ~= "", "Attribute name must be a non-empty string")
+            total = total + user:increaseAttrib(attribute, 0)
+        end
+        return total > payload.threshold
+    end, { type = "object", properties = {
+        attributes = { type = "array", valueType = "string" },
+        threshold = "number"
+    } })
+
     behaviors:registerCondition("is_admin", function(_, context)
         return character(context):isAdmin()
     end)
