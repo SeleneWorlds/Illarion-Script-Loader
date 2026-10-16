@@ -9,16 +9,22 @@ local InventoryManager = require("illarion-script-loader.server.lua.lib.inventor
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
 local function emitUseItem(user, item, targetItem, counter)
-    Events.onUseItem:fire({ character = user, item = item, targetItem = targetItem, counter = counter })
+    local context = { character = user, item = item, targetItem = targetItem, counter = counter }
+    Events.onUseItem:fire(context)
+    return context.handled
 end
 
-local function callUseItem(script, user, item, targetItem, counter)
-    emitUseItem(user, item, targetItem, counter)
+local function runUseItem(script, user, item, targetItem, counter)
     if Config.getProperty("useLegacyUseItem") == "true" then
         script.UseItem(user, item, targetItem, counter, 0, Action.none)
     else
         script.UseItem(user, item, Action.none)
     end
+end
+
+local function callUseItem(script, user, item, targetItem, counter)
+    if emitUseItem(user, item, targetItem, counter) then return end
+    runUseItem(script, user, item, targetItem, counter)
 end
 
 local function getUseItemArgs(user, item, targetItem, counter)
@@ -263,31 +269,21 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
         end
     end
     local item = Item.fromSeleneInventoryItem(inventoryItem)
-    if type(actionFunction) ~= "function" then
-        if targetItem then
-            emitUseItem(character, item, targetItem, counter)
-        else
-            Events.onUseItem:fire({
-                character = character, item = item, counter = counter,
-                targetCharacter = targetCharacter and target or nil,
-                targetPosition = targetCharacter and target.pos or target
-            })
-        end
-        return
-    end
+    local context = {
+        character = character, item = item, counter = counter, targetItem = targetItem,
+        targetCharacter = targetCharacter and target or nil,
+        targetPosition = targetItem and targetItem.pos or (targetCharacter and target.pos or target)
+    }
+    Events.onUseItem:fire(context)
+    if context.handled or type(actionFunction) ~= "function" then return end
     local actionData = character.SeleneEntity:getRuntimeData(DataKeys.LastAction)
     actionData[DataFields.LastActionScript] = script
     actionData[DataFields.LastActionFunction] = actionFunction
     if targetItem then
         actionData[DataFields.LastActionArgs] = getUseItemArgs(character, item, targetItem, counter)
-        callUseItem(script, character, item, targetItem, counter)
+        runUseItem(script, character, item, targetItem, counter)
         return
     end
     actionData[DataFields.LastActionArgs] = { character, item, target, counter, 0 }
-    Events.onUseItem:fire({
-        character = character, item = item, counter = counter,
-        targetCharacter = targetCharacter and target or nil,
-        targetPosition = targetCharacter and target.pos or target
-    })
     actionFunction(character, item, target, counter, 0, Action.none)
 end)

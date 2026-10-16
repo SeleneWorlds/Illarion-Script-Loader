@@ -44,6 +44,24 @@ Registries.entryChanged("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.entryRemoved("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.reloaded("illarion:triggerfields"):connect(reloadTriggerFields)
 
+local function emitAt(event, context, coordinate, dimension, viewerMethod)
+    local entity = context.character.SeleneEntity
+    local annotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield", entity[viewerMethod](entity))
+    if not annotation then return end
+    local triggerfield = Registries.findByName("illarion:triggerfields", annotation.triggerfield)
+    if not triggerfield or triggerfield:getField("enabled") == false then return end
+    local itemContext = {}
+    for key, value in pairs(context) do itemContext[key] = value end
+    itemContext.triggerfield = triggerfield
+    itemContext.coordinate = coordinate
+    local results = behaviors:emit(event, triggerfield:getField("behaviors") or {}, itemContext)
+    if event == "use_item_with" then
+        for _, result in ipairs(results) do
+            if #result.results > 0 then context.handled = true; break end
+        end
+    end
+end
+
 local function emitItemEvent(event, context, viewerMethod)
     local item = context.item
     if not item then return end
@@ -61,20 +79,17 @@ local function emitItemEvent(event, context, viewerMethod)
     else
         return
     end
-    local annotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield",
-        characterEntity[viewerMethod](characterEntity))
-    if not annotation then return end
-    local triggerfield = Registries.findByName("illarion:triggerfields", annotation.triggerfield)
-    if not triggerfield or triggerfield:getField("enabled") == false then return end
-    local itemContext = {}
-    for key, value in pairs(context) do itemContext[key] = value end
-    itemContext.triggerfield = triggerfield
-    itemContext.coordinate = coordinate
-    behaviors:emit(event, triggerfield:getField("behaviors") or {}, itemContext)
+    emitAt(event, context, coordinate, dimension, viewerMethod)
 end
 
 Events.onUseItem:connect(function(context)
     emitItemEvent("use_item", context, "getInteractionViewer")
+    if context.handled or context.targetCharacter then return end
+    local target = context.targetItem
+    local coordinate = context.targetPosition
+    if target and target:getType() == scriptItem.field then coordinate = target.pos end
+    if not coordinate then return end
+    emitAt("use_item_with", context, coordinate, context.character.SeleneEntity:getDimension(), "getInteractionViewer")
 end)
 Events.onLookAtItem:connect(function(context)
     emitItemEvent("look_at_item", context, "getVisionViewer")
