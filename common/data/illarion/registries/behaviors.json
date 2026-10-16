@@ -1,0 +1,13 @@
+{
+  "name": "behaviors",
+  "platform": "server",
+  "icon": "zap",
+  "schema": {
+    "enabled": "enabled",
+    "name": { "type": "string", "optional": true },
+    "behaviors": {
+      "type": "array",
+      "valueType": "moonlight:behaviors"
+    }
+  }
+}

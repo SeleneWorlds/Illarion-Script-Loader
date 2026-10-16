@@ -58,6 +58,7 @@
     "server/lua/rotting.lua",
     "server/lua/scheduled_scripts.lua",
     "server/lua/skills.lua",
+    "server/lua/global_behaviors.lua",
     "server/lua/triggerfields.lua",
     "server/lua/use.lua",
     "server/lua/transfers.lua",
