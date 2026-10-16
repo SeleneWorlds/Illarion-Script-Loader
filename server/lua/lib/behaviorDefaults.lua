@@ -53,6 +53,11 @@ local function matchingItemAt(definition)
     return nil
 end
 
+local function baseTileAt(coordinate)
+    local tiles = Dimensions.getDefault():getTilesAt(position(coordinate.x, coordinate.y, coordinate.z))
+    return tiles[1]
+end
+
 function m.registerBehaviorDefaults(behaviors)
     behaviors:registerAction("unlock_door", function(action)
         return require("base.keys").UnlockDoor(itemAt(action))
@@ -69,6 +74,22 @@ function m.registerBehaviorDefaults(behaviors)
     behaviors:registerAction("lock_door", function(action)
         return require("base.keys").LockDoor(itemAt(action))
     end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerAction("swap_tile", function(action)
+        local payload = data(action)
+        local coordinate = assert(payload.position, "Swap tile requires a position")
+        assert(type(payload.oldTile) == "string", "Swap tile requires an old tile reference")
+        assert(type(payload.tile) == "string", "Swap tile requires a tile reference")
+        local oldEntry = assert(Registries.findByName("tiles", payload.oldTile), "Unknown old tile")
+        local entry = assert(Registries.findByName("tiles", payload.tile), "Unknown tile")
+        local tile = baseTileAt(coordinate)
+        if not tile or tile:getMetadata("tileId") ~= oldEntry:getMetadata("tileId") then return false end
+        return world:changeTile(entry:getMetadata("tileId"), position(coordinate.x, coordinate.y, coordinate.z))
+    end, { type = "object", properties = {
+        position = "coordinate",
+        oldTile = { type = "registry", registry = "tiles" },
+        tile = { type = "registry", registry = "tiles" }
+    } })
 
     behaviors:registerAction("swap_item", function(action)
         local payload = data(action)
@@ -337,6 +358,18 @@ function m.registerBehaviorDefaults(behaviors)
         local coordinate = assert(data(condition).position, "Character condition requires a position")
         return world:isCharacterOnField(position(coordinate.x, coordinate.y, coordinate.z))
     end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerCondition("is_tile", function(condition)
+        local payload = data(condition)
+        local coordinate = assert(payload.position, "Tile condition requires a position")
+        assert(type(payload.tile) == "string", "Tile condition requires a tile reference")
+        local entry = assert(Registries.findByName("tiles", payload.tile), "Unknown tile")
+        local tile = baseTileAt(coordinate)
+        return tile ~= nil and tile:getMetadata("tileId") == entry:getMetadata("tileId")
+    end, { type = "object", properties = {
+        position = "coordinate",
+        tile = { type = "registry", registry = "tiles" }
+    } })
 
     behaviors:registerCondition("is_item_at", function(condition)
         return matchingItemAt(condition) ~= nil
