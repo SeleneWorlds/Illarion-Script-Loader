@@ -2,6 +2,7 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Dimensions = require("selene.dimensions")
 local Server = require("selene.server")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 local Behaviors = require("moonlight-behaviors.server.lua.behaviors")
 local BehaviorDefaults = require("illarion-script-loader.server.lua.lib.behaviorDefaults")
 
@@ -42,6 +43,25 @@ Registries.entryAdded("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.entryChanged("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.entryRemoved("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.reloaded("illarion:triggerfields"):connect(reloadTriggerFields)
+
+Events.onUseItem:connect(function(context)
+    local item = context.item
+    if not item or item:getType() ~= scriptItem.field then return end
+    local coordinate = item.pos
+    local source = item.SeleneTile or item.SeleneEntity
+    local dimension = source:getDimension()
+    local characterEntity = context.character.SeleneEntity
+    local annotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield",
+        characterEntity:getInteractionViewer())
+    if not annotation then return end
+    local triggerfield = Registries.findByName("illarion:triggerfields", annotation.triggerfield)
+    if not triggerfield or triggerfield:getField("enabled") == false then return end
+    local useContext = {}
+    for key, value in pairs(context) do useContext[key] = value end
+    useContext.triggerfield = triggerfield
+    useContext.coordinate = coordinate
+    behaviors:emit("use_item", triggerfield:getField("behaviors") or {}, useContext)
+end)
 
 local function notifyItemCharacterOnField(itemId, character)
     if not itemId then
