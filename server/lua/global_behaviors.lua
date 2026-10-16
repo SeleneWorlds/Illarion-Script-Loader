@@ -29,6 +29,10 @@ Events.onUseItem:connect(function(context)
     M.emit("use_item", context)
 end)
 
+Events.onLookAtItem:connect(function(context)
+    M.emit("look_at_item", context)
+end)
+
 initialize()
 Server.serverReloaded:connect(initialize)
 Registries.entryAdded("illarion:behaviors"):connect(initialize)

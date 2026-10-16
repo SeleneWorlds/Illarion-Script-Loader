@@ -141,11 +141,15 @@ function m.registerBehaviorDefaults(behaviors)
         local coordinate = assert(payload.position, "Create item requires a position")
         assert(type(payload.item) == "string", "Create item requires an item reference")
         local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        local quality = payload.quality == nil and 333 or payload.quality
+        assert(type(quality) == "number" and quality >= 0 and quality < math.huge and quality % 1 == 0,
+            "Item quality must be a non-negative integer")
         return world:createItemFromId(entry:getMetadata("id"), 1,
-            position(coordinate.x, coordinate.y, coordinate.z), true, 333)
+            position(coordinate.x, coordinate.y, coordinate.z), true, quality)
     end, { type = "object", properties = {
         position = "coordinate",
-        item = { type = "registry", registry = "illarion:items" }
+        item = { type = "registry", registry = "illarion:items" },
+        quality = { type = "integer", min = 0, optional = true }
     } })
 
     behaviors:registerAction("give_item", function(action, context)
@@ -216,6 +220,25 @@ function m.registerBehaviorDefaults(behaviors)
         assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
             "English inform message must be a string")
         return character(context):inform(payload.message, payload.messageEnglish or payload.message)
+    end, { type = "object", properties = {
+        message = "string",
+        messageEnglish = { type = "string", optional = true }
+    } })
+
+    behaviors:registerAction("item_inform", function(action, context)
+        local payload = data(action)
+        assert(type(payload.message) == "string", "Item inform message must be a string")
+        assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
+            "English item inform message must be a string")
+        local user = character(context)
+        local item = assert(context.item, "Item inform requires an item")
+        local message = user:getPlayerLanguage() == Player.german and payload.message
+            or (payload.messageEnglish or payload.message)
+        if context.lookAt then
+            context.lookAt.tooltip = { name = message }
+        else
+            return world:itemInform(user, item, message)
+        end
     end, { type = "object", properties = {
         message = "string",
         messageEnglish = { type = "string", optional = true }

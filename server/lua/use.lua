@@ -187,17 +187,19 @@ Network.handlePayload("illarion:use_slot", function(player, payload)
             end
             targetItem = Item.fromSeleneInventoryItem(targetInventoryItem)
         end
+        local item = Item.fromSeleneInventoryItem(inventoryItem)
         local scriptName = inventoryItem:getItem().def:getField("script")
         if scriptName and scriptName ~= "" then
             local status, script = xpcall(require, debug.traceback, scriptName)
             if status and type(script.UseItem) == "function" then
-                local item = Item.fromSeleneInventoryItem(inventoryItem)
                 actionData[DataFields.LastActionScript] = script
                 actionData[DataFields.LastActionFunction] = script.UseItem
                 actionData[DataFields.LastActionArgs] = getUseItemArgs(character, item, targetItem, counter)
                 callUseItem(script, character, item, targetItem, counter)
+                return
             end
         end
+        emitUseItem(character, item, targetItem, counter)
     end
 end)
 
@@ -223,13 +225,10 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
     end
 
     local scriptName = inventoryItem:getItem().def:getField("script")
-    if not scriptName or scriptName == "" then
-        return
-    end
-
-    local status, script = xpcall(require, debug.traceback, scriptName)
-    if not status then
-        return
+    local script = {}
+    if scriptName and scriptName ~= "" then
+        local status, loadedScript = xpcall(require, debug.traceback, scriptName)
+        if status then script = loadedScript end
     end
 
     local target = position(x, y, z)
@@ -263,11 +262,19 @@ Network.handlePayload("illarion:use_slot_at", function(player, payload)
             end
         end
     end
+    local item = Item.fromSeleneInventoryItem(inventoryItem)
     if type(actionFunction) ~= "function" then
+        if targetItem then
+            emitUseItem(character, item, targetItem, counter)
+        else
+            Events.onUseItem:fire({
+                character = character, item = item, counter = counter,
+                targetCharacter = targetCharacter and target or nil,
+                targetPosition = targetCharacter and target.pos or target
+            })
+        end
         return
     end
-
-    local item = Item.fromSeleneInventoryItem(inventoryItem)
     local actionData = character.SeleneEntity:getRuntimeData(DataKeys.LastAction)
     actionData[DataFields.LastActionScript] = script
     actionData[DataFields.LastActionFunction] = actionFunction

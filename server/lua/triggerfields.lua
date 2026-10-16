@@ -44,23 +44,40 @@ Registries.entryChanged("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.entryRemoved("illarion:triggerfields"):connect(reloadTriggerFields)
 Registries.reloaded("illarion:triggerfields"):connect(reloadTriggerFields)
 
-Events.onUseItem:connect(function(context)
+local function emitItemEvent(event, context, viewerMethod)
     local item = context.item
-    if not item or item:getType() ~= scriptItem.field then return end
-    local coordinate = item.pos
-    local source = item.SeleneTile or item.SeleneEntity
-    local dimension = source:getDimension()
+    if not item then return end
+    local itemType = item:getType()
     local characterEntity = context.character.SeleneEntity
+    local coordinate, dimension
+    if itemType == scriptItem.field then
+        coordinate = item.pos
+        local source = item.SeleneTile or item.SeleneEntity
+        dimension = source:getDimension()
+    elseif event == "use_item" and (itemType == scriptItem.inventory
+        or itemType == scriptItem.belt or itemType == scriptItem.container) then
+        coordinate = context.character.pos
+        dimension = characterEntity:getDimension()
+    else
+        return
+    end
     local annotation = dimension:getAnnotationAt(coordinate, "illarion:triggerfield",
-        characterEntity:getInteractionViewer())
+        characterEntity[viewerMethod](characterEntity))
     if not annotation then return end
     local triggerfield = Registries.findByName("illarion:triggerfields", annotation.triggerfield)
     if not triggerfield or triggerfield:getField("enabled") == false then return end
-    local useContext = {}
-    for key, value in pairs(context) do useContext[key] = value end
-    useContext.triggerfield = triggerfield
-    useContext.coordinate = coordinate
-    behaviors:emit("use_item", triggerfield:getField("behaviors") or {}, useContext)
+    local itemContext = {}
+    for key, value in pairs(context) do itemContext[key] = value end
+    itemContext.triggerfield = triggerfield
+    itemContext.coordinate = coordinate
+    behaviors:emit(event, triggerfield:getField("behaviors") or {}, itemContext)
+end
+
+Events.onUseItem:connect(function(context)
+    emitItemEvent("use_item", context, "getInteractionViewer")
+end)
+Events.onLookAtItem:connect(function(context)
+    emitItemEvent("look_at_item", context, "getVisionViewer")
 end)
 
 local function notifyItemCharacterOnField(itemId, character)

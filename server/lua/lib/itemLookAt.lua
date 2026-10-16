@@ -1,11 +1,15 @@
 local illaItemLookAtOk, illaItemLookAt = pcall(require, "server.itemlookat")
 local Config = require("selene.config")
 local I18n = require("selene.i18n")
+local Events = require("illarion-script-loader.server.lua.lib.events")
 
 local m = {}
 local useLegacyLookAt = Config.getProperty("useLegacyLookAt") == "true"
 
 function m.Get(character, itemDef, item)
+    local context = { character = character, item = item, lookAt = {} }
+    Events.onLookAtItem:fire(context)
+    if context.lookAt.tooltip then return context.lookAt.tooltip end
     local result = nil
     local scriptName = itemDef:getField("script")
     if scriptName and scriptName ~= "" then
