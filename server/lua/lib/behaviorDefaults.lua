@@ -186,12 +186,27 @@ function m.registerBehaviorDefaults(behaviors)
     } })
 
     behaviors:registerAction("play_gfx", function(action, context)
-        local gfxId = data(action).gfxId
+        local payload = data(action)
+        local gfxId = payload.gfxId
         assert(type(gfxId) == "number" and gfxId >= 0 and gfxId < math.huge and gfxId % 1 == 0,
             "Gfx id must be a non-negative integer")
-        return world:gfx(gfxId, character(context).pos)
+        local coordinate = payload.position
+        local target
+        if coordinate ~= nil then
+            assert(type(coordinate) == "table", "Gfx position must be a coordinate")
+            for _, axis in ipairs({ "x", "y", "z" }) do
+                local value = coordinate[axis]
+                assert(type(value) == "number" and math.abs(value) < math.huge and value % 1 == 0,
+                    "Gfx coordinate components must be finite integers")
+            end
+            target = position(coordinate.x, coordinate.y, coordinate.z)
+        else
+            target = character(context).pos
+        end
+        return world:gfx(gfxId, target)
     end, { type = "object", properties = {
-        gfxId = { type = "integer", min = 0 }
+        gfxId = { type = "integer", min = 0 },
+        position = { type = "coordinate", optional = true }
     } })
 
     behaviors:registerAction("set_quest_progress", function(action, context)
