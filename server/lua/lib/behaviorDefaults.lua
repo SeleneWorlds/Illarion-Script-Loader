@@ -1,4 +1,5 @@
 local Registries = require("selene.registries")
+local Dimensions = require("selene.dimensions")
 local Behaviors = require("moonlight-behaviors.server.lua.behaviors")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
@@ -16,6 +17,30 @@ end
 local function itemAt(definition)
     local coordinate = assert(data(definition).position, "Behavior requires a position")
     return world:getItemOnField(position(coordinate.x, coordinate.y, coordinate.z))
+end
+
+local function matchingItemAt(definition)
+    local payload = data(definition)
+    local coordinate = assert(payload.position, "Behavior requires a position")
+    assert(type(payload.item) == "string", "Behavior requires an item reference")
+    local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+    local itemId = entry:getMetadata("id")
+    local pos = position(coordinate.x, coordinate.y, coordinate.z)
+    local dimension = Dimensions.getDefault()
+    for _, entity in ipairs(dimension:getEntitiesAt(pos)) do
+        if entity:hasTag("illarion:item") then
+            local item = Item.fromSeleneEntity(entity)
+            if item.id == itemId then return item end
+        end
+    end
+    local tiles = dimension:getTilesAt(pos)
+    for i = #tiles, 1, -1 do
+        if tiles[i]:hasTag("illarion:item") then
+            local item = Item.fromSeleneTile(tiles[i])
+            if item.id == itemId then return item end
+        end
+    end
+    return nil
 end
 
 function m.registerBehaviorDefaults(behaviors)
@@ -108,12 +133,13 @@ function m.registerBehaviorDefaults(behaviors)
         local amount = payload.amount or 1
         assert(type(amount) == "number" and amount >= 1 and amount < math.huge and amount % 1 == 0,
             "Destroy amount must be a positive integer")
-        local coordinate = assert(payload.position, "Destroy item requires a position")
-        if not world:isItemOnField(position(coordinate.x, coordinate.y, coordinate.z)) then return false end
-        return world:erase(itemAt(action), amount)
+        local item = matchingItemAt(action)
+        if not item then return false end
+        return world:erase(item, amount)
     end, { type = "object", properties = {
         position = "coordinate",
-        amount = { type = "integer", min = 1, optional = true }
+        amount = { type = "integer", min = 1, optional = true },
+        item = { type = "registry", registry = "illarion:items" }
     } })
 
     behaviors:registerAction("decrease_movepoints", function(action, context)
@@ -192,12 +218,13 @@ function m.registerBehaviorDefaults(behaviors)
         return item ~= nil and item.quality == 333 and require("base.doors").CheckClosedDoor(item.id)
     end, { type = "object", properties = { position = "coordinate" } })
 
+    behaviors:registerCondition("is_character_at", function(condition)
+        local coordinate = assert(data(condition).position, "Character condition requires a position")
+        return world:isCharacterOnField(position(coordinate.x, coordinate.y, coordinate.z))
+    end, { type = "object", properties = { position = "coordinate" } })
+
     behaviors:registerCondition("is_item_at", function(condition)
-        local payload = data(condition)
-        assert(type(payload.item) == "string", "Item condition requires an item reference")
-        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
-        local item = itemAt(condition)
-        return item ~= nil and item.id == entry:getMetadata("id")
+        return matchingItemAt(condition) ~= nil
     end, { type = "object", properties = {
         position = "coordinate",
         item = { type = "registry", registry = "illarion:items" }
