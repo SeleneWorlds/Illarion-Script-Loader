@@ -50,6 +50,18 @@ function m.registerBehaviorDefaults(behaviors)
         item = { type = "registry", registry = "illarion:items" }
     } })
 
+    behaviors:registerAction("create_item_at", function(action)
+        local payload = data(action)
+        local coordinate = assert(payload.position, "Create item requires a position")
+        assert(type(payload.item) == "string", "Create item requires an item reference")
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        return world:createItemFromId(entry:getMetadata("id"), 1,
+            position(coordinate.x, coordinate.y, coordinate.z), true, 333)
+    end, { type = "object", properties = {
+        position = "coordinate",
+        item = { type = "registry", registry = "illarion:items" }
+    } })
+
     behaviors:registerAction("warp", function(action, context)
         local coordinate = assert(data(action).position, "Warp requires a position")
         return character(context):warp(position(coordinate.x, coordinate.y, coordinate.z))
@@ -73,6 +85,37 @@ function m.registerBehaviorDefaults(behaviors)
         messageEnglish = { type = "string", optional = true }
     } })
 
+    behaviors:registerAction("inform_nearby", function(action)
+        local payload = data(action)
+        local coordinate = assert(payload.position, "Inform nearby requires a position")
+        assert(type(payload.range) == "number" and payload.range >= 0 and payload.range < math.huge,
+            "Inform range must be a finite non-negative number")
+        assert(type(payload.message) == "string", "Inform message must be a string")
+        assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
+            "English inform message must be a string")
+        for _, player in pairs(world:getPlayersInRangeOf(position(coordinate.x, coordinate.y, coordinate.z), payload.range)) do
+            player:inform(payload.message, payload.messageEnglish or payload.message)
+        end
+    end, { type = "object", properties = {
+        position = "coordinate",
+        range = { type = "number", min = 0 },
+        message = "string",
+        messageEnglish = { type = "string", optional = true }
+    } })
+
+    behaviors:registerAction("destroy_item_at", function(action)
+        local payload = data(action)
+        local amount = payload.amount or 1
+        assert(type(amount) == "number" and amount >= 1 and amount < math.huge and amount % 1 == 0,
+            "Destroy amount must be a positive integer")
+        local coordinate = assert(payload.position, "Destroy item requires a position")
+        if not world:isItemOnField(position(coordinate.x, coordinate.y, coordinate.z)) then return false end
+        return world:erase(itemAt(action), amount)
+    end, { type = "object", properties = {
+        position = "coordinate",
+        amount = { type = "integer", min = 1, optional = true }
+    } })
+
     behaviors:registerAction("decrease_movepoints", function(action, context)
         context.character.movepoints = context.character.movepoints - action.data.amount
     end, { type = "object", properties = { amount = { type = "integer", min = 0 } } })
@@ -94,6 +137,15 @@ function m.registerBehaviorDefaults(behaviors)
         return character(context):get_face_to() == Character[direction]
     end, { type = "object", properties = {
         direction = { type = "enum", values = directionValues }
+    } })
+
+    behaviors:registerCondition("is_active_language", function(condition, context)
+        local language = data(condition).language
+        assert(type(language) == "number" and language >= 0 and language < math.huge and language % 1 == 0,
+            "Active language must be a non-negative integer")
+        return character(context).activeLanguage == language
+    end, { type = "object", properties = {
+        language = { type = "integer", min = 0 }
     } })
 
     behaviors:registerCondition("last_spoken_contains", function(condition, context)
@@ -216,6 +268,23 @@ function m.registerBehaviorDefaults(behaviors)
             { value = 11, label = "Coat" },
         } },
         equipped = { type = "boolean", optional = true }
+    } })
+
+    local function schedule(action, context)
+        local payload = data(action)
+        assert(type(payload.delay) == "number" and payload.delay >= 0 and payload.delay < math.huge,
+            "Schedule delay must be a finite non-negative number of milliseconds")
+        local definition = { actions = payload.actions }
+        behaviors:validate(definition)
+        return require("selene.schedules").setTimeout(payload.delay, function()
+            behaviors:run(definition, context)
+        end)
+    end
+    -- Keep the schema finite while allowing scheduled actions to schedule more work.
+    behaviors:registerAction("schedule", schedule)
+    behaviors:registerAction("schedule", schedule, { type = "object", properties = {
+        delay = { type = "number", min = 0 },
+        actions = behaviors:schema().properties.actions
     } })
 
     return behaviors
