@@ -127,6 +127,48 @@ function m.registerBehaviorDefaults(behaviors)
         item = { type = "registry", registry = "illarion:items" }
     } })
 
+    behaviors:registerAction("give_item", function(action, context)
+        local payload = data(action)
+        assert(type(payload.item) == "string", "Give item requires an item reference")
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        local count = payload.count == nil and 1 or payload.count
+        local quality = payload.quality == nil and 333 or payload.quality
+        local itemData = payload.data == nil and 0 or payload.data
+        assert(type(count) == "number" and count >= 1 and count < math.huge and count % 1 == 0,
+            "Item count must be a positive integer")
+        assert(type(quality) == "number" and quality >= 0 and quality < math.huge and quality % 1 == 0,
+            "Item quality must be a non-negative integer")
+        assert(type(itemData) == "number" and math.abs(itemData) < math.huge,
+            "Item data must be a finite number")
+        return character(context):createItem(entry:getMetadata("id"), count, quality, itemData)
+    end, { type = "object", properties = {
+        item = { type = "registry", registry = "illarion:items" },
+        count = { type = "integer", min = 1, optional = true },
+        quality = { type = "integer", min = 0, optional = true },
+        data = { type = "number", optional = true }
+    } })
+
+    behaviors:registerAction("increase_skill", function(action, context)
+        local payload = data(action)
+        assert(type(payload.skill) == "string", "Increase skill requires a skill reference")
+        local entry = assert(Registries.findByName("illarion:skills", payload.skill), "Unknown skill")
+        assert(type(payload.amount) == "number" and payload.amount >= 0 and payload.amount < math.huge
+            and payload.amount % 1 == 0, "Skill amount must be a non-negative integer")
+        return character(context):increaseSkill(entry:getMetadata("id"), payload.amount)
+    end, { type = "object", properties = {
+        skill = { type = "registry", registry = "illarion:skills" },
+        amount = { type = "integer", min = 0 }
+    } })
+
+    behaviors:registerAction("play_gfx", function(action, context)
+        local gfxId = data(action).gfxId
+        assert(type(gfxId) == "number" and gfxId >= 0 and gfxId < math.huge and gfxId % 1 == 0,
+            "Gfx id must be a non-negative integer")
+        return world:gfx(gfxId, character(context).pos)
+    end, { type = "object", properties = {
+        gfxId = { type = "integer", min = 0 }
+    } })
+
     behaviors:registerAction("set_quest_progress", function(action, context)
         local payload = questData(action)
         return character(context):setQuestProgress(payload.questId, payload.progress)
@@ -166,14 +208,19 @@ function m.registerBehaviorDefaults(behaviors)
         assert(type(payload.message) == "string", "Inform message must be a string")
         assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
             "English inform message must be a string")
+        assert(payload.ignoreFloors == nil or type(payload.ignoreFloors) == "boolean",
+            "Ignore floors must be a boolean")
         for _, player in pairs(world:getPlayersInRangeOf(position(coordinate.x, coordinate.y, coordinate.z), payload.range)) do
-            player:inform(payload.message, payload.messageEnglish or payload.message)
+            if payload.ignoreFloors or player.pos.z == coordinate.z then
+                player:inform(payload.message, payload.messageEnglish or payload.message)
+            end
         end
     end, { type = "object", properties = {
         position = "coordinate",
         range = { type = "number", min = 0 },
         message = "string",
-        messageEnglish = { type = "string", optional = true }
+        messageEnglish = { type = "string", optional = true },
+        ignoreFloors = { type = "boolean", optional = true }
     } })
 
     behaviors:registerAction("destroy_item_at", function(action)
