@@ -214,6 +214,19 @@ function m.registerBehaviorDefaults(behaviors)
         return character(context):increasePoisonValue(amount)
     end, { type = "object", properties = { amount = { type = "number", min = 0 } } })
 
+    behaviors:registerAction("talk", function(action, context)
+        local payload = data(action)
+        assert(type(payload.message) == "string", "Talk message must be a string")
+        assert(payload.messageEnglish == nil or type(payload.messageEnglish) == "string",
+            "English talk message must be a string")
+        local user = character(context)
+        user:talkLanguage(Character.say, Player.german, payload.message)
+        user:talkLanguage(Character.say, Player.english, payload.messageEnglish or payload.message)
+    end, { type = "object", properties = {
+        message = "string",
+        messageEnglish = { type = "string", optional = true }
+    } })
+
     behaviors:registerAction("inform", function(action, context)
         local payload = data(action)
         assert(type(payload.message) == "string", "Inform message must be a string")
@@ -416,6 +429,25 @@ function m.registerBehaviorDefaults(behaviors)
     end, { type = "object", properties = {
         position = "coordinate",
         tile = { type = "registry", registry = "tiles" }
+    } })
+
+    behaviors:registerCondition("is_item", function(condition, context)
+        local payload = data(condition)
+        local subject = payload.subject or "item"
+        assert(subject == "item" or subject == "targetItem", "Item subject must be item or targetItem")
+        assert(type(payload.item) == "string", "Item condition requires an item reference")
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        assert(payload.data == nil or (type(payload.data) == "number" and math.abs(payload.data) < math.huge),
+            "Item data must be a finite number")
+        local item = context and context[subject]
+        return item ~= nil and item.id == entry:getMetadata("id")
+            and (payload.data == nil or item.data == payload.data)
+    end, { type = "object", properties = {
+        subject = { type = "enum", optional = true, values = {
+            { value = "item", label = "item" }, { value = "targetItem", label = "targetItem" }
+        } },
+        item = { type = "registry", registry = "illarion:items" },
+        data = { type = "number", optional = true }
     } })
 
     behaviors:registerCondition("is_item_at", function(condition)
