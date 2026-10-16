@@ -75,6 +75,36 @@ function m.registerBehaviorDefaults(behaviors)
         item = { type = "registry", registry = "illarion:items" }
     } })
 
+    behaviors:registerAction("swap_item_in_slot", function(action, context)
+        local payload = data(action)
+        local slot = payload.slot
+        assert(type(slot) == "number" and slot >= 0 and slot <= 11 and slot % 1 == 0,
+            "Equipment slot must be an integer from 0 to 11")
+        assert(type(payload.oldItem) == "string", "Swap item requires an old item reference")
+        local oldEntry = assert(Registries.findByName("illarion:items", payload.oldItem), "Unknown old item")
+        assert(type(payload.item) == "string", "Swap item requires an item reference")
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        assert(payload.data == nil or (type(payload.data) == "number"
+            and payload.data == payload.data and math.abs(payload.data) < math.huge),
+            "Item data must be a finite number")
+        local equipment = InventoryManager.GetEquipment(character(context))
+        local item = equipment:getItem(slot)
+        if item == nil or InventoryManager.IsBlockedHandItem(item)
+            or item.def:getMetadata("id") ~= oldEntry:getMetadata("id") then return false end
+        item.def = entry
+        if payload.data ~= nil then
+            item.data = item.data or {}
+            item.data.data = payload.data ~= 0 and payload.data or nil
+        end
+        equipment:slotUpdated(slot)
+        return true
+    end, { type = "object", properties = {
+        slot = { type = "integer", min = 0, max = 11 },
+        oldItem = { type = "registry", registry = "illarion:items" },
+        item = { type = "registry", registry = "illarion:items" },
+        data = { type = "number", optional = true }
+    } })
+
     behaviors:registerAction("create_item_at", function(action)
         local payload = data(action)
         local coordinate = assert(payload.position, "Create item requires a position")
