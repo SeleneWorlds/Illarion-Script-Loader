@@ -59,6 +59,35 @@ local function baseTileAt(coordinate)
 end
 
 function m.registerBehaviorDefaults(behaviors)
+    local function registerCalendarCondition(kind, field, unit, minimum, maximum)
+        behaviors:registerCondition(kind, function(condition)
+            local values = data(condition)[field]
+            assert(type(values) == "table" and #values > 0,
+                field .. " must be a non-empty array")
+            local count = 0
+            for key in pairs(values) do
+                assert(type(key) == "number" and key >= 1 and key % 1 == 0,
+                    field .. " must be an array")
+                count = count + 1
+            end
+            local current = world:getTime(unit)
+            local matches = false
+            for i = 1, count do
+                local value = values[i]
+                assert(type(value) == "number" and value % 1 == 0
+                    and value >= minimum and value <= maximum,
+                    field .. " must contain integers from " .. minimum .. " to " .. maximum)
+                if value == current then matches = true end
+            end
+            return matches
+        end, { type = "object", properties = {
+            [field] = { type = "array", valueType = { type = "integer", min = minimum, max = maximum } }
+        } })
+    end
+
+    registerCalendarCondition("is_hour", "hours", "hour", 0, 23)
+    registerCalendarCondition("is_month", "months", "month", 1, 16)
+
     behaviors:registerAction("unlock_door", function(action)
         return require("base.keys").UnlockDoor(itemAt(action))
     end, { type = "object", properties = { position = "coordinate" } })
