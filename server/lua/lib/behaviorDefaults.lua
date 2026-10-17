@@ -1,6 +1,7 @@
 local Registries = require("selene.registries")
 local Dimensions = require("selene.dimensions")
 local Behaviors = require("moonlight-behaviors.server.lua.behaviors")
+local Rolls = require("moonlight-rolls.server.lua.rolls")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 local m = {}
@@ -584,6 +585,28 @@ function m.registerBehaviorDefaults(behaviors)
         delay = { type = "number", min = 0 },
         actions = behaviors:schema().properties.actions
     } })
+
+    local roller = Rolls:new()
+    roller:registerType("behavior", function(entry, context)
+        return behaviors:run(entry.data, context)
+    end)
+    local function roll(action, context)
+        local definition = data(action)
+        roller:validate(definition)
+        -- Validate every outcome, including ones that will not be selected.
+        for _, pool in ipairs(definition.pools) do
+            for _, entry in ipairs(pool.entries) do
+                behaviors:validate(entry.data)
+            end
+        end
+        return roller:roll(definition, context)
+    end
+    -- Register first so nested rolls remain available without recursive schemas.
+    behaviors:registerAction("roll", roll)
+    roller:registerType("behavior", function(entry, context)
+        return behaviors:run(entry.data, context)
+    end, behaviors:schema())
+    behaviors:registerAction("roll", roll, roller:schema())
 
     return behaviors
 end
