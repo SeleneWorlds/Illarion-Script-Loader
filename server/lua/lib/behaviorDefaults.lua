@@ -188,6 +188,69 @@ function m.registerBehaviorDefaults(behaviors)
         data = { type = "number", optional = true }
     } })
 
+    behaviors:registerAction("transform_item", function(action, context)
+        local payload = data(action)
+        assert(type(payload.item) == "string", "Transform item requires an item reference")
+        local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
+        assert(type(payload.oldItem) == "string", "Transform item requires a source item reference")
+        local oldEntry = assert(Registries.findByName("illarion:items", payload.oldItem), "Unknown source item")
+        local oldId = oldEntry:getMetadata("id")
+        local item = context and context.item
+        if not item or item.id ~= oldId then
+            local visited = {}
+            local function find(inventory)
+                if not inventory or visited[inventory] then return end
+                visited[inventory] = true
+                for _, slot in ipairs(inventory:getSlots()) do
+                    local candidate = inventory:getItem(slot)
+                    if candidate and candidate.def:getMetadata("id") == oldId then
+                        return Item.fromSeleneInventoryItem(inventory:getInventoryItem(slot))
+                    end
+                    local nested = candidate and find(candidate.content)
+                    if nested then return nested end
+                end
+            end
+            local user = character(context)
+            item = find(InventoryManager.GetBelt(user))
+                or find(InventoryManager.GetEquipment(user))
+                or find(InventoryManager.GetBackpack(user))
+        end
+        if not item then return false end
+        assert(payload.quality == nil or (type(payload.quality) == "number" and payload.quality >= 0
+            and payload.quality < math.huge and payload.quality % 1 == 0),
+            "Item quality must be a non-negative integer")
+        assert(payload.data == nil or (type(payload.data) == "number" and math.abs(payload.data) < math.huge),
+            "Item data must be a finite number")
+        item.id = entry:getMetadata("id")
+        if payload.quality ~= nil then item.quality = payload.quality end
+        if payload.data ~= nil then item.data = payload.data end
+        world:changeItem(item)
+        return true
+    end, { type = "object", properties = {
+        oldItem = { type = "registry", registry = "illarion:items" },
+        item = { type = "registry", registry = "illarion:items" },
+        quality = { type = "integer", min = 0, optional = true },
+        data = { type = "number", optional = true }
+    } })
+
+    behaviors:registerAction("increase_quest_progress", function(action, context)
+        local payload = questData(action)
+        local user = character(context)
+        return user:setQuestProgress(payload.questId, user:getQuestProgress(payload.questId) + payload.progress)
+    end, { type = "object", properties = {
+        questId = { type = "integer", min = 0 },
+        progress = "integer"
+    } })
+
+    behaviors:registerCondition("is_magic_type", function(condition, context)
+        local magicType = data(condition).magicType
+        assert(type(magicType) == "number" and magicType >= 0 and magicType < math.huge
+            and magicType % 1 == 0, "Magic type must be a non-negative integer")
+        return character(context):getMagicType() == magicType
+    end, { type = "object", properties = {
+        magicType = { type = "integer", min = 0 }
+    } })
+
     behaviors:registerAction("create_item_at", function(action)
         local payload = data(action)
         local coordinate = assert(payload.position, "Create item requires a position")
