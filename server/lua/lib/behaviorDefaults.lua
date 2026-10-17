@@ -405,6 +405,51 @@ function m.registerBehaviorDefaults(behaviors)
         return character(context):warp(position(coordinate.x, coordinate.y, coordinate.z))
     end, { type = "object", properties = { position = "coordinate" } })
 
+    behaviors:registerAction("consume_event", function(_, context)
+        assert(context, "Behavior requires an event context").handled = true
+    end)
+
+    behaviors:registerAction("consume_item", function(action, context)
+        local count = data(action).count or 1
+        assert(type(count) == "number" and count >= 1 and count < math.huge and count % 1 == 0,
+            "Consume count must be a positive integer")
+        local item = assert(context and context.item, "Behavior context requires an item")
+        assert(item.number >= count, "Not enough items to consume")
+        return world:erase(item, count)
+    end, { type = "object", properties = {
+        count = { type = "integer", min = 1, optional = true }
+    } })
+
+    behaviors:registerAction("increase_attribute", function(action, context)
+        local payload = data(action)
+        assert(type(payload.attribute) == "string" and payload.attribute ~= "",
+            "Attribute requires a name")
+        return character(context):increaseAttrib(payload.attribute, numericValue(payload.amount))
+    end, { type = "object", properties = { attribute = "string", amount = "any" } })
+
+    behaviors:registerAction("set_attribute", function(action, context)
+        local payload = data(action)
+        assert(type(payload.attribute) == "string" and payload.attribute ~= "",
+            "Attribute requires a name")
+        local value = numericValue(payload.value)
+        local duration = payload.duration
+        assert(duration == nil or (type(duration) == "number" and duration >= 0
+            and duration < math.huge), "Attribute duration must be finite non-negative milliseconds")
+        local attribute = require("illarion-script-loader.server.lua.lib.attributeManager")
+            .GetAttribute(character(context), payload.attribute)
+        if duration == nil then return attribute:setValue(value) end
+        local key = "behavior:set_attribute"
+        local modifier = attribute:addModifier(key, function() return value end)
+        return require("selene.schedules").setTimeout(duration, function()
+            -- A replacement effect must survive the previous effect's expiry.
+            modifier.enabled = false
+            attribute:refresh()
+        end)
+    end, { type = "object", properties = {
+        attribute = "string", value = "any",
+        duration = { type = "number", min = 0, optional = true }
+    } })
+
     behaviors:registerAction("poison", function(action, context)
         local amount = data(action).amount
         assert(type(amount) == "number" and amount == amount and amount >= 0 and amount < math.huge,
