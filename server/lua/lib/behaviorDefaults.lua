@@ -90,19 +90,23 @@ function m.registerBehaviorDefaults(behaviors)
     registerCalendarCondition("is_month", "months", "month", 1, 16)
 
     behaviors:registerAction("unlock_door", function(action)
-        return require("base.keys").UnlockDoor(itemAt(action))
+        local item = itemAt(action)
+        if item then return require("base.keys").UnlockDoor(item) end
     end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerAction("open_door", function(action)
-        return require("base.doors").OpenDoor(itemAt(action))
+        local item = itemAt(action)
+        if item then return require("base.doors").OpenDoor(item) end
     end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerAction("close_door", function(action)
-        return require("base.doors").CloseDoor(itemAt(action))
+        local item = itemAt(action)
+        if item then return require("base.doors").CloseDoor(item) end
     end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerAction("lock_door", function(action)
-        return require("base.keys").LockDoor(itemAt(action))
+        local item = itemAt(action)
+        if item then return require("base.keys").LockDoor(item) end
     end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerAction("swap_tile", function(action)
