@@ -1,6 +1,10 @@
 local Registries = require("selene.registries")
 local Schedules = require("selene.schedules")
 
+local Behaviors = require("moonlight-behaviors.server.lua.behaviors")
+local BehaviorDefaults = require("illarion-script-loader.server.lua.lib.behaviorDefaults")
+
+local behaviors = BehaviorDefaults.registerBehaviorDefaults(Behaviors:new())
 local schedules = {}
 
 local function removeSchedule(identifier)
@@ -27,12 +31,18 @@ local function addSchedule(definition)
         schedule.timeoutId = Schedules.setTimeout(interval * 1000, function()
             schedule.timeoutId = nil
             if schedule.stopped then return end
-            local status, script = xpcall(require, debug.traceback, definition:getField("script"))
-            local functionName = definition:getField("function")
-            if status and type(script[functionName]) == "function" then
-                script[functionName](definition)
-                scheduleNext()
+            behaviors:emit("tick", definition:getField("behaviors") or {}, { scheduledScript = definition })
+            local scriptName = definition:getField("script")
+            if scriptName and scriptName ~= "" then
+                local status, script = xpcall(require, debug.traceback, scriptName)
+                local functionName = definition:getField("function")
+                if status and type(script[functionName]) == "function" then
+                    script[functionName](definition)
+                else
+                    return
+                end
             end
+            scheduleNext()
         end, { name = identifier })
     end
     scheduleNext()
