@@ -15,6 +15,24 @@ local function character(context)
     return assert(context and context.character, "Behavior context requires a character")
 end
 
+local function targetPosition(payload, context)
+    local coordinate = payload.position
+    if coordinate == nil then return character(context).pos end
+    assert(type(coordinate) == "table", "Position must be a coordinate")
+    for _, axis in ipairs({ "x", "y", "z" }) do
+        local value = coordinate[axis]
+        assert(type(value) == "number" and math.abs(value) < math.huge and value % 1 == 0,
+            "Coordinate components must be finite integers")
+    end
+    return position(coordinate.x, coordinate.y, coordinate.z)
+end
+
+local function monsterId(reference)
+    assert(type(reference) == "string", "Monster requires a registry reference")
+    local entry = assert(Registries.findByName("illarion:monsters", reference), "Unknown monster: " .. reference)
+    return entry:getMetadata("id")
+end
+
 local function questData(definition)
     local payload = data(definition)
     assert(type(payload.questId) == "number" and payload.questId >= 0
@@ -243,6 +261,30 @@ function m.registerBehaviorDefaults(behaviors)
         position = { type = "coordinate", optional = true }
     } })
 
+    behaviors:registerAction("play_sound", function(action, context)
+        local payload = data(action)
+        assert(type(payload.soundId) == "number" and payload.soundId >= 0
+            and payload.soundId < math.huge and payload.soundId % 1 == 0,
+            "Sound id must be a non-negative integer")
+        return world:makeSound(payload.soundId, targetPosition(payload, context))
+    end, { type = "object", properties = {
+        soundId = { type = "integer", min = 0 },
+        position = { type = "coordinate", optional = true }
+    } })
+
+    behaviors:registerAction("spawn_monster", function(action, context)
+        local payload = data(action)
+        local id = monsterId(payload.monster)
+        local movePoints = payload.movePoints == nil and 0 or payload.movePoints
+        assert(type(movePoints) == "number" and math.abs(movePoints) < math.huge
+            and movePoints % 1 == 0, "Monster move points must be a finite integer")
+        return world:createMonster(id, targetPosition(payload, context), movePoints)
+    end, { type = "object", properties = {
+        monster = { type = "registry", registry = "illarion:monsters" },
+        position = { type = "coordinate", optional = true },
+        movePoints = { type = "integer", optional = true }
+    } })
+
     behaviors:registerAction("set_quest_progress", function(action, context)
         local payload = questData(action)
         return character(context):setQuestProgress(payload.questId, payload.progress)
@@ -462,6 +504,33 @@ function m.registerBehaviorDefaults(behaviors)
         local item = itemAt(condition)
         return item ~= nil and item.quality == 333 and require("base.doors").CheckClosedDoor(item.id)
     end, { type = "object", properties = { position = "coordinate" } })
+
+    behaviors:registerCondition("is_monster_nearby", function(condition, context)
+        local payload = data(condition)
+        assert(type(payload.range) == "number" and payload.range >= 0 and payload.range < math.huge,
+            "Monster range must be a finite non-negative number")
+        local ids
+        if payload.monsters ~= nil then
+            assert(type(payload.monsters) == "table", "Monsters must be an array of registry references")
+            ids = {}
+            local count = 0
+            for key in pairs(payload.monsters) do
+                assert(type(key) == "number" and key >= 1 and key % 1 == 0,
+                    "Monsters must be an array of registry references")
+                count = count + 1
+            end
+            for i = 1, count do ids[monsterId(payload.monsters[i])] = true end
+        end
+        for _, monster in ipairs(world:getMonstersInRangeOf(targetPosition(payload, context), payload.range)) do
+            if ids == nil or ids[monster:getMonsterType()] then return true end
+        end
+        return false
+    end, { type = "object", properties = {
+        range = { type = "number", min = 0 },
+        position = { type = "coordinate", optional = true },
+        monsters = { type = "array", optional = true,
+            valueType = { type = "registry", registry = "illarion:monsters" } }
+    } })
 
     behaviors:registerCondition("is_character_at", function(condition)
         local coordinate = assert(data(condition).position, "Character condition requires a position")
