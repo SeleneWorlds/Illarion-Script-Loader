@@ -33,14 +33,41 @@ local function monsterId(reference)
     return entry:getMetadata("id")
 end
 
+-- Numeric values may be constants or expressions evaluated when the behavior runs.
+local function numericValue(value, depth)
+    depth = depth or 0
+    assert(depth < 16, "Numeric expression is too deeply nested")
+    local result
+    if type(value) == "number" then
+        result = value
+    else
+        assert(type(value) == "table", "Expected a number or numeric expression")
+        if value.type == "world_time" then
+            local units = { year=true, month=true, day=true, hour=true, minute=true,
+                second=true, unix=true, illarion=true }
+            assert(units[value.unit], "Unknown world time unit")
+            result = world:getTime(value.unit)
+        elseif value.type == "add" then
+            result = numericValue(value.left, depth + 1) + numericValue(value.right, depth + 1)
+        elseif value.type == "multiply" then
+            result = numericValue(value.left, depth + 1) * numericValue(value.right, depth + 1)
+        else
+            error("Unknown numeric expression: " .. tostring(value.type))
+        end
+    end
+    assert(type(result) == "number" and math.abs(result) < math.huge,
+        "Numeric value must be finite")
+    return result
+end
+
 local function questData(definition)
     local payload = data(definition)
     assert(type(payload.questId) == "number" and payload.questId >= 0
         and payload.questId < math.huge and payload.questId % 1 == 0,
         "Quest id must be a non-negative integer")
-    assert(type(payload.progress) == "number" and math.abs(payload.progress) < math.huge
-        and payload.progress % 1 == 0, "Quest progress must be a finite integer")
-    return payload
+    local progress = numericValue(payload.progress)
+    assert(progress % 1 == 0, "Quest progress must be an integer")
+    return payload, progress
 end
 
 local function itemAt(definition)
@@ -188,8 +215,16 @@ function m.registerBehaviorDefaults(behaviors)
         data = { type = "number", optional = true }
     } })
 
+    local transformPayloadSchema = { type = "object", properties = {
+        oldItem = { type = "registry", registry = "illarion:items" },
+        item = { type = "registry", registry = "illarion:items" },
+        count = { type = "integer", min = 1, optional = true },
+        quality = { type = "integer", min = 0, optional = true },
+        data = { type = "number", optional = true }
+    } }
     behaviors:registerAction("transform_item", function(action, context)
         local payload = data(action)
+        if payload.onSuccess then behaviors:validate({ actions = payload.onSuccess }) end
         assert(type(payload.item) == "string", "Transform item requires an item reference")
         local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
         assert(type(payload.oldItem) == "string", "Transform item requires a source item reference")
@@ -221,25 +256,34 @@ function m.registerBehaviorDefaults(behaviors)
             "Item quality must be a non-negative integer")
         assert(payload.data == nil or (type(payload.data) == "number" and math.abs(payload.data) < math.huge),
             "Item data must be a finite number")
-        item.id = entry:getMetadata("id")
-        if payload.quality ~= nil then item.quality = payload.quality end
-        if payload.data ~= nil then item.data = payload.data end
-        world:changeItem(item)
+        local count = payload.count
+        assert(count == nil or (type(count) == "number" and count >= 1
+            and count < math.huge and count % 1 == 0), "Transform count must be a positive integer")
+        if count ~= nil then
+            if item.number < count then return false end
+            local remaining = character(context):createItem(entry:getMetadata("id"), count,
+                payload.quality or item.quality, payload.data or 0)
+            -- createItem may fill only part of a requested stack.
+            local created = count - remaining
+            if created > 0 then world:erase(item, created) end
+            if remaining ~= 0 then return false end
+        else
+            item.id = entry:getMetadata("id")
+            if payload.quality ~= nil then item.quality = payload.quality end
+            if payload.data ~= nil then item.data = payload.data end
+            world:changeItem(item)
+        end
+        if payload.onSuccess then behaviors:run({ actions = payload.onSuccess }, context) end
         return true
-    end, { type = "object", properties = {
-        oldItem = { type = "registry", registry = "illarion:items" },
-        item = { type = "registry", registry = "illarion:items" },
-        quality = { type = "integer", min = 0, optional = true },
-        data = { type = "number", optional = true }
-    } })
+    end, transformPayloadSchema)
 
     behaviors:registerAction("increase_quest_progress", function(action, context)
-        local payload = questData(action)
+        local payload, progress = questData(action)
         local user = character(context)
-        return user:setQuestProgress(payload.questId, user:getQuestProgress(payload.questId) + payload.progress)
+        return user:setQuestProgress(payload.questId, user:getQuestProgress(payload.questId) + progress)
     end, { type = "object", properties = {
         questId = { type = "integer", min = 0 },
-        progress = "integer"
+        progress = "any"
     } })
 
     behaviors:registerCondition("is_magic_type", function(condition, context)
@@ -349,11 +393,11 @@ function m.registerBehaviorDefaults(behaviors)
     } })
 
     behaviors:registerAction("set_quest_progress", function(action, context)
-        local payload = questData(action)
-        return character(context):setQuestProgress(payload.questId, payload.progress)
+        local payload, progress = questData(action)
+        return character(context):setQuestProgress(payload.questId, progress)
     end, { type = "object", properties = {
         questId = { type = "integer", min = 0 },
-        progress = "integer"
+        progress = "any"
     } })
 
     behaviors:registerAction("warp", function(action, context)
@@ -500,15 +544,15 @@ function m.registerBehaviorDefaults(behaviors)
     end)
 
     behaviors:registerCondition("quest_progress", function(condition, context)
-        local payload = questData(condition)
+        local payload, expected = questData(condition)
         local operator = payload.operator == nil and "equals" or payload.operator
         assert(operator == "equals" or operator == "less_than", "Unknown quest progress operator")
         local progress = character(context):getQuestProgress(payload.questId)
-        if operator == "less_than" then return progress < payload.progress end
-        return progress == payload.progress
+        if operator == "less_than" then return progress < expected end
+        return progress == expected
     end, { type = "object", properties = {
         questId = { type = "integer", min = 0 },
-        progress = "integer",
+        progress = "any",
         operator = { type = "enum", optional = true, values = {
             { value = "equals", label = "equals" },
             { value = "less_than", label = "less than" }
@@ -743,6 +787,10 @@ function m.registerBehaviorDefaults(behaviors)
         return behaviors:run(entry.data, context)
     end, behaviors:schema())
     behaviors:registerAction("roll", roll, roller:schema())
+
+    -- Capture the complete action schema without introducing recursive schemas.
+    transformPayloadSchema.properties.onSuccess = behaviors:schema().properties.actions
+    transformPayloadSchema.properties.onSuccess.optional = true
 
     return behaviors
 end
