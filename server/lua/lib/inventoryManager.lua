@@ -189,7 +189,7 @@ end
 
 function m.SerializeItem(item)
     return item and {
-        visual = item.def:getField("visual"),
+        visual = (item.data and item.data.SeleneVisual) or item.def:getField("visual"),
         count = item.count or 1,
         container = (item.def:getField("containerSlots") or 0) > 0
     } or nil
