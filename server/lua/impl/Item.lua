@@ -147,6 +147,9 @@ Item.SeleneMethods.setData = function(item, key, value)
         local itemDataMap = itemData[DataFields.Data] or {}
         itemDataMap[key] = value ~= nil and tostring(value) or nil
         itemData[DataFields.Data] = itemDataMap
+        if key == "SeleneVisual" then
+            item.SeleneEntity:updateVisuals()
+        end
     elseif item.SeleneItem then
         local data = item.SeleneItem.data or {}
         data[key] = value ~= nil and tostring(value) or nil

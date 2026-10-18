@@ -8,6 +8,17 @@ local m = {}
 
 function m.Create(entityDef)
     local entity = Entities.create(entityDef)
+    entity:addDynamicComponent("illarion:visual", function(itemEntity)
+        local itemData = itemEntity:getRuntimeData(DataKeys.Item)
+        local data = itemData and itemData[DataFields.Data]
+        local visual = data and data.SeleneVisual
+        if not visual then
+            local itemId = itemEntity:getEntityDefinition():getMetadata("itemId")
+            local itemDef = itemId and Registries.findByMetadata("illarion:items", "id", itemId)
+            visual = itemDef and itemDef:getField("visual")
+        end
+        return visual and { type = "visual", visual = visual } or nil
+    end)
     entity:addDynamicComponent("illarion:draggable", function(itemEntity)
         local itemData = itemEntity:getRuntimeData(DataKeys.Item)
         local itemId = itemEntity:getEntityDefinition():getMetadata("itemId")
