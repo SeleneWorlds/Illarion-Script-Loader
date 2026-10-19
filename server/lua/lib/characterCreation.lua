@@ -146,6 +146,7 @@ function m.getOptions(compactColours, locale)
                             slot = tonumber(slot) or 0,
                             id = itemId,
                             name = itemName or definition:getField("name") or definition:getName(),
+                            visual = definition:getField("visual"),
                             count = tonumber(item.count) or 1
                         })
                     end
@@ -155,13 +156,26 @@ function m.getOptions(compactColours, locale)
             for _, item in ipairs(items) do
                 item.slot = nil
             end
+            local skills = {}
+            for skillName, skill in pairs(plainTable(pack:getField("skills"))) do
+                local definition = Registries.findByName("illarion:skills", skillName)
+                local skillId = definition and tonumber(definition:getMetadata("id"))
+                if skillId then
+                    table.insert(skills, {
+                        id = skillId,
+                        name = definition:getMetadata("name") or skillName,
+                        value = tonumber(plainTable(skill).value) or 0
+                    })
+                end
+            end
+            table.sort(skills, function(a, b) return a.id < b.id end)
             local suggestions = {}
             local packAttributes = plainTable(pack:getField("attributes"))
             for _, attribute in ipairs(creationAttributes) do
                 suggestions[attribute] = tonumber(packAttributes[attribute])
             end
             table.insert(startPacks, {
-                id = id, name = name, items = items,
+                id = id, name = name, items = items, skills = skills,
                 attributes = next(suggestions) and suggestions or nil
             })
         end
