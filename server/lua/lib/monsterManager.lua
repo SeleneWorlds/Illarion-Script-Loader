@@ -2,6 +2,7 @@ local Registries = require("selene.registries")
 local Entities = require("selene.entities")
 local Grid = require("selene.grid")
 local Pathfinding = require("selene.pathfinding")
+local Config = require("selene.config")
 local ActionPoints = require("illarion-script-loader.server.lua.lib.actionPoints")
 
 local Constants = require("illarion-script-loader.server.lua.lib.constants")
@@ -13,6 +14,7 @@ local RouteManager = require("illarion-script-loader.server.lua.lib.routeManager
 local CombatManager = require("illarion-script-loader.server.lua.lib.combatManager")
 
 local m = {}
+local useLegacyCombat = Config.getProperty("useLegacyCombat") == "true"
 
 local MAX_ACTION_POINTS = 21
 local WALK_ACTION_POINT_COST = 20
@@ -330,7 +332,8 @@ local function attackTarget(monster, target, charData, script)
 
     local combatData = monster.SeleneEntity:getRuntimeData(DataKeys.Combat)
     combatData[DataFields.TargetId] = target.SeleneEntity:getNetworkId()
-    if monster.fightpoints >= 0 then
+    if (useLegacyCombat and monster.movepoints >= MAX_ACTION_POINTS)
+            or (not useLegacyCombat and monster.fightpoints >= 0) then
         callMonsterScript(script, "onAttack", monster, target)
         CombatManager.Attack(monster)
     end
