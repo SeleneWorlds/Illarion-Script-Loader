@@ -61,8 +61,9 @@ local function finishLogin(player, selectedCharacter)
                 otherPlayerCount = otherPlayerCount + 1
             end
         end
-        local welcomeMessageDe = ":) Willkommen in Illarion, es sind " .. otherPlayerCount .. " andere Spieler online."
-        local welcomeMessageEn = ":) Welcome to Illarion. There are " .. otherPlayerCount .. " other players online."
+        local serverName = Server.getName()
+        local welcomeMessageDe = ":) Willkommen in " .. serverName .. ", es sind " .. otherPlayerCount .. " andere Spieler online."
+        local welcomeMessageEn = ":) Welcome to " .. serverName .. ". There are " .. otherPlayerCount .. " other players online."
         common.InformNLS(character, welcomeMessageDe, welcomeMessageEn)
     end
 
