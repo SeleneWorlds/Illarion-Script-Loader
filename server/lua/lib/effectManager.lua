@@ -72,7 +72,12 @@ function m.Tick(user)
         end
     end
     for _, effectName in pairs(removedEffects) do
-        effects[effectName] = nil
+        local effectDef = Registries.findByName("illarion:ltes", tostring(effectName))
+        if effectDef then
+            m.RemoveEffect(user, m.WrapLongTimeEffect(effectDef, entity, effects[effectName]))
+        else
+            effects[effectName] = nil
+        end
     end
 end
 
