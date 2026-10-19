@@ -33,9 +33,11 @@ function m.Create(entityDef)
         local count = math.floor(tonumber(itemData and itemData[DataFields.Count]) or 1)
         return {
             type = "visual",
-            visual = "illarion:labels/character",
+            visual = "illarion:labels/item_count",
             position = {
-                origin = "bottom_right"
+                origin = "tile_bottom_right",
+                offsetX = 3,
+                offsetY = -3
             },
             overrides = {
                 text = count > 1 and string.format("%d", count) or ""
