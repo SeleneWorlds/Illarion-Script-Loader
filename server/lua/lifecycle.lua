@@ -12,6 +12,8 @@ local Events = require("illarion-script-loader.server.lua.lib.events")
 
 local PlayerManager = require("illarion-script-loader.server.lua.lib.playerManager")
 local CharacterManager = require("illarion-script-loader.server.lua.lib.characterManager")
+local LoginLocation = require("illarion-script-loader.server.lua.lib.loginLocation")
+local CharacterVisual = require("illarion-script-loader.server.lua.lib.characterVisual")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 local BanManager = require("illarion-script-loader.server.lua.lib.banManager")
 local CharacterCreation = require("illarion-script-loader.server.lua.lib.characterCreation")
@@ -38,6 +40,10 @@ end)
 
 local function sendCharacters(player)
     local characters = CharacterPersistence.loadCharacterSummaries(player)
+    for _, character in ipairs(characters) do
+        character.visual = CharacterVisual.findRaceEntity(character.race, character.sex):getName()
+        character.subtitle = LoginLocation.getName(character)
+    end
     if PlayerManager.IsAdminUserId(player:getUserId()) then
         table.insert(characters, { id = HEADLESS_CHARACTER_ID, name = "Headless Login" })
     end

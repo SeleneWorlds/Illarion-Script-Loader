@@ -17,6 +17,9 @@ local m = {}
 ---@field race integer
 ---@field sex string
 ---@field createdAt integer
+---@field x integer
+---@field y integer
+---@field z integer
 
 ---@class PersistedCharacterSummary: CharacterSummary
 ---@field x integer
@@ -162,7 +165,7 @@ function m.loadCharacterSummaries(player)
     local userId = getUserId(player)
     local characters = database:query(
         [[
-            SELECT id, name, race, sex, created_at AS "createdAt"
+            SELECT id, name, race, sex, x, y, z, created_at AS "createdAt"
             FROM characters
             WHERE user_id = ? AND deleted_at IS NULL
             ORDER BY id
