@@ -4,6 +4,7 @@ local Json = require("selene.json")
 local Registries = require("selene.registries")
 local I18n = require("selene.i18n")
 
+local CharacterVisual = require("illarion-script-loader.server.lua.lib.characterVisual")
 local CharacterPersistence = require("illarion-script-loader.server.lua.lib.characterPersistence")
 local PayloadValidation = require("illarion-script-loader.server.lua.lib.payloadValidation")
 
@@ -90,7 +91,10 @@ function m.getOptions(compactColours, locale)
             local types = {}
             for typeId, raceType in pairs(plainTable(race:getField("types"))) do
                 raceType = plainTable(raceType)
-                local resultType = { id = tonumber(typeId) }
+                local resultType = {
+                    id = tonumber(typeId),
+                    visual = CharacterVisual.findRaceEntity(raceId, tonumber(typeId)):getName()
+                }
                 if raceType.hairs ~= nil then
                     resultType.hairs = {}
                     for _, hair in pairs(plainTable(raceType.hairs)) do
