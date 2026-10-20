@@ -49,10 +49,6 @@ local function requireAdmin(character, commandLine)
     return true
 end
 
-local function informUnknown(character, command)
-    character:inform("Unbekannter Befehl: !" .. command, "Unknown command: !" .. command)
-end
-
 local function handleGm(character, args)
     if args == "" then
         character:inform("Benutzung: !gm <Nachricht>", "Usage: !gm <message>")
@@ -458,12 +454,12 @@ function m.handle(character, message)
 
     local commandLine = trim(message:sub(2))
     if commandLine == "" then
-        return true
+        return false
     end
 
     local command, args = commandLine:match("^(%S+)%s*(.-)$")
     if not command then
-        return true
+        return false
     end
 
     command = command:lower()
@@ -471,8 +467,7 @@ function m.handle(character, message)
 
     local commandDefinition = findCommand(command)
     if commandDefinition == nil then
-        informUnknown(character, command)
-        return true
+        return false
     end
 
     if commandDefinition.requireAdmin and not requireAdmin(character, "!" .. commandLine) then
