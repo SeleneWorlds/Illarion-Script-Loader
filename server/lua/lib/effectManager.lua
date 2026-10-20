@@ -25,7 +25,7 @@ function m.EnsureSeleneEffectData(effect)
 end
 
 function m.AddEffect(user, effect)
-    local found, existing = user.effects:find(effect.id)
+    local found, existing = user.effects:find(effect.effectId)
     if found then
         local status, effectScript = loadEffectScript(effect.SeleneEffectDefinition)
         if status and effectScript and type(effectScript.doubleEffect) == "function" then
@@ -97,7 +97,7 @@ end
 
 function m.RemoveEffect(user, effect)
    local effects = user.SeleneEntity:getRuntimeData(DataKeys.Effects)
-   local effectDef = Registries.findByMetadata("illarion:ltes", "id", effect.id)
+   local effectDef = Registries.findByMetadata("illarion:ltes", "id", effect.effectId)
    if effectDef then
        local status, effectScript = loadEffectScript(effectDef)
        if status and effectScript and type(effectScript.removeEffect) == "function" then
