@@ -5,6 +5,12 @@ local Rolls = require("moonlight-rolls.server.lua.rolls")
 local InventoryManager = require("illarion-script-loader.server.lua.lib.inventoryManager")
 
 local m = {}
+local schemaModule = "illarion-script-loader.server.lua.lib.behaviorDefaults"
+local function deferredActions()
+    return { type = "array", valueType = {
+        type = "scripted_schema_lookup", module = schemaModule, ["function"] = "actionSchema"
+    } }
+end
 
 local function data(definition)
     assert(type(definition.data) == "table", "Behavior payload must be a table")
@@ -808,7 +814,7 @@ function m.registerBehaviorDefaults(behaviors)
     behaviors:registerAction("schedule", schedule)
     behaviors:registerAction("schedule", schedule, { type = "object", properties = {
         delay = { type = "number", min = 0 },
-        actions = behaviors:schema().properties.actions
+        actions = deferredActions()
     } })
 
     local roller = Rolls:new()
@@ -830,14 +836,18 @@ function m.registerBehaviorDefaults(behaviors)
     behaviors:registerAction("roll", roll)
     roller:registerType("behavior", function(entry, context)
         return behaviors:run(entry.data, context)
-    end, behaviors:schema())
+    end, { type = "scripted_schema_lookup", module = schemaModule })
     behaviors:registerAction("roll", roll, roller:schema())
 
     -- Capture the complete action schema without introducing recursive schemas.
-    transformPayloadSchema.properties.onSuccess = behaviors:schema().properties.actions
+    transformPayloadSchema.properties.onSuccess = deferredActions()
     transformPayloadSchema.properties.onSuccess.optional = true
 
     return behaviors
+end
+
+function m.actionSchema()
+    return m.registerBehaviorDefaults(Behaviors:new()):schema().properties.actions.valueType.properties
 end
 
 function m.schema()
