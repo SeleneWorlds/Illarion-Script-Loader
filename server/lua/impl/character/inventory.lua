@@ -238,9 +238,11 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     return result
 end
 
---- Selene-only API for equipping an item.
+--- Returns "picked_up" for map pickup, "equipped" for carried/already held
+--- items, "failed_to_pickup" for map failures, or "failed_to_equip" otherwise.
+--- Updates itemRef to point to the held item on success.
 Character.SeleneMethods.equipItem = function(user, itemRef)
-    if type(itemRef) ~= "table" then return false end
+    if type(itemRef) ~= "table" then return "failed_to_equip" end
     local equipment = InventoryManager.GetEquipment(user)
     if itemRef.SeleneEntity then
         local entity = itemRef.SeleneEntity
@@ -248,7 +250,7 @@ Character.SeleneMethods.equipItem = function(user, itemRef)
         local pos, userPos = itemRef.pos, user.pos
         if entity:getDimension() ~= dimension or pos.z ~= userPos.z
                 or math.abs(pos.x - userPos.x) > 1 or math.abs(pos.y - userPos.y) > 1 then
-            return false
+            return "failed_to_pickup"
         end
         -- Only pick the visible top item, just as with a manual map pickup.
         local entities = dimension:getEntitiesAt(pos.x, pos.y, pos.z, user.SeleneEntity:getInteractionViewer())
@@ -256,7 +258,7 @@ Character.SeleneMethods.equipItem = function(user, itemRef)
         for i = #entities, 1, -1 do
             if entities[i]:hasTag("illarion:item") then topItem = entities[i]; break end
         end
-        if topItem ~= entity then return false end
+        if topItem ~= entity then return "failed_to_pickup" end
         local pickup = require("illarion-script-loader.server.lua.lib.itemPickup")
         for _, slot in ipairs({Character.right_tool, Character.left_tool}) do
             if equipment:getItem(slot) == nil then
@@ -266,11 +268,11 @@ Character.SeleneMethods.equipItem = function(user, itemRef)
                     itemRef.SeleneItem = held.SeleneItem
                     itemRef.SeleneInventory = held.SeleneInventory
                     itemRef.SeleneInventoryItem = held.SeleneInventoryItem
-                    return true
+                    return "picked_up"
                 end
             end
         end
-        return false
+        return "failed_to_pickup"
     end
     local source = itemRef.SeleneInventory
     local reference = itemRef.SeleneInventoryItem
@@ -279,7 +281,7 @@ Character.SeleneMethods.equipItem = function(user, itemRef)
             and source.owner == user then
         if source == equipment and (reference.slotId == Character.right_tool
                 or reference.slotId == Character.left_tool) then
-            return true
+            return "equipped"
         end
         -- Try empty hands before swapping a held item into the tool's old slot.
         for _, emptyOnly in ipairs({true, false}) do
@@ -295,10 +297,10 @@ Character.SeleneMethods.equipItem = function(user, itemRef)
                     itemRef.SeleneInventory = equipment
                     itemRef.SeleneInventoryItem = equipment:getInventoryItem(slot)
                     itemRef.SeleneItem = equipment:getItem(slot)
-                    return true
+                    return "equipped"
                 end
             end
         end
     end
-    return false
+    return "failed_to_equip"
 end
