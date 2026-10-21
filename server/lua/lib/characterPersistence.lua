@@ -370,6 +370,68 @@ function m.loadCharacter(player, characterId)
     return character
 end
 
+local collectionColumns = {
+    skills = true, items = true, introductions = true, quests = true, long_time_effects = true,
+}
+
+function m.exportCharacterRecord(characterId)
+    local columns = {}
+    for _, column in ipairs(database:query("PRAGMA table_info(characters)")) do
+        columns[#columns + 1] = collectionColumns[column.name]
+            and ("json(" .. column.name .. ") AS " .. column.name) or column.name
+    end
+    local record = assert(database:query(
+        "SELECT " .. table.concat(columns, ", ") .. " FROM characters WHERE id = ? AND deleted_at IS NULL",
+        characterId
+    )[1], "Character no longer exists.")
+    for name in pairs(collectionColumns) do record[name] = Json.decode(record[name]) end
+    record.user_id = nil
+    return record
+end
+
+local preservedImportColumns = {
+    id = true, name = true, user_id = true, deleted_at = true,
+    x = true, y = true, z = true, facing = true,
+}
+function m.importCharacterRecord(characterId, record, applyOnline)
+    assert(type(record) == "table", "Character JSON must be an object.")
+    assert(database:scalar("SELECT id FROM characters WHERE id = ? AND deleted_at IS NULL", characterId),
+        "Target character no longer exists.")
+    assert(record.sex == "male" or record.sex == "female", "Invalid character sex.")
+    assert(Registries.findByMetadata("illarion:races", "id", record.race), "Unknown character race.")
+    local updates, values, known = {}, {}, {}
+    for _, column in ipairs(database:query("PRAGMA table_info(characters)")) do
+        local name = column.name
+        known[name] = true
+        if not preservedImportColumns[name] then
+            local value = record[name]
+            if collectionColumns[name] then
+                assert(type(value) == "table", name .. " must be an object or array.")
+                value = Json.encode(value)
+            elseif column.type == "INTEGER" then
+                assert(type(value) == "number" and value % 1 == 0, name .. " must be an integer.")
+            else
+                assert(type(value) == "string", name .. " must be a string.")
+            end
+            updates[#updates + 1] = name .. (collectionColumns[name] and " = jsonb(?)" or " = ?")
+            values[#values + 1] = value
+        end
+    end
+    for name in pairs(record) do assert(known[name], "Unknown character field: " .. tostring(name)) end
+    values[#values + 1] = characterId
+    database:execute("BEGIN IMMEDIATE")
+    local ok, importError = pcall(function()
+        database:execute("UPDATE characters SET " .. table.concat(updates, ", ")
+            .. " WHERE id = ? AND deleted_at IS NULL", values)
+        if applyOnline then applyOnline() end
+    end)
+    if not ok then
+        database:execute("ROLLBACK")
+        error(importError)
+    end
+    database:execute("COMMIT")
+end
+
 local function attributeValue(character, name)
     return AttributeManager.GetAttribute(character, name):getEffectiveValue()
 end
@@ -737,6 +799,7 @@ function m.saveCharacter(player, character)
     if not ok then
         character:pageGM(character, "Failed to save")
         database:execute("ROLLBACK")
+        error(saveError)
     else
         database:execute("COMMIT")
     end

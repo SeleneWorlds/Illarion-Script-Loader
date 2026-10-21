@@ -234,6 +234,37 @@ function m.Spawn(player, selectedCharacter)
     return character
 end
 
+function m.ReloadCharacter(player, characterId)
+    local saved = assert(CharacterPersistence.loadCharacter(player, characterId), "Character no longer exists.")
+    local previous = player:getControlledEntity()
+    local oldCharacter = Character.fromSelenePlayer(player)
+    local playerData = player:getRuntimeData(DataKeys.Player)
+    local oldTotal, oldLogin = playerData[DataFields.TotalOnlineTime], playerData[DataFields.CurrentLoginTimestamp]
+    local ok, character = pcall(m.Spawn, player, saved)
+    if not ok then
+        local replacement = player:getControlledEntity()
+        if replacement and replacement ~= previous then replacement:remove() end
+        player:setControlledEntity(previous)
+        player:setCameraEntity(previous)
+        player:setCameraToFollowTarget()
+        playerData[DataFields.TotalOnlineTime], playerData[DataFields.CurrentLoginTimestamp] = oldTotal, oldLogin
+        error(character)
+    end
+    InventoryManager.CloseAllShowcases(oldCharacter)
+    oldCharacter:abortAction()
+    previous:remove()
+    require("illarion-script-loader.server.lua.lib.skillManager").SendAll(character)
+    require("illarion-script-loader.server.lua.lib.magicManager").SendMagicState(character)
+    for viewId, inventory in pairs({equipment = InventoryManager.GetEquipment(character), belt = InventoryManager.GetBelt(character)}) do
+        for _, slotId in ipairs(inventory:getSlots()) do
+            Network.sendToPlayer(player, "illarion:update_slot", {
+                viewId = viewId, slotId = slotId, item = InventoryManager.SerializeItem(inventory:getItem(slotId)),
+            })
+        end
+    end
+    return character
+end
+
 function m.Despawn(player)
     if player:getControlledEntity() then
         player:getControlledEntity():remove()
