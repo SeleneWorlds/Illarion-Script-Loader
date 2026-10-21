@@ -96,10 +96,12 @@ Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
     return rest
 end
 
-Character.SeleneMethods.createItem = function(user, itemId, count, quality, data, durability)
+Character.SeleneMethods.createItem = function(user, itemId, count, quality, data, durability, wear)
     itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
     quality = assert(tonumber(quality), "quality must be a number, was " .. tostring(quality))
+    assert(wear == nil or (type(wear) == "number" and wear % 1 == 0 and wear >= 0 and wear <= 255),
+        "wear must be an integer between 0 and 255")
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
         return 0
@@ -110,7 +112,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         count = count,
         quality = quality,
         durability = tonumber(durability) or 99,
-        wear = InventoryManager.InitialWear(itemDef),
+        wear = wear == nil and InventoryManager.InitialWear(itemDef) or wear,
         data = itemData
     })
     if rest <= 0 then
@@ -124,7 +126,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
             count = rest,
             quality = quality,
             durability = tonumber(durability) or 99,
-            wear = InventoryManager.InitialWear(itemDef),
+            wear = wear == nil and InventoryManager.InitialWear(itemDef) or wear,
             data = itemData
         })
     end

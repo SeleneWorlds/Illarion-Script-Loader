@@ -224,7 +224,7 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality, durability)
     end
 end
 
-world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data, durability)
+world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data, durability, wear)
     itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     if count ~= nil then
         count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
@@ -232,6 +232,8 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
     if quality ~= nil then
         quality = assert(tonumber(quality), "quality must be a number, was " .. tostring(quality))
     end
+    assert(wear == nil or (type(wear) == "number" and wear % 1 == 0 and wear >= 0 and wear <= 255),
+        "wear must be an integer between 0 and 255")
     local dimension = Dimensions.getDefault()
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
@@ -250,7 +252,7 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         local tileData = dimension:getAnnotationAt(tile:getCoordinate(), tileDef:getName()) or {}
         tileData[DataFields.Quality] = tonumber(quality) or 3
         tileData[DataFields.Durability] = tonumber(durability) or 99
-        tileData[DataFields.Wear] = agingSpeed
+        tileData[DataFields.Wear] = wear == nil and agingSpeed or wear
         dimension:annotateTile(tile:getCoordinate(), tileDef:getName(), tileData)
         item = Item.fromSeleneTile(tile)
     else
@@ -263,7 +265,7 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         itemData[DataFields.Count] = tonumber(count) or 1
         itemData[DataFields.Quality] = tonumber(quality) or 3
         itemData[DataFields.Durability] = tonumber(durability) or 99
-        itemData[DataFields.Wear] = agingSpeed
+        itemData[DataFields.Wear] = wear == nil and agingSpeed or wear
         itemData[DataFields.Data] = {}
         entity:setCoordinate(pos)
         entity:spawn(dimension)
@@ -272,7 +274,7 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
 
     item.quality = tonumber(quality) or 3
     item.durability = tonumber(durability) or 99
-    item.wear = agingSpeed
+    item.wear = wear == nil and agingSpeed or wear
     if type(data) == "table" then
         for key, value in pairs(data) do
             item:setData(key, value)
