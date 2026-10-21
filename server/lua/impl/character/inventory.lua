@@ -242,6 +242,36 @@ end
 Character.SeleneMethods.equipItem = function(user, itemRef)
     if type(itemRef) ~= "table" then return false end
     local equipment = InventoryManager.GetEquipment(user)
+    if itemRef.SeleneEntity then
+        local entity = itemRef.SeleneEntity
+        local dimension = user.SeleneEntity:getDimension()
+        local pos, userPos = itemRef.pos, user.pos
+        if entity:getDimension() ~= dimension or pos.z ~= userPos.z
+                or math.abs(pos.x - userPos.x) > 1 or math.abs(pos.y - userPos.y) > 1 then
+            return false
+        end
+        -- Only pick the visible top item, just as with a manual map pickup.
+        local entities = dimension:getEntitiesAt(pos.x, pos.y, pos.z, user.SeleneEntity:getInteractionViewer())
+        local topItem
+        for i = #entities, 1, -1 do
+            if entities[i]:hasTag("illarion:item") then topItem = entities[i]; break end
+        end
+        if topItem ~= entity then return false end
+        local pickup = require("illarion-script-loader.server.lua.lib.itemPickup")
+        for _, slot in ipairs({Character.right_tool, Character.left_tool}) do
+            if equipment:getItem(slot) == nil then
+                local held = pickup.pickup(user, entity, equipment, slot, 1)
+                if held then
+                    itemRef.SeleneEntity = nil
+                    itemRef.SeleneItem = held.SeleneItem
+                    itemRef.SeleneInventory = held.SeleneInventory
+                    itemRef.SeleneInventoryItem = held.SeleneInventoryItem
+                    return true
+                end
+            end
+        end
+        return false
+    end
     local source = itemRef.SeleneInventory
     local reference = itemRef.SeleneInventoryItem
     local item = itemRef.SeleneItem
