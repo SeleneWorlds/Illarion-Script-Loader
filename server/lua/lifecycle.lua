@@ -62,8 +62,14 @@ local function finishLogin(player, selectedCharacter)
             end
         end
         local serverName = Server.getName()
-        local welcomeMessageDe = ":) Willkommen in " .. serverName .. ", es sind " .. otherPlayerCount .. " andere Spieler online."
-        local welcomeMessageEn = ":) Welcome to " .. serverName .. ". There are " .. otherPlayerCount .. " other players online."
+        local welcomeMessageDe = ":) Willkommen in " .. serverName
+        local welcomeMessageEn = ":) Welcome to " .. serverName .. "."
+        if otherPlayerCount > 0 then
+            welcomeMessageDe = welcomeMessageDe .. ", es sind " .. otherPlayerCount .. " andere Spieler online."
+            welcomeMessageEn = welcomeMessageEn .. " There are " .. otherPlayerCount .. " other players online."
+        else
+            welcomeMessageDe = welcomeMessageDe .. "."
+        end
         common.InformNLS(character, welcomeMessageDe, welcomeMessageEn)
     end
 
