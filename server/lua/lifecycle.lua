@@ -72,6 +72,7 @@ local function finishLogin(player, selectedCharacter)
     end
     SkillManager.SendAll(character)
     MagicManager.SendMagicState(character)
+    player:setVisibleOnline(not selectedCharacter.headless)
 end
 
 Players.playerQueued:connect(function(entry)
