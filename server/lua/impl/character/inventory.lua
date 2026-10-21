@@ -237,3 +237,38 @@ Character.SeleneMethods.getItemList = function(user, itemId)
     end
     return result
 end
+
+--- Selene-only API for equipping an item.
+Character.SeleneMethods.equipItem = function(user, itemRef)
+    if type(itemRef) ~= "table" then return false end
+    local equipment = InventoryManager.GetEquipment(user)
+    local source = itemRef.SeleneInventory
+    local reference = itemRef.SeleneInventoryItem
+    local item = itemRef.SeleneItem
+    if source and reference and item and source:getItem(reference.slotId) == item
+            and source.owner == user then
+        if source == equipment and (reference.slotId == Character.right_tool
+                or reference.slotId == Character.left_tool) then
+            return true
+        end
+        -- Try empty hands before swapping a held item into the tool's old slot.
+        for _, emptyOnly in ipairs({true, false}) do
+            for _, slot in ipairs({Character.right_tool, Character.left_tool}) do
+                local held = equipment:getItem(slot)
+                if (not emptyOnly or held == nil)
+                        and InventoryManager.ItemFitsEquipmentSlot(item, slot)
+                        and (not held or not source.isEquipment
+                            or InventoryManager.ItemFitsEquipmentSlot(held, reference.slotId))
+                        and InventoryManager.CanMoveWithHands(source, reference.slotId, equipment, slot)
+                        and source:moveItemTo(equipment, reference.slotId, slot, 1) then
+                    InventoryManager.UpdateBlockedHand(equipment)
+                    itemRef.SeleneInventory = equipment
+                    itemRef.SeleneInventoryItem = equipment:getInventoryItem(slot)
+                    itemRef.SeleneItem = equipment:getItem(slot)
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
