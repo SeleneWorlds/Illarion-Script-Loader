@@ -97,6 +97,7 @@ function m.AgeFieldEntity(entity)
         local replacementData = replacement:getRuntimeData(DataKeys.Item)
         replacementData[DataFields.Count] = data[DataFields.Count] or 1
         replacementData[DataFields.Quality] = data[DataFields.Quality]
+        replacementData[DataFields.Durability] = data[DataFields.Durability] or 99
         replacementData[DataFields.Wear] = initialWear(replacementDef)
         replacementData[DataFields.Data] = data[DataFields.Data] or {}
         replacementData[DataFields.Content] = data[DataFields.Content]

@@ -86,18 +86,27 @@ end
 Item.SeleneGetters.quality = function(item)
     if item.SeleneTile then
         local data = item.SeleneTile:getDimension():getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
-        return tonumber(data and data[DataFields.Quality]) or 333
+        return tonumber(data and data[DataFields.Quality]) or 3
     elseif item.SeleneEntity then
         local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
-        return tonumber(itemData and itemData[DataFields.Quality]) or 333
+        return tonumber(itemData and itemData[DataFields.Quality]) or 3
     elseif item.SeleneItem then
-        return tonumber(item.SeleneItem.quality) or 333
+        return tonumber(item.SeleneItem.quality) or 3
     end
-    return 333
+    return 3
 end
 
 Item.SeleneGetters.durability = function(item)
-    return item.quality % 100
+    if item.SeleneTile then
+        local data = item.SeleneTile:getDimension():getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
+        return tonumber(data and data[DataFields.Durability]) or 99
+    elseif item.SeleneEntity then
+        local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
+        return tonumber(itemData and itemData[DataFields.Durability]) or 99
+    elseif item.SeleneItem then
+        return tonumber(item.SeleneItem.durability) or 99
+    end
+    return 99
 end
 
 Item.SeleneGetters.data = function(item)

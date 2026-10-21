@@ -167,7 +167,7 @@ end
 local function handleCreate(character, args)
     local words = splitWords(args)
     if #words == 0 then
-        character:inform("Benutzung: !create <id|name> [quantity [quality [key=value ...]]]", "Usage: !create <id|name> [quantity [quality [key=value ...]]]")
+        character:inform("Benutzung: !create <id|name> [quantity [quality [durability [key=value ...]]]]", "Usage: !create <id|name> [quantity [quality [durability [key=value ...]]]]")
         return
     end
 
@@ -178,16 +178,17 @@ local function handleCreate(character, args)
     end
 
     local quantity = tonumber(words[2]) or 1
-    local quality = tonumber(words[3]) or 333
+    local quality = tonumber(words[3]) or 3
+    local durability = tonumber(words[4]) or 99
     local data = {}
-    for i = 4, #words do
+    for i = 5, #words do
         local key, value = words[i]:match("^([^=]+)=(.*)$")
         if key ~= nil then
             data[key] = value
         end
     end
 
-    local rest = character:createItem(itemId, quantity, quality, data)
+    local rest = character:createItem(itemId, quantity, quality, data, durability)
     if rest > 0 then
         character:inform("Nicht genug Platz, Restmenge: " .. rest, "Not enough space, remaining count: " .. rest)
         return
@@ -384,7 +385,7 @@ COMMANDS = {
     },
     {
         names = {"create"},
-        help = "!create <id|name> [quantity [quality [key=value ...]]] - creates an item in your inventory.",
+        help = "!create <id|name> [quantity [quality [durability [key=value ...]]]] - creates an item in your inventory.",
         handler = handleCreate,
         requireAdmin = true,
     },

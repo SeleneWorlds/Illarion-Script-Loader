@@ -453,7 +453,8 @@ local function serializeItem(item)
         id = tonumber(item.def:getMetadata("id")),
         count = tonumber(item.count) or 1,
         wear = tonumber(item.wear) or 0,
-        quality = tonumber(item.quality) or 333,
+        quality = tonumber(item.quality) or 3,
+        durability = tonumber(item.durability) or 99,
         data = copyStringMap(item.data)
     }
     if item.content then
@@ -549,7 +550,8 @@ local function deserializeItem(saved)
         def = itemDef,
         count = tonumber(saved.count) or 1,
         wear = tonumber(saved.wear) or 0,
-        quality = tonumber(saved.quality) or 333,
+        quality = tonumber(saved.quality) or 3,
+        durability = tonumber(saved.durability) or 99,
         data = copyStringMap(saved.data)
     }
 end

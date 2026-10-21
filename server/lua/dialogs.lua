@@ -129,7 +129,8 @@ Network.handlePayload("illarion:look_at_menu_item", function(player, payload)
         SeleneItem = {
             def = itemDef,
             count = 1,
-            quality = entry.quality or 333,
+            quality = entry.quality or 3,
+            durability = entry.durability or 99,
             wear = 0,
             data = entry.data and entry.data ~= 0 and { data = tostring(entry.data) } or {}
         }

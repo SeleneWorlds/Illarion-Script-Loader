@@ -9,7 +9,7 @@ MenuStruct.SeleneConstructor = function(title, callback)
     }
 end
 
-MenuStruct.SeleneMethods.addItem = function(self, itemId, quality, data)
+MenuStruct.SeleneMethods.addItem = function(self, itemId, quality, data, durability)
     itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     local itemDef = Registries.findByMetadata("illarion:items", "id", itemId)
     if not itemDef then
@@ -19,7 +19,8 @@ MenuStruct.SeleneMethods.addItem = function(self, itemId, quality, data)
     table.insert(self.items, {
         id = itemId,
         visual = itemDef:getField("visual"),
-        quality = tonumber(quality) or 333,
+        quality = tonumber(quality) or 3,
+        durability = tonumber(durability) or 99,
         data = tonumber(data) or 0
     })
 end

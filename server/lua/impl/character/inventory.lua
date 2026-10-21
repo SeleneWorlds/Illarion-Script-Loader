@@ -96,7 +96,7 @@ Character.SeleneMethods.increaseAtPos = function(user, slotId, amount)
     return rest
 end
 
-Character.SeleneMethods.createItem = function(user, itemId, count, quality, data)
+Character.SeleneMethods.createItem = function(user, itemId, count, quality, data, durability)
     itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
     quality = assert(tonumber(quality), "quality must be a number, was " .. tostring(quality))
@@ -109,6 +109,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
         def = itemDef,
         count = count,
         quality = quality,
+        durability = tonumber(durability) or 99,
         wear = InventoryManager.InitialWear(itemDef),
         data = itemData
     })
@@ -122,6 +123,7 @@ Character.SeleneMethods.createItem = function(user, itemId, count, quality, data
             def = itemDef,
             count = rest,
             quality = quality,
+            durability = tonumber(durability) or 99,
             wear = InventoryManager.InitialWear(itemDef),
             data = itemData
         })
@@ -177,7 +179,7 @@ Character.SeleneMethods.eraseItem = function(user, itemId, count, data)
     return rest
 end
 
-Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
+Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality, durability)
     slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
     newId = assert(tonumber(newId), "newId must be a number, was " .. tostring(newId))
     newQuality = assert(tonumber(newQuality), "newQuality must be a number, was " .. tostring(newQuality))
@@ -192,23 +194,20 @@ Character.SeleneMethods.swapAtPos = function(user, slotId, newId, newQuality)
     end
     local inventoryItem = inventory:getInventoryItem(slotId)
     local item = inventoryItem and inventoryItem:getItem()
-    local illaItem = Item.fromSeleneInventoryItem(inventoryItem)
     if item ~= nil then
         item.def = itemDef
         item.wear = InventoryManager.InitialWear(itemDef)
-        if newQuality > 0 then
-            illaItem.quality = newQuality
-        end
+        if newQuality > 0 then item.quality = newQuality end
+        if durability ~= nil then item.durability = durability end
         inventory:slotUpdated(slotId)
     else
         inventory:setItem(slotId, {
             def = itemDef,
             count = 1,
+            quality = newQuality,
+            durability = durability or 99,
             wear = InventoryManager.InitialWear(itemDef)
         })
-        local newInventoryItem = inventory:getInventoryItem(slotId)
-        local newIllaItem = Item.fromSeleneInventoryItem(newInventoryItem)
-        newIllaItem.quality = newQuality
     end
     InventoryManager.UpdateBlockedHand(inventory)
     return true

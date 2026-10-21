@@ -133,7 +133,8 @@ function m.UpdateBlockedHand(equipment)
                     equipment:setItem(oppositeSlot, {
                         def = itemDef,
                         count = 1,
-                        quality = 333,
+                        quality = 3,
+                        durability = 99,
                         wear = 255,
                         data = {}
                     })

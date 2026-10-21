@@ -304,7 +304,7 @@ local function starterPackData(pack)
             local inventory = slotId <= 11 and equipment or belt
             table.insert(inventory, {
                 slot = slotId,
-                item = { id = id, count = tonumber(item.count) or 1, quality = tonumber(item.quality) or 333, data = {} }
+                item = { id = id, count = tonumber(item.count) or 1, quality = tonumber(item.quality) or 3, durability = tonumber(item.durability) or 99, data = {} }
             })
         end
     end

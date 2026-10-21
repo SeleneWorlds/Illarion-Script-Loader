@@ -112,6 +112,7 @@ world.SeleneMethods.changeItem = function(world, item)
     local newId = assert(tonumber(item.id), "item.id must be a number, was " .. tostring(item.id))
     local newNumber = assert(tonumber(item.number), "item.number must be a number, was " .. tostring(item.number))
     local newQuality = assert(tonumber(item.quality), "item.quality must be a number, was " .. tostring(item.quality))
+    local newDurability = assert(tonumber(item.durability), "item.durability must be a number")
     local newWear = assert(tonumber(item.wear), "item.wear must be a number, was " .. tostring(item.wear))
 
     if item.SeleneTile ~= nil then
@@ -128,6 +129,7 @@ world.SeleneMethods.changeItem = function(world, item)
         end
         local data = dimension:getAnnotationAt(coordinate, tileDef:getName()) or {}
         data[DataFields.Quality] = newQuality
+        data[DataFields.Durability] = newDurability
         data[DataFields.Wear] = newWear
         dimension:annotateTile(coordinate, tileDef:getName(), data)
     elseif item.SeleneEntity ~= nil then
@@ -138,6 +140,7 @@ world.SeleneMethods.changeItem = function(world, item)
         local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
         itemData[DataFields.Count] = newNumber
         itemData[DataFields.Quality] = newQuality
+        itemData[DataFields.Durability] = newDurability
         itemData[DataFields.Wear] = newWear
         item.SeleneEntity:updateVisuals()
     elseif item.SeleneItem ~= nil then
@@ -148,6 +151,7 @@ world.SeleneMethods.changeItem = function(world, item)
         item.SeleneItem.def = itemDef
         item.SeleneItem.count = newNumber
         item.SeleneItem.quality = newQuality
+        item.SeleneItem.durability = newDurability
         item.SeleneItem.wear = newWear
         item.SeleneInventory:slotUpdated(item.SeleneInventoryItem.slotId)
     end
@@ -172,9 +176,10 @@ world.SeleneMethods.getItemName = function(world, itemId, language)
     return ""
 end
 
-world.SeleneMethods.swap = function(world, item, newId, newQuality)
+world.SeleneMethods.swap = function(world, item, newId, newQuality, durability)
     newId = assert(tonumber(newId), "newId must be a number, was " .. tostring(newId))
     newQuality = assert(tonumber(newQuality), "newQuality must be a number, was " .. tostring(newQuality))
+    local newDurability = durability == nil and item.durability or assert(tonumber(durability), "durability must be a number")
     if item:getType() == scriptItem.field then
         if item.SeleneTile ~= nil then
             local NewTileDef = Registries.findByMetadata("tiles", "itemId", newId)
@@ -182,7 +187,13 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
                 error("Unknown tile id " .. tostring(newId))
             end
             local map = item.SeleneTile:getDimension():getMap()
-            map:swapTile(item.SeleneTile:getCoordinate(), item.SeleneTile:getDefinition(), NewTileDef)
+            local dimension = item.SeleneTile:getDimension()
+            local coordinate = item.SeleneTile:getCoordinate()
+            local data = dimension:getAnnotationAt(coordinate, item.SeleneTile:getName()) or {}
+            data[DataFields.Quality] = newQuality
+            data[DataFields.Durability] = newDurability
+            map:swapTile(coordinate, item.SeleneTile:getDefinition(), NewTileDef)
+            dimension:annotateTile(coordinate, NewTileDef:getName(), data)
         elseif item.SeleneEntity ~= nil then
             local itemDef = Registries.findByMetadata("illarion:items", "id", newId)
             local entityDef = Registries.findByMetadata("entities", "itemId", newId)
@@ -196,7 +207,8 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
             local newEntity = ItemEntity.Create(entityDef)
             local newData = newEntity:getRuntimeData(DataKeys.Item)
             newData[DataFields.Count] = oldData[DataFields.Count] or 1
-            newData[DataFields.Quality] = tonumber(newQuality) or 333
+            newData[DataFields.Quality] = tonumber(newQuality) or 3
+            newData[DataFields.Durability] = newDurability
             newData[DataFields.Wear] = tonumber(itemDef:getField("agingSpeed")) or 0
             newData[DataFields.Data] = oldData[DataFields.Data] or {}
             newEntity:setCoordinate(oldEntity:getCoordinate())
@@ -206,13 +218,13 @@ world.SeleneMethods.swap = function(world, item, newId, newQuality)
             item.SeleneEntity = newEntity
         end
     elseif item:getType() == scriptItem.inventory or item:getType() == scriptItem.belt then
-        item.owner:swapAtPos(item.itempos, newId, newQuality)
+        item.owner:swapAtPos(item.itempos, newId, newQuality, newDurability)
     elseif item:getType() == scriptItem.container then
-        item.inside:swapAtPos(item.itempos, newId, newQuality)
+        item.inside:swapAtPos(item.itempos, newId, newQuality, newDurability)
     end
 end
 
-world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data)
+world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, always, quality, data, durability)
     itemId = assert(tonumber(itemId), "itemId must be a number, was " .. tostring(itemId))
     if count ~= nil then
         count = assert(tonumber(count), "count must be a number, was " .. tostring(count))
@@ -236,7 +248,8 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         end
         local tile = dimension:placeTile(pos, tileDef)
         local tileData = dimension:getAnnotationAt(tile:getCoordinate(), tileDef:getName()) or {}
-        tileData[DataFields.Quality] = tonumber(quality) or 333
+        tileData[DataFields.Quality] = tonumber(quality) or 3
+        tileData[DataFields.Durability] = tonumber(durability) or 99
         tileData[DataFields.Wear] = agingSpeed
         dimension:annotateTile(tile:getCoordinate(), tileDef:getName(), tileData)
         item = Item.fromSeleneTile(tile)
@@ -248,7 +261,8 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         local entity = ItemEntity.Create(entityType)
         local itemData = entity:getRuntimeData(DataKeys.Item)
         itemData[DataFields.Count] = tonumber(count) or 1
-        itemData[DataFields.Quality] = tonumber(quality) or 333
+        itemData[DataFields.Quality] = tonumber(quality) or 3
+        itemData[DataFields.Durability] = tonumber(durability) or 99
         itemData[DataFields.Wear] = agingSpeed
         itemData[DataFields.Data] = {}
         entity:setCoordinate(pos)
@@ -256,7 +270,8 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
         item = Item.fromSeleneEntity(entity)
     end
 
-    item.quality = tonumber(quality) or 333
+    item.quality = tonumber(quality) or 3
+    item.durability = tonumber(durability) or 99
     item.wear = agingSpeed
     if type(data) == "table" then
         for key, value in pairs(data) do
@@ -272,8 +287,14 @@ world.SeleneMethods.createItemFromId = function(world, itemId, count, pos, alway
 end
 
 world.SeleneMethods.createItemFromItem = function(world, item, pos, always)
-    local data = item.SeleneItem and item.SeleneItem.data or item.data
-    return world:createItemFromId(item.id, item.number, pos, always, item.quality, data)
+    local data = item.customData or (item.SeleneItem and item.SeleneItem.data)
+    if item.SeleneEntity then
+        data = item.SeleneEntity:getRuntimeData(DataKeys.Item)[DataFields.Data]
+    elseif item.SeleneTile then
+        data = item.SeleneTile:getDimension():getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
+    end
+    data = data or item.data
+    return world:createItemFromId(item.id, item.number, pos, always, item.quality, data, item.durability)
 end
 
 world.SeleneMethods.getArmorStruct = function(world, itemId)
@@ -340,7 +361,12 @@ end
 
 world.SeleneMethods.changeQuality = function(world, item, amount)
     amount = assert(tonumber(amount), "amount must be a number, was " .. tostring(amount))
-    item.quality = amount + item.durability <= 99 and amount + item.quality or item.quality - item.durability + 99
+    item.quality = math.max(0, item.quality + amount)
+end
+
+world.SeleneMethods.changeDurability = function(world, item, amount)
+    amount = assert(tonumber(amount), "amount must be a number")
+    item.durability = math.max(0, math.min(99, item.durability + amount))
 end
 
 world.SeleneMethods.increase = function(world, item, count)

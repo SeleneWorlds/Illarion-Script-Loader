@@ -17,6 +17,11 @@ local function data(definition)
     return definition.data
 end
 
+local function validateDurability(value)
+    assert(value == nil or (type(value) == "number" and value >= 0 and value <= 99 and value % 1 == 0),
+        "Item durability must be an integer between 0 and 99")
+end
+
 local function character(context)
     return assert(context and context.character, "Behavior context requires a character")
 end
@@ -225,7 +230,8 @@ function m.registerBehaviorDefaults(behaviors)
         oldItem = { type = "registry", registry = "illarion:items" },
         item = { type = "registry", registry = "illarion:items" },
         count = { type = "integer", min = 1, optional = true },
-        quality = { type = "integer", min = 0, optional = true },
+        quality = { type = "integer", min = 0, max = 9, optional = true },
+        durability = { type = "integer", min = 0, max = 99, optional = true },
         data = { type = "number", optional = true }
     } }
     behaviors:registerAction("transform_item", function(action, context)
@@ -257,8 +263,9 @@ function m.registerBehaviorDefaults(behaviors)
                 or find(InventoryManager.GetBackpack(user))
         end
         if not item then return false end
+        validateDurability(payload.durability)
         assert(payload.quality == nil or (type(payload.quality) == "number" and payload.quality >= 0
-            and payload.quality < math.huge and payload.quality % 1 == 0),
+            and payload.quality <= 9 and payload.quality % 1 == 0),
             "Item quality must be a non-negative integer")
         assert(payload.data == nil or (type(payload.data) == "number" and math.abs(payload.data) < math.huge),
             "Item data must be a finite number")
@@ -268,7 +275,7 @@ function m.registerBehaviorDefaults(behaviors)
         if count ~= nil then
             if item.number < count then return false end
             local remaining = character(context):createItem(entry:getMetadata("id"), count,
-                payload.quality or item.quality, payload.data or 0)
+                payload.quality or item.quality, payload.data or 0, payload.durability or item.durability)
             -- createItem may fill only part of a requested stack.
             local created = count - remaining
             if created > 0 then world:erase(item, created) end
@@ -276,6 +283,7 @@ function m.registerBehaviorDefaults(behaviors)
         else
             item.id = entry:getMetadata("id")
             if payload.quality ~= nil then item.quality = payload.quality end
+            if payload.durability ~= nil then item.durability = payload.durability end
             if payload.data ~= nil then item.data = payload.data end
             world:changeItem(item)
         end
@@ -306,15 +314,17 @@ function m.registerBehaviorDefaults(behaviors)
         local coordinate = assert(payload.position, "Create item requires a position")
         assert(type(payload.item) == "string", "Create item requires an item reference")
         local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
-        local quality = payload.quality == nil and 333 or payload.quality
-        assert(type(quality) == "number" and quality >= 0 and quality < math.huge and quality % 1 == 0,
+        validateDurability(payload.durability)
+        local quality = payload.quality == nil and 3 or payload.quality
+        assert(type(quality) == "number" and quality >= 0 and quality <= 9 and quality % 1 == 0,
             "Item quality must be a non-negative integer")
         return world:createItemFromId(entry:getMetadata("id"), 1,
-            position(coordinate.x, coordinate.y, coordinate.z), true, quality)
+            position(coordinate.x, coordinate.y, coordinate.z), true, quality, nil, payload.durability)
     end, { type = "object", properties = {
         position = "coordinate",
         item = { type = "registry", registry = "illarion:items" },
-        quality = { type = "integer", min = 0, optional = true }
+        quality = { type = "integer", min = 0, max = 9, optional = true },
+        durability = { type = "integer", min = 0, max = 99, optional = true }
     } })
 
     behaviors:registerAction("give_item", function(action, context)
@@ -322,19 +332,21 @@ function m.registerBehaviorDefaults(behaviors)
         assert(type(payload.item) == "string", "Give item requires an item reference")
         local entry = assert(Registries.findByName("illarion:items", payload.item), "Unknown item")
         local count = payload.count == nil and 1 or payload.count
-        local quality = payload.quality == nil and 333 or payload.quality
+        validateDurability(payload.durability)
+        local quality = payload.quality == nil and 3 or payload.quality
         local itemData = payload.data == nil and 0 or payload.data
         assert(type(count) == "number" and count >= 1 and count < math.huge and count % 1 == 0,
             "Item count must be a positive integer")
-        assert(type(quality) == "number" and quality >= 0 and quality < math.huge and quality % 1 == 0,
+        assert(type(quality) == "number" and quality >= 0 and quality <= 9 and quality % 1 == 0,
             "Item quality must be a non-negative integer")
         assert(type(itemData) == "number" and math.abs(itemData) < math.huge,
             "Item data must be a finite number")
-        return character(context):createItem(entry:getMetadata("id"), count, quality, itemData)
+        return character(context):createItem(entry:getMetadata("id"), count, quality, itemData, payload.durability)
     end, { type = "object", properties = {
         item = { type = "registry", registry = "illarion:items" },
         count = { type = "integer", min = 1, optional = true },
-        quality = { type = "integer", min = 0, optional = true },
+        quality = { type = "integer", min = 0, max = 9, optional = true },
+        durability = { type = "integer", min = 0, max = 99, optional = true },
         data = { type = "number", optional = true }
     } })
 
@@ -660,7 +672,7 @@ function m.registerBehaviorDefaults(behaviors)
 
     behaviors:registerCondition("is_door_locked", function(condition)
         local item = itemAt(condition)
-        return item ~= nil and item.quality == 333 and require("base.doors").CheckClosedDoor(item.id)
+        return item ~= nil and item:getData("locked") == "true" and require("base.doors").CheckClosedDoor(item.id)
     end, { type = "object", properties = { position = "coordinate" } })
 
     behaviors:registerCondition("is_monster_nearby", function(condition, context)

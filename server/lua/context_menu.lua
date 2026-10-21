@@ -196,6 +196,7 @@ local function pickup(player, payload, target)
         def = itemDef,
         count = itemData[DataFields.Count] or 1,
         quality = itemData[DataFields.Quality],
+        durability = itemData[DataFields.Durability] or 99,
         wear = itemData[DataFields.Wear],
         data = itemData[DataFields.Data] or {},
         content = itemData[DataFields.Content]
@@ -208,6 +209,7 @@ local function pickup(player, payload, target)
             def = item.def,
             count = rest,
             quality = item.quality,
+            durability = item.durability or 99,
             wear = item.wear,
             data = item.data
         })

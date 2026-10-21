@@ -105,7 +105,7 @@ Container.SeleneMethods.increaseAtPos = function(container, slotId, amount)
     return container.SeleneInventory:increaseCountAt(slotId, amount)
 end
 
-Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQuality)
+Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQuality, durability)
     slotId = assert(tonumber(slotId), "slotId must be a number, was " .. tostring(slotId))
     newId = assert(tonumber(newId), "newId must be a number, was " .. tostring(newId))
     newQuality = assert(tonumber(newQuality), "newQuality must be a number, was " .. tostring(newQuality))
@@ -119,17 +119,17 @@ Container.SeleneMethods.swapAtPos = function(container, slotId, newId, newQualit
     if item ~= nil then
         item.def = itemDef
         item.wear = InventoryManager.InitialWear(itemDef)
-        if newQuality > 0 then
-            Item.fromSeleneInventoryItem(inventoryItem).quality = newQuality
-        end
+        if newQuality > 0 then item.quality = newQuality end
+        if durability ~= nil then item.durability = durability end
         inventory:slotUpdated(slotId)
     else
         inventory:setItem(slotId, {
             def = itemDef,
             count = 1,
+            quality = newQuality,
+            durability = durability or 99,
             wear = InventoryManager.InitialWear(itemDef)
         })
-        Item.fromSeleneInventoryItem(inventory:getInventoryItem(slotId)).quality = newQuality
     end
     return true
 end

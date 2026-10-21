@@ -47,6 +47,7 @@ local function CreateItemFromEntity(entity)
         def = itemDef,
         count = itemData[DataFields.Count] or 1,
         quality = itemData[DataFields.Quality],
+        durability = itemData[DataFields.Durability] or 99,
         wear = itemData[DataFields.Wear],
         data = itemData[DataFields.Data] or {},
         content = itemData[DataFields.Content]
@@ -389,6 +390,7 @@ Network.handlePayload("illarion:move_coordinate_to_coordinate", function(player,
     local movedItemData = movedEntity:getRuntimeData(DataKeys.Item)
     movedItemData[DataFields.Count] = count
     movedItemData[DataFields.Quality] = itemData[DataFields.Quality]
+    movedItemData[DataFields.Durability] = itemData[DataFields.Durability] or 99
     movedItemData[DataFields.Wear] = itemData[DataFields.Wear]
     movedItemData[DataFields.Data] = itemData[DataFields.Data] or {}
     movedItemData[DataFields.Content] = itemData[DataFields.Content]
@@ -489,6 +491,7 @@ local function moveSlotToCoordinate(player, payload)
     local customData = item.data or {}
     entityItemData[DataFields.Count] = count
     entityItemData[DataFields.Quality] = item.quality
+    entityItemData[DataFields.Durability] = item.durability or 99
     entityItemData[DataFields.Wear] = item.wear
     entityItemData[DataFields.Data] = customData
     entityItemData[DataFields.Content] = item.content
