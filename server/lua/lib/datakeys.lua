@@ -15,6 +15,7 @@ m.ScriptVars = "illarion:scriptVars"
 m.Player = "illarion:player"
 m.Character = "illarion:character"
 m.Item = "illarion:item"
+m.Book = "illarion:book"
 m.Dialogs = "illarion:dialogs"
 m.PersistedAttributes = "illarion:persistedAttributes"
 

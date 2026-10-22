@@ -21,7 +21,7 @@ defaults(0.2, 3, { "request_time", "request_weather" })
 
 -- Script actions and container opens are deliberate clicks, with room for quick sequences.
 defaults(5, 10, {
-    "cast", "use_at", "use_slot", "use_slot_at", "push_character",
+    "book_request_page", "cast", "use_at", "use_slot", "use_slot_at", "push_character",
     "open_container_at", "open_container_slot"
 })
 

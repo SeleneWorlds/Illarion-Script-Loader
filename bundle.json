@@ -1,7 +1,12 @@
 {
   "name": "illarion-script-loader",
   "description": "Implementation to the Illarion API and entrypoints to load Illarion scripts. ",
-  "dependencies": ["moonlight-inventory", "moonlight-attributes", "moonlight-behaviors", "moonlight-rolls"],
+  "dependencies": [
+    "moonlight-inventory",
+    "moonlight-attributes",
+    "moonlight-behaviors",
+    "moonlight-rolls"
+  ],
   "entrypoints": [
     "server/lua/impl/init.lua",
     "server/lua/impl/character/actions.lua",
@@ -60,6 +65,7 @@
     "server/lua/skills.lua",
     "server/lua/global_behaviors.lua",
     "server/lua/triggerfields.lua",
+    "server/lua/books.lua",
     "server/lua/use.lua",
     "server/lua/transfers.lua",
     "server/lua/time_sync.lua",
