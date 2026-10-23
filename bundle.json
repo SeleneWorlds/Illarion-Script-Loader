@@ -64,6 +64,7 @@
     "server/lua/scheduled_scripts.lua",
     "server/lua/skills.lua",
     "server/lua/global_behaviors.lua",
+    "server/lua/map_edits.lua",
     "server/lua/triggerfields.lua",
     "server/lua/books.lua",
     "server/lua/use.lua",
