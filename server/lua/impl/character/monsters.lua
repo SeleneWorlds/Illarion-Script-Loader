@@ -16,6 +16,7 @@ roller:registerType("item", function(entry)
         maxQuality = item.quality.max,
         minDurability = item.durability.min,
         maxDurability = item.durability.max,
+        wear = item.wear,
         data = item.data or {}
     }
 end)
