@@ -10,7 +10,8 @@ local EventLog = require("illarion-script-loader.server.lua.lib.eventLog")
 
 local RaceLanguage = require("illarion-script-loader.server.lua.lib.raceLanguage")
 
-local function talk(user, mode, message, messageEnglish, locale)
+local function talk(user, mode, message, messageEnglish, locale, options)
+    options = options or {}
     local userEntity = user.SeleneEntity
     mode, message = ChatMode.parsePrefix(mode, message)
     if messageEnglish then
@@ -102,7 +103,7 @@ local function talk(user, mode, message, messageEnglish, locale)
                 authorName = NameManager.Get(userEntity, listener and entity or nil, player:getLocale()),
                 mode = mode,
                 message = prefix .. effectiveMessage,
-                showInChat = showInChat
+                showInChat = options.showInChat ~= false and showInChat
             })
         end
     end
@@ -154,13 +155,17 @@ local function talk(user, mode, message, messageEnglish, locale)
     charData[DataFields.LastSpokenText] = message
 end
 
-Character.SeleneMethods.talk = function(user, mode, message, messageEnglish)
-    return talk(user, mode, message, messageEnglish)
+Character.SeleneMethods.talk = function(user, mode, message, messageEnglish, options)
+    if type(messageEnglish) == "table" and options == nil then
+        options = messageEnglish
+        messageEnglish = nil
+    end
+    return talk(user, mode, message, messageEnglish, nil, options)
 end
 
-Character.SeleneMethods.talkLanguage = function(user, mode, language, message)
+Character.SeleneMethods.talkLanguage = function(user, mode, language, message, options)
     language = assert(tonumber(language), "language must be a number, was " .. tostring(language))
-    return talk(user, mode, message, nil, language)
+    return talk(user, mode, message, nil, language, options)
 end
 
 Character.SeleneGetters.activeLanguage = function(user)
