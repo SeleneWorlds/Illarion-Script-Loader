@@ -11,6 +11,9 @@ end
 -- Allow a few rapid messages/commands, then one per second.
 defaults(1, 5, { "chat" })
 
+-- Allow typing refreshes and quick start/stop transitions.
+defaults(2, 5, { "typing" })
+
 -- Character requests can perform database reads; creation also writes persistent data.
 -- Bursts allow retries after validation failures without permitting sustained flooding.
 defaults(1, 3, { "request_characters", "request_character_creation", "select_character" })

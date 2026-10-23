@@ -43,3 +43,22 @@ Network.handlePayload("illarion:chat", function(player, payload)
     end
     character:talk(mode, message)
 end)
+
+Network.handlePayload("illarion:typing", function(player, payload)
+    if type(payload.typing) ~= "boolean" then
+        return
+    end
+    local entity = player:getControlledEntity()
+    local dimension = entity and entity:getDimension()
+    if not dimension then
+        return
+    end
+    for _, observer in ipairs(dimension:getObserversInRange(entity:getCoordinate(), 14, 2)) do
+        if observer ~= player then
+            Network.sendToPlayer(observer, "illarion:typing", {
+                author = entity:getNetworkId(),
+                typing = payload.typing
+            })
+        end
+    end
+end)
