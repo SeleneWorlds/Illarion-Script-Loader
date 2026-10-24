@@ -393,6 +393,8 @@ local preservedImportColumns = {
     id = true, name = true, user_id = true, deleted_at = true,
     x = true, y = true, z = true, facing = true,
 }
+local fractionalImportColumns = { hitpoints = true, mana = true, foodlevel = true }
+
 function m.importCharacterRecord(characterId, record, applyOnline)
     assert(type(record) == "table", "Character JSON must be an object.")
     assert(database:scalar("SELECT id FROM characters WHERE id = ? AND deleted_at IS NULL", characterId),
@@ -408,6 +410,9 @@ function m.importCharacterRecord(characterId, record, applyOnline)
             if collectionColumns[name] then
                 assert(type(value) == "table", name .. " must be an object or array.")
                 value = Json.encode(value)
+            elseif fractionalImportColumns[name] then
+                assert(type(value) == "number" and value > -math.huge and value < math.huge,
+                    name .. " must be a finite number.")
             elseif column.type == "INTEGER" then
                 assert(type(value) == "number" and value % 1 == 0, name .. " must be an integer.")
             else
