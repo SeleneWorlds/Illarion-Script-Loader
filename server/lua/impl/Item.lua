@@ -84,16 +84,17 @@ Item.SeleneGetters.wear = function(item)
 end
 
 Item.SeleneGetters.quality = function(item)
+    local quality
     if item.SeleneTile then
         local data = item.SeleneTile:getDimension():getAnnotationAt(item.SeleneTile:getCoordinate(), item.SeleneTile:getName())
-        return tonumber(data and data[DataFields.Quality]) or 3
+        quality = data and data[DataFields.Quality]
     elseif item.SeleneEntity then
         local itemData = item.SeleneEntity:getRuntimeData(DataKeys.Item)
-        return tonumber(itemData and itemData[DataFields.Quality]) or 3
+        quality = itemData and itemData[DataFields.Quality]
     elseif item.SeleneItem then
-        return tonumber(item.SeleneItem.quality) or 3
+        quality = item.SeleneItem.quality
     end
-    return 3
+    return math.max(0, math.min(9, math.floor(tonumber(quality) or 3)))
 end
 
 Item.SeleneGetters.durability = function(item)
